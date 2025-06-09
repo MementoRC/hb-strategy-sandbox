@@ -4,8 +4,8 @@ Performance benchmark tests for strategy sandbox.
 
 import json
 import time
-from decimal import Decimal
 from datetime import timedelta
+from decimal import Decimal
 
 import pytest
 

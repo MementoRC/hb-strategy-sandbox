@@ -11,14 +11,14 @@ from typing import Any, Dict, List, Optional
 from strategy_sandbox.core.protocols import (
     BalanceProtocol,
     EventProtocol,
-    OrderCandidate,
+    MarketEvent,
     Order,
     OrderBook,
-    OrderType,
+    OrderCandidate,
     OrderSide,
     OrderStatus,
+    OrderType,
     PriceType,
-    MarketEvent,
 )
 
 
@@ -28,9 +28,9 @@ class ExchangeSimulator:
     def __init__(self, balance_manager: BalanceProtocol, event_system: EventProtocol):
         self._balance_manager = balance_manager
         self._event_system = event_system
-        self._order_books: Dict[str, OrderBook] = {}
-        self._active_orders: Dict[str, Order] = {}
-        self._trading_pairs: List[str] = []
+        self._order_books: dict[str, OrderBook] = {}
+        self._active_orders: dict[str, Order] = {}
+        self._trading_pairs: list[str] = []
         self._current_timestamp = 0.0
 
         # Statistics tracking
@@ -153,7 +153,7 @@ class ExchangeSimulator:
         """Get current order book for a trading pair."""
         return self._order_books.get(trading_pair)
 
-    def get_trading_pairs(self) -> List[str]:
+    def get_trading_pairs(self) -> list[str]:
         """Get list of available trading pairs."""
         return self._trading_pairs.copy()
 
@@ -243,11 +243,11 @@ class ExchangeSimulator:
         del self._active_orders[order_id]
         return True
 
-    def get_order(self, order_id: str) -> Optional[Order]:
+    def get_order(self, order_id: str) -> Order | None:
         """Get order by ID."""
         return self._active_orders.get(order_id)
 
-    def get_open_orders(self, trading_pair: Optional[str] = None) -> List[Order]:
+    def get_open_orders(self, trading_pair: str | None = None) -> list[Order]:
         """Get open orders, optionally filtered by trading pair."""
         orders = [
             order for order in self._active_orders.values() if order.status == OrderStatus.OPEN
@@ -258,7 +258,7 @@ class ExchangeSimulator:
 
         return orders
 
-    def get_order_statistics(self) -> Dict[str, Any]:
+    def get_order_statistics(self) -> dict[str, Any]:
         """Get order statistics."""
         return {
             "total_orders": self._order_count,
@@ -276,3 +276,19 @@ class ExchangeSimulator:
         self._order_count = 0
         self._fill_count = 0
         self._total_volume = Decimal("0")
+
+    # Position management methods (for derivatives support)
+    def get_position(self, trading_pair: str) -> dict[str, Any] | None:
+        """Get position for a trading pair."""
+        # Basic implementation - return None for spot trading
+        return None
+
+    def get_all_positions(self) -> dict[str, dict[str, Any]]:
+        """Get all positions."""
+        # Basic implementation - return empty dict for spot trading
+        return {}
+
+    def set_leverage(self, trading_pair: str, leverage: int) -> bool:
+        """Set leverage for a trading pair."""
+        # Basic implementation - not supported in spot trading
+        return False

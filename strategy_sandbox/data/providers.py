@@ -25,7 +25,7 @@ class SimpleDataProvider:
         trading_pair: str,
         start_time: datetime,
         end_time: datetime,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get historical market data (placeholder implementation)."""
         # Return empty list for now - can be extended
         return []
@@ -34,7 +34,7 @@ class SimpleDataProvider:
         self,
         trading_pair: str,
         timestamp: datetime,
-    ) -> Optional[OrderBook]:
+    ) -> OrderBook | None:
         """Get order book snapshot at timestamp (placeholder implementation)."""
         # Return None for now - can be extended with real data
         return None

@@ -2,8 +2,9 @@
 Unit tests for SandboxEnvironment.
 """
 
-import pytest
 from decimal import Decimal
+
+import pytest
 
 from strategy_sandbox import SandboxEnvironment
 from strategy_sandbox.core import SandboxConfiguration
@@ -49,11 +50,11 @@ class TestSandboxEnvironment:
         await sandbox.initialize()
 
         initial_timestamp = sandbox.current_timestamp
-        await sandbox.step()
+        next_timestamp = initial_timestamp + 1.0
+        await sandbox.step(next_timestamp)
 
-        # Timestamp should advance by tick_interval
-        expected_timestamp = initial_timestamp + sandbox.config.tick_interval
-        assert sandbox.current_timestamp == expected_timestamp
+        # Timestamp should be set to the provided value
+        assert sandbox.current_timestamp == next_timestamp
 
     @pytest.mark.asyncio
     async def test_reset_function(self):
@@ -66,7 +67,8 @@ class TestSandboxEnvironment:
 
         # Modify state
         sandbox.balance.update_balance("USDT", Decimal("-100"))
-        await sandbox.step()
+        next_timestamp = sandbox.current_timestamp + 1.0
+        await sandbox.step(next_timestamp)
 
         # Reset
         sandbox.reset()

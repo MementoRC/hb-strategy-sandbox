@@ -2,8 +2,9 @@
 Basic functionality tests to verify CI pipeline.
 """
 
-import pytest
 from decimal import Decimal
+
+import pytest
 
 from strategy_sandbox.core.protocols import OrderCandidate, OrderSide, OrderType, PriceType
 
@@ -78,5 +79,6 @@ class TestBasicFunctionality:
 
         # Test async step
         initial_timestamp = sandbox.current_timestamp
-        await sandbox.step()
-        assert sandbox.current_timestamp > initial_timestamp
+        next_timestamp = initial_timestamp + 1.0
+        await sandbox.step(next_timestamp)
+        assert sandbox.current_timestamp == next_timestamp

@@ -6,7 +6,8 @@ Simple event system for MVP functionality.
 
 import asyncio
 import uuid
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any, Dict
 
 from strategy_sandbox.core.protocols import MarketEvent
 
@@ -15,10 +16,10 @@ class SandboxEventSystem:
     """Simple event system implementation."""
 
     def __init__(self):
-        self._subscribers: Dict[MarketEvent, Dict[str, Callable]] = {}
+        self._subscribers: dict[MarketEvent, dict[str, Callable]] = {}
         self._event_queue: asyncio.Queue = asyncio.Queue()
 
-    def emit_event(self, event_type: MarketEvent, data: Dict[str, Any]) -> None:
+    def emit_event(self, event_type: MarketEvent, data: dict[str, Any]) -> None:
         """Emit a market event."""
         # Add to queue for async processing
         try:
@@ -53,7 +54,7 @@ class SandboxEventSystem:
             except asyncio.QueueEmpty:
                 break
 
-    async def _dispatch_event(self, event_type: MarketEvent, data: Dict[str, Any]) -> None:
+    async def _dispatch_event(self, event_type: MarketEvent, data: dict[str, Any]) -> None:
         """Dispatch event to subscribers."""
         if event_type in self._subscribers:
             for callback in self._subscribers[event_type].values():

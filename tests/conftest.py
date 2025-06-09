@@ -2,8 +2,9 @@
 Pytest configuration and fixtures for strategy sandbox tests.
 """
 
-import pytest
 from decimal import Decimal
+
+import pytest
 
 from strategy_sandbox import SandboxEnvironment
 from strategy_sandbox.core import SandboxConfiguration

@@ -5,10 +5,10 @@ These protocols define the clean interfaces that sandbox components must impleme
 ensuring compatibility and testability.
 """
 
-from decimal import Decimal
-from typing import Any, Dict, List, Optional, Protocol
 from datetime import datetime
+from decimal import Decimal
 from enum import Enum
+from typing import Any, Dict, List, Optional, Protocol
 
 
 class PriceType(Enum):
@@ -66,7 +66,7 @@ class OrderCandidate:
         side: OrderSide,
         order_type: OrderType,
         amount: Decimal,
-        price: Optional[Decimal] = None,
+        price: Decimal | None = None,
     ):
         self.trading_pair = trading_pair
         self.side = side
@@ -86,7 +86,7 @@ class Order:
         side: OrderSide,
         order_type: OrderType,
         amount: Decimal,
-        price: Optional[Decimal] = None,
+        price: Decimal | None = None,
         status: OrderStatus = OrderStatus.PENDING,
     ):
         self.order_id = order_id
@@ -115,9 +115,9 @@ class OrderBook:
     def __init__(
         self,
         trading_pair: str,
-        bids: List[OrderBookLevel],
-        asks: List[OrderBookLevel],
-        timestamp: Optional[datetime] = None,
+        bids: list[OrderBookLevel],
+        asks: list[OrderBookLevel],
+        timestamp: datetime | None = None,
     ):
         self.trading_pair = trading_pair
         self.bids = sorted(bids, key=lambda x: x.price, reverse=True)  # Highest first
@@ -125,17 +125,17 @@ class OrderBook:
         self.timestamp = timestamp or datetime.now()
 
     @property
-    def best_bid(self) -> Optional[Decimal]:
+    def best_bid(self) -> Decimal | None:
         """Get the best bid price."""
         return self.bids[0].price if self.bids else None
 
     @property
-    def best_ask(self) -> Optional[Decimal]:
+    def best_ask(self) -> Decimal | None:
         """Get the best ask price."""
         return self.asks[0].price if self.asks else None
 
     @property
-    def mid_price(self) -> Optional[Decimal]:
+    def mid_price(self) -> Decimal | None:
         """Get the mid price."""
         if self.best_bid and self.best_ask:
             return (self.best_bid + self.best_ask) / Decimal("2")
@@ -153,7 +153,7 @@ class MarketProtocol(Protocol):
         """Get current order book for a trading pair."""
         ...
 
-    def get_trading_pairs(self) -> List[str]:
+    def get_trading_pairs(self) -> list[str]:
         """Get list of available trading pairs."""
         ...
 
@@ -174,7 +174,7 @@ class BalanceProtocol(Protocol):
         """Get available balance for an asset."""
         ...
 
-    def get_all_balances(self) -> Dict[str, Decimal]:
+    def get_all_balances(self) -> dict[str, Decimal]:
         """Get all asset balances."""
         ...
 
@@ -202,11 +202,11 @@ class OrderProtocol(Protocol):
         """Cancel an order."""
         ...
 
-    def get_order(self, order_id: str) -> Optional[Order]:
+    def get_order(self, order_id: str) -> Order | None:
         """Get order by ID."""
         ...
 
-    def get_open_orders(self, trading_pair: Optional[str] = None) -> List[Order]:
+    def get_open_orders(self, trading_pair: str | None = None) -> list[Order]:
         """Get open orders, optionally filtered by trading pair."""
         ...
 
@@ -214,7 +214,7 @@ class OrderProtocol(Protocol):
 class EventProtocol(Protocol):
     """Protocol for event handling."""
 
-    def emit_event(self, event_type: MarketEvent, data: Dict[str, Any]) -> None:
+    def emit_event(self, event_type: MarketEvent, data: dict[str, Any]) -> None:
         """Emit a market event."""
         ...
 
@@ -230,11 +230,11 @@ class EventProtocol(Protocol):
 class PositionProtocol(Protocol):
     """Protocol for position management (futures/derivatives)."""
 
-    def get_position(self, trading_pair: str) -> Optional[Dict[str, Any]]:
+    def get_position(self, trading_pair: str) -> dict[str, Any] | None:
         """Get position for a trading pair."""
         ...
 
-    def get_all_positions(self) -> Dict[str, Dict[str, Any]]:
+    def get_all_positions(self) -> dict[str, dict[str, Any]]:
         """Get all positions."""
         ...
 
@@ -267,11 +267,11 @@ class SandboxProtocol(Protocol):
         ...
 
     @property
-    def position(self) -> Optional[PositionProtocol]:
+    def position(self) -> PositionProtocol | None:
         """Get position protocol instance (for derivatives)."""
         ...
 
-    def step(self, timestamp: float) -> None:
+    async def step(self, timestamp: float) -> None:
         """Advance sandbox simulation to timestamp."""
         ...
 
@@ -288,15 +288,15 @@ class DataProviderProtocol(Protocol):
         trading_pair: str,
         start_time: datetime,
         end_time: datetime,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get historical market data."""
         ...
 
-    def get_order_book_snapshot(
+    async def get_order_book_snapshot(
         self,
         trading_pair: str,
         timestamp: datetime,
-    ) -> Optional[OrderBook]:
+    ) -> OrderBook | None:
         """Get order book snapshot at timestamp."""
         ...
 
@@ -304,7 +304,7 @@ class DataProviderProtocol(Protocol):
 class StrategyProtocol(Protocol):
     """Protocol for strategies that can run in the sandbox."""
 
-    def on_tick(self, timestamp: float) -> None:
+    async def on_tick(self, timestamp: float) -> None:
         """Called on each simulation tick."""
         ...
 

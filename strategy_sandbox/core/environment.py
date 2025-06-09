@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Union
 
+from strategy_sandbox.balance.manager import SandboxBalanceManager
 from strategy_sandbox.core.protocols import (
     BalanceProtocol,
     DataProviderProtocol,
@@ -20,10 +21,9 @@ from strategy_sandbox.core.protocols import (
     PositionProtocol,
     StrategyProtocol,
 )
-from strategy_sandbox.balance.manager import SandboxBalanceManager
+from strategy_sandbox.data.providers import SimpleDataProvider
 from strategy_sandbox.events.system import SandboxEventSystem
 from strategy_sandbox.markets.exchange_simulator import ExchangeSimulator
-from strategy_sandbox.data.providers import SimpleDataProvider
 
 
 class SandboxConfiguration:
@@ -31,10 +31,10 @@ class SandboxConfiguration:
 
     def __init__(
         self,
-        initial_balances: Optional[Dict[str, Decimal]] = None,
-        trading_pairs: Optional[List[str]] = None,
-        start_timestamp: Optional[float] = None,
-        end_timestamp: Optional[float] = None,
+        initial_balances: dict[str, Decimal] | None = None,
+        trading_pairs: list[str] | None = None,
+        start_timestamp: float | None = None,
+        end_timestamp: float | None = None,
         tick_interval: float = 1.0,  # seconds
         enable_derivatives: bool = False,
     ):
@@ -56,8 +56,8 @@ class SandboxEnvironment:
 
     def __init__(
         self,
-        config: Optional[SandboxConfiguration] = None,
-        data_provider: Optional[DataProviderProtocol] = None,
+        config: SandboxConfiguration | None = None,
+        data_provider: DataProviderProtocol | None = None,
     ):
         self.config = config or SandboxConfiguration()
         self.logger = logging.getLogger(__name__)
@@ -74,11 +74,11 @@ class SandboxEnvironment:
         # State
         self._current_timestamp = self.config.start_timestamp
         self._is_running = False
-        self._strategies: List[StrategyProtocol] = []
+        self._strategies: list[StrategyProtocol] = []
         self._initialized = False
 
         # Performance tracking
-        self._performance_metrics: Dict[str, Any] = {}
+        self._performance_metrics: dict[str, Any] = {}
 
     async def initialize(self) -> None:
         """Initialize the sandbox environment."""
@@ -96,8 +96,10 @@ class SandboxEnvironment:
             await self._exchange_simulator.add_trading_pair(trading_pair)
 
         # Initialize data provider
-        if hasattr(self._data_provider, "initialize"):
-            await self._data_provider.initialize()
+        if hasattr(self._data_provider, "initialize") and callable(
+            getattr(self._data_provider, "initialize", None)
+        ):
+            await self._data_provider.initialize()  # type: ignore
 
         self._initialized = True
         self.logger.info("Sandbox environment initialized")
@@ -117,9 +119,9 @@ class SandboxEnvironment:
 
     async def run(
         self,
-        duration: Optional[Union[timedelta, float]] = None,
-        until_timestamp: Optional[float] = None,
-    ) -> Dict[str, Any]:
+        duration: timedelta | float | None = None,
+        until_timestamp: float | None = None,
+    ) -> dict[str, Any]:
         """
         Run the sandbox simulation.
 
@@ -171,15 +173,10 @@ class SandboxEnvironment:
         self.logger.info("Simulation completed")
         return self._performance_metrics
 
-    async def step(self, timestamp: Optional[float] = None) -> None:
+    async def step(self, timestamp: float) -> None:
         """Advance simulation by one step."""
-        if timestamp:
-            self._current_timestamp = timestamp
-
+        self._current_timestamp = timestamp
         await self._simulation_step()
-
-        if not timestamp:
-            self._current_timestamp += self.config.tick_interval
 
     async def _simulation_step(self) -> None:
         """Execute one simulation step."""
@@ -204,7 +201,7 @@ class SandboxEnvironment:
         for trading_pair in self.config.trading_pairs:
             # Get order book data if available
             if hasattr(self._data_provider, "get_order_book_snapshot"):
-                order_book = await self._data_provider.get_order_book_snapshot(
+                order_book = await self._data_provider.get_order_book_snapshot(  # type: ignore
                     trading_pair,
                     datetime.fromtimestamp(self._current_timestamp),
                 )
@@ -280,7 +277,7 @@ class SandboxEnvironment:
         return self._event_system
 
     @property
-    def position(self) -> Optional[PositionProtocol]:
+    def position(self) -> PositionProtocol | None:
         """Get position protocol instance."""
         if self.config.enable_derivatives:
             return self._exchange_simulator
@@ -292,7 +289,7 @@ class SandboxEnvironment:
         return self._current_timestamp
 
     @property
-    def performance_metrics(self) -> Dict[str, Any]:
+    def performance_metrics(self) -> dict[str, Any]:
         """Get current performance metrics."""
         return self._performance_metrics.copy()
 

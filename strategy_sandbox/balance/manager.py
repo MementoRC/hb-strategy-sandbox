@@ -12,8 +12,8 @@ class SandboxBalanceManager:
     """Simple implementation of balance management for sandbox."""
 
     def __init__(self):
-        self._balances: Dict[str, Decimal] = {}
-        self._locked_balances: Dict[str, Decimal] = {}
+        self._balances: dict[str, Decimal] = {}
+        self._locked_balances: dict[str, Decimal] = {}
 
     def get_balance(self, asset: str) -> Decimal:
         """Get total balance for an asset."""
@@ -25,7 +25,7 @@ class SandboxBalanceManager:
         locked = self._locked_balances.get(asset, Decimal("0"))
         return total - locked
 
-    def get_all_balances(self) -> Dict[str, Decimal]:
+    def get_all_balances(self) -> dict[str, Decimal]:
         """Get all asset balances."""
         return self._balances.copy()
 
