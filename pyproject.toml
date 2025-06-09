@@ -99,10 +99,15 @@ asyncio-throttle = ">=1.0.0"
 # Testing framework (needed for CI)
 pytest = ">=7.0.0"
 pytest-asyncio = ">=0.21.0"
+pytest-cov = ">=4.1.0"
+pytest-mock = ">=3.11.0"
+pytest-timeout = ">=2.1.0"
+pytest-benchmark = ">=4.0.0"
 aioresponses = "*"
 
 # Basic quality tools
 ruff = ">=0.1.5"
+mypy = ">=1.5.1"
 
 # Tasks equivalent to hatch scripts
 [tool.pixi.tasks]
