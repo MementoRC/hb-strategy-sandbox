@@ -55,20 +55,16 @@ jobs:
         pixi-version: v0.20.1
     
     - name: Install dependencies
-      run: |
-        PYVER=${{ matrix.python-version }}
-        pixi install -e py${PYVER//./}
+      run: pixi install -e py${{ matrix.python-version | replace('.', '') }}
     
     - name: Run unit tests with coverage
-      run: |
-        PYVER=${{ matrix.python-version }}
-        pixi run -e py${PYVER//./} pytest tests/unit --cov=strategy_sandbox --cov-report=xml --cov-report=term
+      run: pixi run -e py${{ matrix.python-version | replace('.', '') }} pytest tests/unit --cov=strategy_sandbox --cov-report=xml --cov-report=term
     
     - name: Run integration tests
+      shell: bash
       run: |
-        PYVER=${{ matrix.python-version }}
         # Allow integration tests to pass if no tests are found
-        pixi run -e py${PYVER//./} pytest tests/integration --maxfail=1 -x || [ $? -eq 5 ]
+        pixi run -e py${{ matrix.python-version | replace('.', '') }} pytest tests/integration --maxfail=1 -x || [ $? -eq 5 ]
       
     - name: Upload coverage reports to Codecov
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
