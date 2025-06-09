@@ -5,22 +5,21 @@ Simple implementations for MVP functionality.
 """
 
 from datetime import datetime
-from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from strategy_sandbox.core.protocols import DataProviderProtocol, OrderBook, OrderBookLevel
+from strategy_sandbox.core.protocols import OrderBook
 
 
 class SimpleDataProvider:
     """Simple data provider with basic functionality."""
-    
+
     def __init__(self):
         self._initialized = False
-    
+
     async def initialize(self) -> None:
         """Initialize data provider."""
         self._initialized = True
-    
+
     def get_historical_data(
         self,
         trading_pair: str,
@@ -30,8 +29,8 @@ class SimpleDataProvider:
         """Get historical market data (placeholder implementation)."""
         # Return empty list for now - can be extended
         return []
-    
-    def get_order_book_snapshot(
+
+    async def get_order_book_snapshot(
         self,
         trading_pair: str,
         timestamp: datetime,

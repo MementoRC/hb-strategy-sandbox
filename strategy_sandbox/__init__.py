@@ -18,7 +18,7 @@ __all__ = [
     "__version__",
     "SandboxEnvironment",
     "MarketProtocol",
-    "BalanceProtocol", 
+    "BalanceProtocol",
     "OrderProtocol",
     "EventProtocol",
 ]

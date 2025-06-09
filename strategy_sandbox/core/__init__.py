@@ -26,7 +26,7 @@ __all__ = [
     "SandboxConfiguration",
     "MarketProtocol",
     "BalanceProtocol",
-    "OrderProtocol", 
+    "OrderProtocol",
     "EventProtocol",
     "PositionProtocol",
     "SandboxProtocol",
@@ -38,7 +38,7 @@ __all__ = [
     "OrderBookLevel",
     "PriceType",
     "OrderType",
-    "OrderSide", 
+    "OrderSide",
     "OrderStatus",
     "MarketEvent",
 ]

@@ -33,28 +33,28 @@ async def sandbox(basic_config):
 @pytest.fixture
 def mock_strategy():
     """Mock strategy for testing."""
-    
+
     class MockStrategy:
         def __init__(self):
             self.sandbox = None
             self.tick_count = 0
             self.initialized = False
             self.cleaned_up = False
-        
+
         def initialize(self, sandbox):
             self.sandbox = sandbox
             self.initialized = True
-        
+
         async def on_tick(self, timestamp: float):
             self.tick_count += 1
-        
+
         async def on_order_filled(self, order):
             pass
-        
+
         async def on_balance_updated(self, asset: str, balance: Decimal):
             pass
-        
+
         def cleanup(self):
             self.cleaned_up = True
-    
+
     return MockStrategy()
