@@ -84,9 +84,25 @@ packages = ["strategy_sandbox"]
 
 # Conda dependencies
 [tool.pixi.dependencies]
+# Build dependencies
 cython = ">=3"
 wheel = ">=0.37.0"
+
+# Core runtime dependencies (from project.dependencies)
+python = ">=3.10"
+aiohttp = ">=3.8.0"
+numpy = ">=1.20.0"
+pandas = ">=1.0.0"
+pydantic = ">=2"
+asyncio-throttle = ">=1.0.0"
+
+# Testing framework (needed for CI)
+pytest = ">=7.0.0"
+pytest-asyncio = ">=0.21.0"
 aioresponses = "*"
+
+# Basic quality tools
+ruff = ">=0.1.5"
 
 # Tasks equivalent to hatch scripts
 [tool.pixi.tasks]
