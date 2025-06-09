@@ -1,0 +1,84 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main, development ]
+    paths:
+      - 'docs/**'
+      - 'strategy_sandbox/**'
+      - 'examples/**'
+      - 'README.md'
+  pull_request:
+    branches: [ main, development ]
+    paths:
+      - 'docs/**'
+      - 'strategy_sandbox/**'
+      - 'examples/**'
+      - 'README.md'
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  # Build documentation
+  build-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: v0.20.1
+    
+    - name: Install documentation dependencies
+      run: pixi install -e docs
+    
+    - name: Build documentation
+      run: pixi run -e docs docs-build
+    
+    - name: Upload documentation artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: docs-${{ github.sha }}
+        path: site/
+        retention-days: 7
+
+  # Deploy documentation to GitHub Pages
+  deploy-docs:
+    runs-on: ubuntu-latest
+    needs: build-docs
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: v0.20.1
+    
+    - name: Build documentation
+      run: pixi run -e docs docs-build
+    
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+    
+    - name: Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: site/
+    
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
