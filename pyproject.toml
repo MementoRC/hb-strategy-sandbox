@@ -1,0 +1,231 @@
+[build-system]
+requires = [
+    "hatchling>=1.18.0",
+    "Cython>=3",
+    "wheel>=0.37.0",
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "hb-strategy-sandbox"
+description = "A Hummingbot strategy testing and simulation sandbox"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Memento RC Mori", email = "claude.rc@gmail.com"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Cython",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+dependencies = [
+    "aiohttp>=3.8.0",
+    "numpy>=1.20.0",
+    "pandas>=1.0.0",
+    "pydantic>=2",
+    "asyncio-throttle>=1.0.0",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/MementoRC/hb-strategy-sandbox"
+Documentation = "https://mementorc.github.io/hb-strategy-sandbox"
+Repository = "https://github.com/MementoRC/hb-strategy-sandbox/tree/master"
+
+[project.optional-dependencies]
+dev = [
+    "aioresponses>=0.7.0",
+    "pre-commit>=2.15.0",
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-benchmark>=4.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "pytest-timeout>=2.1.0",
+    "pyupgrade",
+    "ruff>=0.1.5",
+    "mypy>=1.5.1",
+    "cython-lint>=0.15.0",
+]
+doc = [
+    "mkdocs",
+    "mkdocs-git-revision-date-localized-plugin",
+    "mkdocs-material>=8.2.0",
+    "mkdocstrings-python",
+    "mkdocstrings>=0.18.0",
+    "pymdown-extensions>=8.0.0",
+]
+hummingbot = [
+    # Optional dependency for Hummingbot integration
+    # Users can install without Hummingbot for standalone usage
+]
+
+# Pixi configuration
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[tool.hatch.version]
+path = "strategy_sandbox/__about__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["strategy_sandbox"]
+
+# Conda dependencies
+[tool.pixi.dependencies]
+cython = ">=3"
+wheel = ">=0.37.0"
+aioresponses = "*"
+
+# Tasks equivalent to hatch scripts
+[tool.pixi.tasks]
+test = "pytest tests"
+test-unit = "pytest tests/unit"
+test-integration = "pytest tests/integration"
+test-performance = "pytest tests/performance"
+lint = "ruff check strategy_sandbox tests"
+format = "ruff format strategy_sandbox tests"
+typecheck = "mypy strategy_sandbox"
+lint-cython = "cython-lint strategy_sandbox"
+check = { cmd = ["pixi run format", "pixi run lint", "pixi run typecheck", "pixi run test-unit"] }
+
+# Documentation tasks
+docs-build = "mkdocs build --clean --strict"
+docs-serve = "mkdocs serve --dev-addr localhost:8009"
+docs-deploy = "mkdocs gh-deploy"
+
+# CI tasks
+ci-check = "ruff check strategy_sandbox tests; ruff format --check strategy_sandbox tests"
+ci-hints = "mypy --install-types --non-interactive --ignore-missing-imports strategy_sandbox/"
+
+# Features
+[tool.pixi.feature.docs.dependencies]
+mkdocs = "*"
+mkdocs-git-revision-date-localized-plugin = "*"
+mkdocs-material = ">=8.2.0"
+mkdocstrings-python = "*"
+mkdocstrings = ">=0.18.0"
+pymdown-extensions = ">=8.0.0"
+
+[tool.pixi.feature.dev.dependencies]
+pre-commit = ">=2.15.0"
+pytest = ">=7.0.0"
+pytest-asyncio = ">=0.21.0"
+pytest-cov = ">=4.1.0"
+pytest-mock = ">=3.11.0"
+pytest-timeout = ">=2.1.0"
+pyupgrade = "*"
+ruff = ">=0.1.5"
+mypy = ">=1.5.1"
+cython-lint = ">=0.15.0"
+
+[tool.pixi.feature.ci.dependencies]
+types-setuptools = "*"
+
+# Python version features
+[tool.pixi.feature.py310.dependencies]
+python = "3.10.*"
+
+[tool.pixi.feature.py311.dependencies]
+python = "3.11.*"
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+
+# Environments
+[tool.pixi.environments]
+default = { features = ["dev"], solve-group = "default" }
+docs = { features = ["docs"], solve-group = "default" }
+ci = { features = ["ci", "dev"], solve-group = "default" }
+py310 = { features = ["py310", "dev"], solve-group = "py310" }
+py311 = { features = ["py311", "dev"], solve-group = "py311" }
+py312 = { features = ["py312", "dev"], solve-group = "py312" }
+
+# Tool configurations
+[tool.coverage.run]
+branch = true
+parallel = true
+source_pkgs = ["strategy_sandbox", "tests"]
+omit = [
+  "strategy_sandbox/__about__.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+skip_empty = true
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:", "raise NotImplementedError"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "W",   # pycodestyle warnings
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+]
+ignore = [
+    "E203",  # whitespace before ':'
+    "E501",  # line too long - handled by formatter
+    "F401",  # unused imports - we'll address these gradually
+]
+unfixable = ["F401"]  # unused imports - let the developer decide
+
+[tool.ruff.lint.isort]
+known-first-party = ["strategy_sandbox"]
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+markers = [
+    "unit: marks tests as unit tests",
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+    "performance: marks tests as performance tests",
+    "asyncio: marks tests as asyncio tests",
+    "benchmark: marks tests as performance benchmarks (deselect with '-m \"not benchmark\"')",
+]
+log_cli = true
+log_cli_level = "INFO"
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+strict_optional = false
+warn_return_any = false
+warn_unused_ignores = false
+disallow_untyped_defs = false
+check_untyped_defs = false
+
+# Exclude problematic modules temporarily during development
+exclude = [
+    "strategy_sandbox/integration/.*",
+]
