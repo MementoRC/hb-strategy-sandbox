@@ -54,10 +54,10 @@ jobs:
         PYVER=${{ matrix.python-version }}
         pixi install -e py${PYVER//./}
     
-    - name: Run unit tests
+    - name: Run unit tests with coverage
       run: |
         PYVER=${{ matrix.python-version }}
-        pixi run -e py${PYVER//./} test-unit
+        pixi run -e py${PYVER//./} pytest tests/unit --cov=strategy_sandbox --cov-report=xml --cov-report=term
     
     - name: Run integration tests
       run: |
@@ -66,7 +66,7 @@ jobs:
         pixi run -e py${PYVER//./} pytest tests/integration --maxfail=1 -x || [ $? -eq 5 ]
       
     - name: Upload coverage to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
