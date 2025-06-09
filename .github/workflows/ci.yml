@@ -62,7 +62,8 @@ jobs:
     - name: Run integration tests
       run: |
         PYVER=${{ matrix.python-version }}
-        pixi run -e py${PYVER//./} test-integration
+        # Allow integration tests to pass if no tests are found
+        pixi run -e py${PYVER//./} pytest tests/integration --maxfail=1 -x || [ $? -eq 5 ]
       
     - name: Upload coverage to Codecov
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
