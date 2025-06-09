@@ -50,13 +50,19 @@ jobs:
         pixi-version: v0.20.1
     
     - name: Install dependencies
-      run: pixi install -e py${{ matrix.python-version }}
+      run: |
+        PYVER=${{ matrix.python-version }}
+        pixi install -e py${PYVER//./}
     
     - name: Run unit tests
-      run: pixi run -e py${{ matrix.python-version }} test-unit
+      run: |
+        PYVER=${{ matrix.python-version }}
+        pixi run -e py${PYVER//./} test-unit
     
     - name: Run integration tests
-      run: pixi run -e py${{ matrix.python-version }} test-integration
+      run: |
+        PYVER=${{ matrix.python-version }}
+        pixi run -e py${PYVER//./} test-integration
       
     - name: Upload coverage to Codecov
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
