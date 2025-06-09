@@ -65,12 +65,12 @@ jobs:
         # Allow integration tests to pass if no tests are found
         pixi run -e py${PYVER//./} pytest tests/integration --maxfail=1 -x || [ $? -eq 5 ]
       
-    - name: Upload coverage to Codecov
+    - name: Upload coverage reports to Codecov
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.xml
+        slug: MementoRC/hb-strategy-sandbox
         fail_ci_if_error: true
 
   # Performance benchmarks
