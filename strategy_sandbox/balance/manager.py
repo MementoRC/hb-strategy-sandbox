@@ -5,7 +5,6 @@ Simplified version of the balance manager from the original sandbox for MVP.
 """
 
 from decimal import Decimal
-from typing import Dict
 
 
 class SandboxBalanceManager:

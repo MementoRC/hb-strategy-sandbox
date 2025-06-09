@@ -9,7 +9,7 @@ import asyncio
 import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from strategy_sandbox.balance.manager import SandboxBalanceManager
 from strategy_sandbox.core.protocols import (

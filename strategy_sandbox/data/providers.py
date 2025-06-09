@@ -5,7 +5,7 @@ Simple implementations for MVP functionality.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from strategy_sandbox.core.protocols import OrderBook
 

@@ -7,7 +7,7 @@ Simple event system for MVP functionality.
 import asyncio
 import uuid
 from collections.abc import Callable
-from typing import Any, Dict
+from typing import Any
 
 from strategy_sandbox.core.protocols import MarketEvent
 

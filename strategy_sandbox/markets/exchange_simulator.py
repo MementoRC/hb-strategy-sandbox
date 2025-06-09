@@ -6,7 +6,7 @@ Simplified implementation for MVP functionality.
 
 import uuid
 from decimal import Decimal
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from strategy_sandbox.core.protocols import (
     BalanceProtocol,
