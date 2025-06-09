@@ -158,10 +158,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Run Bandit Security Scan
-      uses: securecodewarrior/github-action-bandit@v1.0.1
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        exit_zero: true
+        python-version: '3.12'
+    
+    - name: Run Bandit Security Scan
+      run: |
+        pip install bandit[toml]
+        bandit -r strategy_sandbox -f json -o bandit-report.json || true
+        bandit -r strategy_sandbox || true
     
     - name: Run Safety Check
       run: |
