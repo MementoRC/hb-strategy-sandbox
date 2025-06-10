@@ -1,0 +1,28 @@
+site_name: HB Strategy Sandbox
+site_description: A Hummingbot strategy testing and simulation sandbox
+site_url: https://mementorc.github.io/hb-strategy-sandbox
+
+repo_name: MementoRC/hb-strategy-sandbox
+repo_url: https://github.com/MementoRC/hb-strategy-sandbox
+
+nav:
+  - Home: index.md
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google

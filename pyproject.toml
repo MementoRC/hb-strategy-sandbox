@@ -58,17 +58,13 @@ dev = [
     "twine>=4.0.0",
     "safety>=2.0.0",
 ]
-doc = [
+docs = [
     "mkdocs",
     "mkdocs-git-revision-date-localized-plugin",
     "mkdocs-material>=8.2.0",
     "mkdocstrings-python",
     "mkdocstrings>=0.18.0",
     "pymdown-extensions>=8.0.0",
-]
-hummingbot = [
-    # Optional dependency for Hummingbot integration
-    # Users can install without Hummingbot for standalone usage
 ]
 
 # Pixi configuration
