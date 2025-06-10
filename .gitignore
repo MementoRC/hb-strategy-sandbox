@@ -159,9 +159,8 @@ cython_debug/
 #  https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore
 .idea/
 
-# Pixi
+# Pixi environments (but keep lock file for CI reproducibility)
 .pixi/
-pixi.lock
 
 # VS Code
 .vscode/
