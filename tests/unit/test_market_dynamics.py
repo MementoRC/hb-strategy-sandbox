@@ -140,7 +140,7 @@ class TestMarketDynamics:
         )
 
         # Place order at timestamp 0
-        order_id = exchange_simulator.place_order(order_candidate)
+        exchange_simulator.place_order(order_candidate)
         await exchange_simulator.process_tick(0.0)
 
         # Order should be pending due to latency

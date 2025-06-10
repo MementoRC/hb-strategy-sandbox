@@ -8,7 +8,7 @@ import math
 import random
 import uuid
 from decimal import Decimal
-from typing import Any, List, Optional
+from typing import Any
 
 from strategy_sandbox.core.protocols import (
     BalanceProtocol,
