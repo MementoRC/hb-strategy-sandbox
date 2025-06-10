@@ -147,10 +147,10 @@ jobs:
         pixi-version: v0.20.1
     
     - name: Build package
-      run: pixi run -e dev python -m build
+      run: pixi run -e default python -m build
     
     - name: Check package
-      run: pixi run -e dev python -m twine check dist/*
+      run: pixi run -e default python -m twine check dist/*
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
