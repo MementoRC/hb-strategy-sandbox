@@ -78,6 +78,13 @@ path = "strategy_sandbox/__about__.py"
 [tool.hatch.build.targets.wheel]
 packages = ["strategy_sandbox"]
 
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.claude",
+    "/.aider*",
+    "/.mcp.json"
+]
+
 # Conda dependencies
 [tool.pixi.dependencies]
 # Build dependencies
