@@ -172,3 +172,8 @@ pixi.lock
 # Local development files
 *.local
 .local/
+
+# Claude Code files
+.claude/
+.aider*
+.mcp.json

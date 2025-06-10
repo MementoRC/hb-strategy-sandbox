@@ -9,6 +9,11 @@ on:
 env:
   FORCE_COLOR: 1
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   # Lint and format check
   lint:
@@ -50,20 +55,30 @@ jobs:
         pixi-version: v0.20.1
     
     - name: Install dependencies
-      run: pixi install -e py${{ matrix.python-version }}
+      shell: bash
+      run: |
+        PYVER="${{ matrix.python-version }}"
+        pixi install -e py${PYVER//./}
     
-    - name: Run unit tests
-      run: pixi run -e py${{ matrix.python-version }} test-unit
+    - name: Run unit tests with coverage
+      shell: bash
+      run: |
+        PYVER="${{ matrix.python-version }}"
+        pixi run -e py${PYVER//./} pytest tests/unit --cov=strategy_sandbox --cov-report=xml --cov-report=term
     
     - name: Run integration tests
-      run: pixi run -e py${{ matrix.python-version }} test-integration
+      shell: bash
+      run: |
+        PYVER="${{ matrix.python-version }}"
+        # Allow integration tests to pass if no tests are found
+        pixi run -e py${PYVER//./} pytest tests/integration --maxfail=1 -x || [ $? -eq 5 ]
       
-    - name: Upload coverage to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
-      uses: codecov/codecov-action@v3
+    - name: Upload coverage reports to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.xml
+        slug: MementoRC/hb-strategy-sandbox
         fail_ci_if_error: true
 
   # Performance benchmarks
@@ -132,10 +147,10 @@ jobs:
         pixi-version: v0.20.1
     
     - name: Build package
-      run: pixi run -e dev python -m build
+      run: pixi run -e default python -m build
     
     - name: Check package
-      run: pixi run -e dev python -m twine check dist/*
+      run: pixi run -e default python -m twine check dist/*
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -151,10 +166,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Run Bandit Security Scan
-      uses: securecodewarrior/github-action-bandit@v1.0.1
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        exit_zero: true
+        python-version: '3.12'
+    
+    - name: Run Bandit Security Scan
+      run: |
+        pip install bandit[toml]
+        bandit -r strategy_sandbox -f json -o bandit-report.json || true
+        bandit -r strategy_sandbox || true
     
     - name: Run Safety Check
       run: |

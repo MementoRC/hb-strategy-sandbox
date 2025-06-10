@@ -8,17 +8,17 @@ trading strategies without connecting to real exchanges.
 from strategy_sandbox.__about__ import __version__
 from strategy_sandbox.core.environment import SandboxEnvironment
 from strategy_sandbox.core.protocols import (
-    MarketProtocol,
     BalanceProtocol,
-    OrderProtocol,
     EventProtocol,
+    MarketProtocol,
+    OrderProtocol,
 )
 
 __all__ = [
     "__version__",
     "SandboxEnvironment",
     "MarketProtocol",
-    "BalanceProtocol", 
+    "BalanceProtocol",
     "OrderProtocol",
     "EventProtocol",
 ]
