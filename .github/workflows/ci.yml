@@ -30,7 +30,7 @@ jobs:
     - name: Set up Pixi
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
-        pixi-version: v0.35.0
+        pixi-version: latest
         cache: true
 
     - name: Install dependencies
@@ -51,7 +51,7 @@ jobs:
     - name: Set up Pixi
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
-        pixi-version: v0.35.0
+        pixi-version: latest
         cache: true
 
     - name: Install dependencies
@@ -125,7 +125,7 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.8.1
         with:
           environments: ${{ matrix.pixi-environment }}
-          pixi-version: v0.35.0
+          pixi-version: latest
           cache: true
 
       - name: Install project dependencies (using Pixi)
@@ -204,7 +204,7 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.8.1
         with:
           environments: default
-          pixi-version: v0.35.0
+          pixi-version: latest
           cache: true
 
       - name: Install project dependencies (using Pixi)
@@ -298,7 +298,7 @@ jobs:
     - name: Set up Pixi
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
-        pixi-version: v0.35.0
+        pixi-version: latest
         cache: true
 
     - name: Install dependencies
