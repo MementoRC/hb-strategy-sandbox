@@ -133,6 +133,11 @@ docs-deploy = "mkdocs gh-deploy"
 ci-check = "ruff check strategy_sandbox tests; ruff format --check strategy_sandbox tests"
 ci-hints = "mypy --install-types --non-interactive --ignore-missing-imports strategy_sandbox/"
 
+# Security tasks
+security-bandit = "bandit -r strategy_sandbox -f json -o bandit-report.json"
+security-safety = "safety check --json --output safety-report.json"
+security-audit = "pip-audit --format=json --output=pip-audit-report.json"
+
 # Features
 [tool.pixi.feature.docs.dependencies]
 mkdocs = "*"
@@ -218,7 +223,7 @@ aioresponses = "*"
 ruff = ">=0.1.5"
 mypy = ">=1.5.1"
 
-# Environments  
+# Environments
 [tool.pixi.environments]
 default = { features = ["dev"], solve-group = "default" }
 docs = { features = ["docs"], solve-group = "default" }

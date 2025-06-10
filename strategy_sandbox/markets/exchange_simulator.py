@@ -36,8 +36,8 @@ class ExchangeSimulator:
         self,
         balance_manager: BalanceProtocol,
         event_system: EventProtocol,
-        slippage_config: Optional[SlippageConfig] = None,
-        market_dynamics_config: Optional[MarketDynamicsConfig] = None,
+        slippage_config: SlippageConfig | None = None,
+        market_dynamics_config: MarketDynamicsConfig | None = None,
     ):
         self._balance_manager = balance_manager
         self._event_system = event_system

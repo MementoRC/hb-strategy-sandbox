@@ -392,7 +392,7 @@ class MarketDepthLevel:
         self,
         price: Decimal,
         amount: Decimal,
-        cumulative_amount: Optional[Decimal] = None,
+        cumulative_amount: Decimal | None = None,
         order_count: int = 1,
     ):
         self.price = price
@@ -412,8 +412,8 @@ class TradeFill:
         fill_amount: Decimal,
         slippage_bps: Decimal,
         is_partial: bool = False,
-        remaining_amount: Optional[Decimal] = None,
-        market_impact: Optional[Decimal] = None,
+        remaining_amount: Decimal | None = None,
+        market_impact: Decimal | None = None,
     ):
         self.order_id = order_id
         self.fill_price = fill_price

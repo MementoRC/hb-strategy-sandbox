@@ -26,15 +26,19 @@ jobs:
     timeout-minutes: 5
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Pixi
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
         pixi-version: v0.20.1
-    
+        cache: true
+
+    - name: Install dependencies
+      run: pixi install -e default
+
     - name: Fast linting check
       run: pixi run ci-check
-    
+
     - name: Fast unit tests (no coverage)
       run: pixi run -e default pytest tests -x -q --no-cov -m "not integration and not benchmark" || true
   # Lint and format check
@@ -43,15 +47,19 @@ jobs:
     timeout-minutes: 10
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Pixi
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
         pixi-version: v0.20.1
-    
+        cache: true
+
+    - name: Install dependencies
+      run: pixi install -e default
+
     - name: Run linting
       run: pixi run ci-check
-    
+
     - name: Run type checking
       run: pixi run ci-hints
 
@@ -74,12 +82,12 @@ jobs:
           - os: ubuntu-latest
             python-version: "3.12"
             pixi-environment: "py312"
-          
+
           # macOS: Python 3.12+ only (aligned with Hummingbot requirements)
           - os: macos-latest
             python-version: "3.12"
             pixi-environment: "py312"
-          
+
           # Windows: Core versions only (optimized for performance)
           - os: windows-latest
             python-version: "3.10"
@@ -88,6 +96,23 @@ jobs:
           - os: windows-latest
             python-version: "3.12"
             pixi-environment: "py312"
+
+    # Service containers for enhanced integration testing (Ubuntu only)
+    services:
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+      websocket-echo:
+        image: jmalloc/echo-server:latest
+        ports:
+          - 8080:8080
 
     defaults:
       run:
@@ -100,6 +125,8 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.8.1
         with:
           environments: ${{ matrix.pixi-environment }}
+          pixi-version: v0.20.1
+          cache: true
 
       - name: Install project dependencies (using Pixi)
         run: |
@@ -121,6 +148,11 @@ jobs:
           fi
 
       - name: Run integration tests separately
+        env:
+          # Service container connection details (available on Ubuntu runners only)
+          REDIS_URL: redis://localhost:6379
+          WEBSOCKET_ECHO_URL: ws://localhost:8080
+          TEST_WITH_SERVICES: ${{ matrix.os == 'ubuntu-latest' && 'true' || 'false' }}
         run: |
           # Run integration tests separately to prevent URL patching pollution
           # Exclude benchmark tests from CI blocking - they're for performance monitoring only
@@ -129,6 +161,18 @@ jobs:
           if [[ "${{ matrix.os }}" == "windows-latest" && "${{ matrix.python-version }}" == "3.10" ]]; then
             echo "Skipping integration tests on Windows Python 3.10 for performance optimization"
           else
+            # Wait for service containers to be ready (Ubuntu only)
+            if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+              echo "Waiting for service containers to be ready..."
+              # Install redis-tools for health checks
+              sudo apt-get update && sudo apt-get install -y redis-tools
+              # Wait for Redis
+              timeout 30 bash -c 'until redis-cli -h localhost -p 6379 ping; do sleep 1; done' || echo "Redis not available, continuing without it"
+              # Give WebSocket echo server a moment to start (no health check)
+              sleep 5
+              echo "Service containers ready (or timeout reached)"
+            fi
+            
             pixi run -e ${{ matrix.pixi-environment }} pytest tests -m "integration and not benchmark" --cov=strategy_sandbox --cov-append || [ $? -eq 5 ]
           fi
 
@@ -160,6 +204,8 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.8.1
         with:
           environments: default
+          pixi-version: v0.20.1
+          cache: true
 
       - name: Install project dependencies (using Pixi)
         run: |
@@ -201,7 +247,7 @@ jobs:
             benchmark-results/
             tests/performance/
           retention-days: 30
-      
+
       - name: Comment benchmark results on PR
         if: github.event_name == 'pull_request' && success()
         uses: actions/github-script@v7
@@ -211,25 +257,25 @@ jobs:
             try {
               const benchmarkResults = fs.readFileSync('benchmark-results.json', 'utf8');
               const results = JSON.parse(benchmarkResults);
-              
+
               const comment = `## 📊 Performance Benchmark Results
-              
+
               | Metric | Value | Change |
               |--------|-------|--------|
               | Avg Response Time | ${results.avg_response_time || 'N/A'} | ${results.change_response_time || 'N/A'} |
               | Memory Usage | ${results.memory_usage || 'N/A'} | ${results.change_memory || 'N/A'} |
               | Throughput | ${results.throughput || 'N/A'} ops/sec | ${results.change_throughput || 'N/A'} |
-              
+
               <details>
               <summary>View detailed results</summary>
-              
+
               \`\`\`json
               ${JSON.stringify(results, null, 2)}
               \`\`\`
               </details>
-              
+
               📈 **Non-blocking**: These benchmarks monitor performance trends but don't affect CI status.`;
-              
+
               github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
@@ -245,21 +291,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [lint, test]
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Pixi
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
         pixi-version: v0.20.1
-    
+        cache: true
+
+    - name: Install dependencies
+      run: pixi install -e default
+
     - name: Build package
       run: pixi run -e default python -m build
-    
+
     - name: Check package
       run: pixi run -e default python -m twine check dist/*
-    
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -271,26 +321,26 @@ jobs:
   security:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.12'
-    
+
     - name: Run Bandit Security Scan
       run: |
         pip install bandit[toml]
         bandit -r strategy_sandbox -f json -o bandit-report.json || true
         bandit -r strategy_sandbox || true
-    
+
     - name: Run Safety Check
       run: |
         pip install safety
         safety check --json --output safety-report.json || true
-    
+
     - name: Upload security scan results
       uses: actions/upload-artifact@v4
       if: always()

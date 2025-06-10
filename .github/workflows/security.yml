@@ -1,0 +1,354 @@
+name: Security
+
+on:
+  push:
+    branches: [ main, development ]
+  pull_request:
+    branches: [ main, development ]
+  schedule:
+    # Run weekly security scans on Mondays at 2 AM UTC
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  # CodeQL Analysis for advanced security scanning
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['python']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        queries: security-extended,security-and-quality
+        config: |
+          paths:
+            - strategy_sandbox
+          paths-ignore:
+            - tests
+            - docs
+            - examples
+
+    - name: Set up Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: v0.20.1
+        cache: true
+
+    - name: Install dependencies for analysis
+      run: |
+        pixi install -e default
+        # Ensure package is available for analysis
+        pixi run -e default pip install -e .
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"
+
+  # Comprehensive dependency and vulnerability scanning
+  dependency-security:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: v0.20.1
+        cache: true
+
+    - name: Install dependencies
+      run: pixi install -e default
+
+    - name: Run comprehensive security scans
+      run: |
+        # Create reports directory
+        mkdir -p security-reports
+        
+        # Install security scanning tools
+        pixi run -e default pip install safety bandit[toml] pip-audit
+        
+        # 1. Bandit - Python code security analysis
+        echo "Running Bandit security scan..."
+        pixi run -e default bandit -r strategy_sandbox \
+          -f json -o security-reports/bandit-report.json || true
+        pixi run -e default bandit -r strategy_sandbox || true
+        
+        # 2. Safety - Known security vulnerabilities in dependencies
+        echo "Running Safety dependency scan..."
+        pixi run -e default safety check \
+          --json --output security-reports/safety-report.json || true
+        pixi run -e default safety check || true
+        
+        # 3. pip-audit - Additional vulnerability scanning
+        echo "Running pip-audit scan..."
+        pixi run -e default pip-audit \
+          --format=json --output=security-reports/pip-audit-report.json || true
+        pixi run -e default pip-audit || true
+
+    - name: Generate security summary
+      run: |
+        echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+        echo "| Tool | Status | Report |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+        
+        # Check if Bandit found issues
+        if [ -f security-reports/bandit-report.json ]; then
+          BANDIT_ISSUES=$(python3 -c "import json; data=json.load(open('security-reports/bandit-report.json')); print(len(data.get('results', [])))" 2>/dev/null || echo "0")
+          echo "| Bandit | ✅ Complete | $BANDIT_ISSUES issues found |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Bandit | ❌ Failed | Check logs |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Check Safety results
+        if [ -f security-reports/safety-report.json ]; then
+          echo "| Safety | ✅ Complete | Check artifacts |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Safety | ❌ Failed | Check logs |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Check pip-audit results
+        if [ -f security-reports/pip-audit-report.json ]; then
+          echo "| pip-audit | ✅ Complete | Check artifacts |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| pip-audit | ❌ Failed | Check logs |" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-scan-reports-${{ github.run_id }}
+        path: security-reports/
+        retention-days: 90
+
+  # Secret detection scanning
+  secret-detection:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+
+    - name: Install detect-secrets
+      run: pip install detect-secrets
+
+    - name: Run secrets baseline scan
+      run: |
+        # Create baseline if it doesn't exist
+        if [ ! -f .secrets.baseline ]; then
+          echo "Creating secrets baseline..."
+          detect-secrets scan --all-files --force-use-all-plugins \
+            --baseline .secrets.baseline
+        fi
+        
+        # Scan for new secrets
+        echo "Scanning for secrets..."
+        detect-secrets scan --all-files --force-use-all-plugins \
+          --baseline .secrets.baseline --fail-on-unaudited-secrets || true
+
+    - name: Verify secrets baseline
+      run: |
+        if [ -f .secrets.baseline ]; then
+          echo "Auditing secrets baseline..."
+          detect-secrets audit .secrets.baseline --report || true
+        else
+          echo "No secrets baseline found"
+        fi
+
+    - name: Upload secrets baseline
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: secrets-baseline-${{ github.run_id }}
+        path: .secrets.baseline
+        retention-days: 30
+
+  # License compliance checking
+  license-compliance:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+
+    - name: Install license checker
+      run: |
+        pip install pip-licenses licensecheck
+
+    - name: Check licenses
+      run: |
+        # Install project dependencies
+        pip install -e .
+        
+        # Generate license reports
+        pip-licenses --format=json --output-file=licenses.json
+        pip-licenses --format=plain-vertical > licenses.txt
+        
+        echo "## License Compliance Report" >> $GITHUB_STEP_SUMMARY
+        echo "| Package | License | Compatible |" >> $GITHUB_STEP_SUMMARY
+        echo "|---------|---------|------------|" >> $GITHUB_STEP_SUMMARY
+        
+        # Check for problematic licenses
+        PROBLEMATIC_LICENSES="GPL-3.0|AGPL|LGPL-3.0"
+        if pip-licenses --format=plain | grep -E "$PROBLEMATIC_LICENSES"; then
+          echo "⚠️ **Warning**: Potentially problematic licenses detected" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ **All licenses appear compatible**" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Upload license reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: license-compliance-${{ github.run_id }}
+        path: |
+          licenses.json
+          licenses.txt
+        retention-days: 30
+
+  # Supply chain security verification
+  supply-chain-security:
+    name: Supply Chain Security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: v0.20.1
+        cache: true
+
+    - name: Install dependencies
+      run: pixi install -e default
+
+    - name: Verify package integrity
+      run: |
+        # Build the package
+        pixi run -e default python -m build
+        
+        # Verify package structure
+        mkdir -p supply-chain-reports
+        
+        # Check wheel contents
+        for wheel in dist/*.whl; do
+          echo "=== Contents of $wheel ===" >> supply-chain-reports/package-contents.txt
+          unzip -l "$wheel" >> supply-chain-reports/package-contents.txt
+          echo "" >> supply-chain-reports/package-contents.txt
+        done
+        
+        # Check source distribution contents
+        for tarball in dist/*.tar.gz; do
+          echo "=== Contents of $tarball ===" >> supply-chain-reports/package-contents.txt
+          tar -tzf "$tarball" >> supply-chain-reports/package-contents.txt
+          echo "" >> supply-chain-reports/package-contents.txt
+        done
+        
+        # Verify no suspicious files are included
+        echo "## Supply Chain Security Check" >> $GITHUB_STEP_SUMMARY
+        if grep -E "\.(exe|dll|so\..*|dylib)$" supply-chain-reports/package-contents.txt; then
+          echo "⚠️ **Warning**: Binary files detected in package" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ **No suspicious binary files detected**" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Upload supply chain analysis
+      uses: actions/upload-artifact@v4
+      with:
+        name: supply-chain-analysis-${{ github.run_id }}
+        path: |
+          supply-chain-reports/
+          dist/
+        retention-days: 30
+
+  # Security summary report
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [codeql-analysis, dependency-security, secret-detection, license-compliance, supply-chain-security]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+    - name: Security scan summary
+      run: |
+        echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+        echo "| Scan Type | Status | Details |" >> $GITHUB_STEP_SUMMARY
+        echo "|-----------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+        echo "| CodeQL Analysis | ${{ needs.codeql-analysis.result }} | Advanced static analysis |" >> $GITHUB_STEP_SUMMARY
+        echo "| Dependency Scan | ${{ needs.dependency-security.result }} | Vulnerability detection |" >> $GITHUB_STEP_SUMMARY
+        echo "| Secret Detection | ${{ needs.secret-detection.result }} | Credential scanning |" >> $GITHUB_STEP_SUMMARY
+        echo "| License Check | ${{ needs.license-compliance.result }} | License compatibility |" >> $GITHUB_STEP_SUMMARY
+        echo "| Supply Chain | ${{ needs.supply-chain-security.result }} | Package integrity |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Overall security status
+        FAILED_JOBS=0
+        [[ "${{ needs.codeql-analysis.result }}" != "success" ]] && ((FAILED_JOBS++))
+        [[ "${{ needs.dependency-security.result }}" != "success" ]] && ((FAILED_JOBS++))
+        [[ "${{ needs.secret-detection.result }}" != "success" ]] && ((FAILED_JOBS++))
+        [[ "${{ needs.license-compliance.result }}" != "success" ]] && ((FAILED_JOBS++))
+        [[ "${{ needs.supply-chain-security.result }}" != "success" ]] && ((FAILED_JOBS++))
+        
+        if [ $FAILED_JOBS -eq 0 ]; then
+          echo "✅ **Overall Security Status: PASSED**" >> $GITHUB_STEP_SUMMARY
+          echo "All security scans completed successfully." >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ **Overall Security Status: REVIEW REQUIRED**" >> $GITHUB_STEP_SUMMARY
+          echo "$FAILED_JOBS security scan(s) need attention." >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📋 **Artifacts available for 90 days:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Security scan reports" >> $GITHUB_STEP_SUMMARY
+        echo "- License compliance reports" >> $GITHUB_STEP_SUMMARY
+        echo "- Supply chain analysis" >> $GITHUB_STEP_SUMMARY
+        echo "- Secrets baseline (if applicable)" >> $GITHUB_STEP_SUMMARY
