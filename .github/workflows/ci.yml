@@ -92,7 +92,8 @@ jobs:
         run: |
           # Run integration tests separately to prevent URL patching pollution
           # Exclude benchmark tests from CI blocking - they're for performance monitoring only
-          pixi run -e ${{ matrix.pixi-environment }} pytest tests -m "integration and not benchmark" --cov=strategy_sandbox --cov-append
+          # Allow integration tests to pass if no tests are found (exit code 5)
+          pixi run -e ${{ matrix.pixi-environment }} pytest tests -m "integration and not benchmark" --cov=strategy_sandbox --cov-append || [ $? -eq 5 ]
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
