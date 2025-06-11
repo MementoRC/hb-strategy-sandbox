@@ -63,7 +63,7 @@ jobs:
     - name: Run type checking
       run: pixi run ci-hints
 
-  # Unit tests with separation for better isolation
+  # Cross-platform unit tests (no service containers)
   test:
     name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -96,23 +96,6 @@ jobs:
           - os: windows-latest
             python-version: "3.12"
             pixi-environment: "py312"
-
-    # Service containers for enhanced integration testing (Ubuntu only)
-    services:
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-      websocket-echo:
-        image: jmalloc/echo-server:latest
-        ports:
-          - 8080:8080
 
     defaults:
       run:
@@ -147,32 +130,14 @@ jobs:
             pixi run -e ${{ matrix.pixi-environment }} pytest tests -m "not integration and not benchmark" --cov=strategy_sandbox --cov-report=xml:coverage.xml
           fi
 
-      - name: Run integration tests separately
-        env:
-          # Service container connection details (available on Ubuntu runners only)
-          REDIS_URL: redis://localhost:6379
-          WEBSOCKET_ECHO_URL: ws://localhost:8080
-          TEST_WITH_SERVICES: ${{ matrix.os == 'ubuntu-latest' && 'true' || 'false' }}
+      - name: Run integration tests (basic)
         run: |
-          # Run integration tests separately to prevent URL patching pollution
-          # Exclude benchmark tests from CI blocking - they're for performance monitoring only
-          # Allow integration tests to pass if no tests are found (exit code 5)
+          # Run basic integration tests without service dependencies
           # Skip integration tests on Windows Python 3.10 for performance
           if [[ "${{ matrix.os }}" == "windows-latest" && "${{ matrix.python-version }}" == "3.10" ]]; then
             echo "Skipping integration tests on Windows Python 3.10 for performance optimization"
           else
-            # Wait for service containers to be ready (Ubuntu only)
-            if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-              echo "Waiting for service containers to be ready..."
-              # Install redis-tools for health checks
-              sudo apt-get update && sudo apt-get install -y redis-tools
-              # Wait for Redis
-              timeout 30 bash -c 'until redis-cli -h localhost -p 6379 ping; do sleep 1; done' || echo "Redis not available, continuing without it"
-              # Give WebSocket echo server a moment to start (no health check)
-              sleep 5
-              echo "Service containers ready (or timeout reached)"
-            fi
-            
+            # Run integration tests that don't require external services
             pixi run -e ${{ matrix.pixi-environment }} pytest tests -m "integration and not benchmark" --cov=strategy_sandbox --cov-append || [ $? -eq 5 ]
           fi
 
@@ -184,6 +149,76 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: MementoRC/hb-strategy-sandbox
           fail_ci_if_error: false
+
+  # Ubuntu-only integration tests with service containers
+  integration-tests:
+    name: Integration Tests with Services
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [test]
+
+    # Service containers for enhanced integration testing (Ubuntu only)
+    services:
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+      websocket-echo:
+        image: jmalloc/echo-server:latest
+        ports:
+          - 8080:8080
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          environments: default
+          pixi-version: latest
+          cache: true
+
+      - name: Install project dependencies
+        run: |
+          pixi install -e default
+          echo "Python version check:"
+          pixi run -e default python --version
+
+      - name: Wait for service containers
+        run: |
+          echo "Waiting for service containers to be ready..."
+          # Install redis-tools for health checks
+          sudo apt-get update && sudo apt-get install -y redis-tools
+          # Wait for Redis
+          timeout 30 bash -c 'until redis-cli -h localhost -p 6379 ping; do sleep 1; done' || echo "Redis not available, continuing without it"
+          # Give WebSocket echo server a moment to start (no health check)
+          sleep 5
+          echo "Service containers ready (or timeout reached)"
+
+      - name: Run enhanced integration tests
+        env:
+          # Service container connection details
+          REDIS_URL: redis://localhost:6379
+          WEBSOCKET_ECHO_URL: ws://localhost:8080
+          TEST_WITH_SERVICES: true
+        run: |
+          # Run integration tests that can use external services
+          pixi run -e default pytest tests -m "integration and not benchmark" --cov=strategy_sandbox --cov-report=xml:integration-coverage.xml || [ $? -eq 5 ]
+
+      - name: Upload integration test coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./integration-coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: MementoRC/hb-strategy-sandbox
+          fail_ci_if_error: false
+          flags: integration
 
   # Performance benchmarks (non-blocking)
   benchmark:
@@ -356,18 +391,19 @@ jobs:
     name: CI Status Summary
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [lint, test, build, benchmark, security]
+    needs: [lint, test, integration-tests, build, benchmark, security]
     if: always()
     steps:
       - name: Report CI Status
         run: |
-          # Check if all required jobs passed
-          if [[ "${{ needs.test.result }}" == "success" && "${{ needs.lint.result }}" == "success" && "${{ needs.build.result }}" == "success" && "${{ needs.security.result }}" == "success" ]]; then
+          # Check if all required jobs passed (benchmark is non-blocking)
+          if [[ "${{ needs.test.result }}" == "success" && "${{ needs.lint.result }}" == "success" && "${{ needs.integration-tests.result }}" == "success" && "${{ needs.build.result }}" == "success" && "${{ needs.security.result }}" == "success" ]]; then
             echo "✅ All CI jobs passed"
             echo "## 🎉 CI Status: SUCCESS" >> $GITHUB_STEP_SUMMARY
             echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
             echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Tests | ✅ ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Tests (Cross-platform) | ✅ ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Integration Tests | ✅ ${{ needs.integration-tests.result }} |" >> $GITHUB_STEP_SUMMARY
             echo "| Lint | ✅ ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
             echo "| Build | ✅ ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
             echo "| Security | ✅ ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
@@ -378,7 +414,8 @@ jobs:
             echo "## ❌ CI Status: FAILURE" >> $GITHUB_STEP_SUMMARY
             echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
             echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Tests | ${{ needs.test.result == 'success' && '✅' || '❌' }} ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Tests (Cross-platform) | ${{ needs.test.result == 'success' && '✅' || '❌' }} ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Integration Tests | ${{ needs.integration-tests.result == 'success' && '✅' || '❌' }} ${{ needs.integration-tests.result }} |" >> $GITHUB_STEP_SUMMARY
             echo "| Lint | ${{ needs.lint.result == 'success' && '✅' || '❌' }} ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
             echo "| Build | ${{ needs.build.result == 'success' && '✅' || '❌' }} ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
             echo "| Security | ${{ needs.security.result == 'success' && '✅' || '❌' }} ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
