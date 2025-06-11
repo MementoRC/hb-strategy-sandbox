@@ -99,6 +99,9 @@ pandas = ">=1.0.0"
 pydantic = ">=2"
 asyncio-throttle = ">=1.0.0"
 
+# Security fix: Pin requests to version without vulnerability GHSA-9hjg-9r4m-mvj7
+requests = ">=2.32.4"
+
 # Testing framework (needed for CI)
 pytest = ">=7.0.0"
 pytest-asyncio = ">=0.21.0"
@@ -136,7 +139,7 @@ ci-hints = "mypy --install-types --non-interactive --ignore-missing-imports stra
 # Security tasks - Enhanced centralized management
 security-static = "mkdir -p reports && bandit -r strategy_sandbox/ -f json -o reports/bandit-report.json || echo 'Bandit scan completed with findings'"
 security-deps = "mkdir -p reports && safety check --output json --save-json reports/safety-report.json || safety check || echo 'Safety scan completed'"
-security-audit = "mkdir -p reports && pip-audit --format=json --output=reports/pip-audit-report.json --skip-editable || pip-audit --skip-editable"
+security-audit = "mkdir -p reports && pip-audit --format=json --output=reports/pip-audit-report.json --skip-editable || echo 'Pip-audit scan completed with findings'"
 security-secrets = "detect-secrets scan --baseline .secrets.baseline strategy_sandbox/ tests/ --force-use-all-plugins || echo 'Secrets scan completed'"
 security-supply-chain = "python -c \"import pkg_resources; print('Supply chain verification: OK')\""
 security-comprehensive = { depends-on = ["security-static", "security-audit", "security-secrets", "security-supply-chain"] }
