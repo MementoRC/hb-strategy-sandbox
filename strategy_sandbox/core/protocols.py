@@ -323,3 +323,103 @@ class StrategyProtocol(Protocol):
     def cleanup(self) -> None:
         """Cleanup strategy resources."""
         ...
+
+
+class SlippageModel(Enum):
+    """Slippage calculation models."""
+
+    LINEAR = "linear"
+    LOGARITHMIC = "logarithmic"
+    SQUARE_ROOT = "square_root"
+    CUSTOM = "custom"
+
+
+class MarketRegime(Enum):
+    """Market regime types."""
+
+    TRENDING_UP = "trending_up"
+    TRENDING_DOWN = "trending_down"
+    SIDEWAYS = "sideways"
+    VOLATILE = "volatile"
+
+
+class SlippageConfig:
+    """Configuration for slippage simulation."""
+
+    def __init__(
+        self,
+        model: SlippageModel = SlippageModel.LINEAR,
+        base_slippage_bps: Decimal = Decimal("1.0"),  # Base slippage in basis points
+        depth_impact_factor: Decimal = Decimal("0.1"),  # How much depth affects slippage
+        volatility_multiplier: Decimal = Decimal("1.0"),  # Volatility impact on slippage
+        max_slippage_bps: Decimal = Decimal("50.0"),  # Maximum slippage cap
+        enable_partial_fills: bool = True,
+    ):
+        self.model = model
+        self.base_slippage_bps = base_slippage_bps
+        self.depth_impact_factor = depth_impact_factor
+        self.volatility_multiplier = volatility_multiplier
+        self.max_slippage_bps = max_slippage_bps
+        self.enable_partial_fills = enable_partial_fills
+
+
+class MarketDynamicsConfig:
+    """Configuration for market dynamics simulation."""
+
+    def __init__(
+        self,
+        price_volatility: Decimal = Decimal("0.001"),  # Price volatility per tick
+        trend_strength: Decimal = Decimal("0.0"),  # Trend strength (-1 to 1)
+        regime: MarketRegime = MarketRegime.SIDEWAYS,
+        regime_change_probability: Decimal = Decimal("0.001"),  # Chance of regime change per tick
+        order_book_refresh_rate: int = 10,  # Ticks between order book updates
+        latency_ms: Decimal = Decimal("50.0"),  # Simulated order processing latency
+        enable_realistic_spreads: bool = True,
+    ):
+        self.price_volatility = price_volatility
+        self.trend_strength = trend_strength
+        self.regime = regime
+        self.regime_change_probability = regime_change_probability
+        self.order_book_refresh_rate = order_book_refresh_rate
+        self.latency_ms = latency_ms
+        self.enable_realistic_spreads = enable_realistic_spreads
+
+
+class MarketDepthLevel:
+    """Enhanced order book level with market depth information."""
+
+    def __init__(
+        self,
+        price: Decimal,
+        amount: Decimal,
+        cumulative_amount: Decimal | None = None,
+        order_count: int = 1,
+    ):
+        self.price = price
+        self.amount = amount
+        self.cumulative_amount = cumulative_amount or amount
+        self.order_count = order_count
+        self.last_updated = datetime.now()
+
+
+class TradeFill:
+    """Represents a trade fill with slippage information."""
+
+    def __init__(
+        self,
+        order_id: str,
+        fill_price: Decimal,
+        fill_amount: Decimal,
+        slippage_bps: Decimal,
+        is_partial: bool = False,
+        remaining_amount: Decimal | None = None,
+        market_impact: Decimal | None = None,
+    ):
+        self.order_id = order_id
+        self.fill_price = fill_price
+        self.fill_amount = fill_amount
+        self.slippage_bps = slippage_bps
+        self.is_partial = is_partial
+        self.remaining_amount = remaining_amount or Decimal("0")
+        self.market_impact = market_impact or Decimal("0")
+        self.timestamp = datetime.now()

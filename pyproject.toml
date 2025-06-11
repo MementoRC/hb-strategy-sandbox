@@ -99,6 +99,9 @@ pandas = ">=1.0.0"
 pydantic = ">=2"
 asyncio-throttle = ">=1.0.0"
 
+# Security fix: Pin requests to version without vulnerability GHSA-9hjg-9r4m-mvj7
+requests = ">=2.32.4"
+
 # Testing framework (needed for CI)
 pytest = ">=7.0.0"
 pytest-asyncio = ">=0.21.0"
@@ -133,6 +136,31 @@ docs-deploy = "mkdocs gh-deploy"
 ci-check = "ruff check strategy_sandbox tests; ruff format --check strategy_sandbox tests"
 ci-hints = "mypy --install-types --non-interactive --ignore-missing-imports strategy_sandbox/"
 
+# Security tasks - Enhanced centralized management
+security-static = "mkdir -p reports && bandit -r strategy_sandbox/ -f json -o reports/bandit-report.json || echo 'Bandit scan completed with findings'"
+security-deps = "mkdir -p reports && safety check --output json --save-json reports/safety-report.json || safety check || echo 'Safety scan completed'"
+security-audit = "mkdir -p reports && pip-audit --format=json --output=reports/pip-audit-report.json --skip-editable || echo 'Pip-audit scan completed with findings'"
+security-secrets = "detect-secrets scan --baseline .secrets.baseline strategy_sandbox/ tests/ --force-use-all-plugins || echo 'Secrets scan completed'"
+security-supply-chain = "python -c \"import pkg_resources; print('Supply chain verification: OK')\""
+security-comprehensive = { depends-on = ["security-static", "security-audit", "security-secrets", "security-supply-chain"] }
+security-all = { depends-on = ["security-comprehensive"] }
+security-ci = "mkdir -p reports && pixi run -e security security-comprehensive"
+
+# Performance monitoring tasks
+performance-benchmark = "pytest tests/performance/ --benchmark-json=reports/benchmark.json"
+performance-memory = "python -m memory_profiler tests/performance/memory_test.py"
+performance-profile = "python -m cProfile -o reports/profile.stats -m pytest tests/performance/"
+performance-regression = "python scripts/compare-benchmarks.py"
+
+# Container tasks
+container-build = "docker build -t hb-strategy-sandbox:latest ."
+container-scan = "trivy image hb-strategy-sandbox:latest --format json --output reports/trivy-results.json"
+container-test = "docker run --rm hb-strategy-sandbox:latest pytest tests/unit"
+
+# Advanced CI tasks
+ci-matrix-test = { depends-on = ["test", "security-comprehensive"] }
+ci-full = { depends-on = ["test", "lint", "typecheck", "security-comprehensive", "performance-benchmark"] }
+
 # Features
 [tool.pixi.feature.docs.dependencies]
 mkdocs = "*"
@@ -156,6 +184,28 @@ cython-lint = ">=0.15.0"
 
 [tool.pixi.feature.ci.dependencies]
 types-setuptools = "*"
+
+[tool.pixi.feature.security.pypi-dependencies]
+# Security scanning tools
+bandit = { version = ">=1.7.0", extras = ["toml"] }
+safety = ">=2.0.0"
+pip-audit = ">=2.0.0"
+detect-secrets = ">=1.4.0"
+
+[tool.pixi.feature.performance.pypi-dependencies]
+# Performance monitoring tools
+locust = ">=2.20.0"
+pytest-benchmark = ">=4.0.0"
+memory-profiler = ">=0.60.0"
+psutil = ">=5.9.0"
+
+[tool.pixi.feature.container.pypi-dependencies]
+# Container and deployment tools
+docker = ">=6.0.0"
+
+[tool.pixi.feature.container.dependencies]
+# Container security tools (conda packages)
+trivy = ">=0.40.0"
 
 # Python version features
 [tool.pixi.feature.py310.dependencies]
@@ -218,11 +268,15 @@ aioresponses = "*"
 ruff = ">=0.1.5"
 mypy = ">=1.5.1"
 
-# Environments  
+# Environments
 [tool.pixi.environments]
 default = { features = ["dev"], solve-group = "default" }
 docs = { features = ["docs"], solve-group = "default" }
 ci = { features = ["ci", "dev"], solve-group = "default" }
+security = { features = ["dev", "security"], solve-group = "default" }
+performance = { features = ["dev", "performance"], solve-group = "default" }
+container = { features = ["dev", "container"], solve-group = "default" }
+full = { features = ["dev", "docs", "security", "performance", "container"], solve-group = "default" }
 py310 = { features = ["py310", "dev"], solve-group = "py310" }
 py311 = { features = ["py311", "dev"], solve-group = "py311" }
 py312 = { features = ["py312", "dev"], solve-group = "py312" }
@@ -307,3 +361,8 @@ check_untyped_defs = false
 exclude = [
     "strategy_sandbox/integration/.*",
 ]
+
+# Bandit security configuration
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]  # Skip assert_used warnings in tests

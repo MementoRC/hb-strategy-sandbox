@@ -22,3 +22,24 @@ repos:
       - id: mypy
         additional_dependencies: [types-setuptools]
         exclude: ^(tests/|docs/)
+
+  # Security scanning
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: ^(tests/.*|.*\.lock|.*\.json)$
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: ['-r', 'strategy_sandbox', '--format', 'custom', '--skip', 'B101']
+
+  # Performance and best practices
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.0
+    hooks:
+      - id: pyupgrade
+        args: ['--py310-plus']
