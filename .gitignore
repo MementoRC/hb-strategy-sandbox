@@ -176,3 +176,9 @@ cython_debug/
 .claude/
 .aider*
 .mcp.json
+
+# Security and analysis reports
+reports/
+bandit-report.json
+safety-report.json
+pip-audit-report.json

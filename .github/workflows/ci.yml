@@ -212,7 +212,7 @@ jobs:
           # Check if integration tests exist, otherwise skip gracefully
           echo "Checking for integration tests..."
           TEST_COUNT=$(pixi run -e default pytest tests -m "integration and not benchmark" --collect-only -q 2>/dev/null | grep -c "test session starts" || echo "0")
-          
+
           if [ "$TEST_COUNT" -eq "0" ]; then
             echo "No integration tests found with 'integration' marker"
             echo "Running basic integration directory tests instead..."
@@ -372,30 +372,58 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Set up Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
       with:
-        python-version: '3.12'
+        pixi-version: latest
+        cache: true
 
-    - name: Run Bandit Security Scan
-      run: |
-        pip install bandit[toml]
-        bandit -r strategy_sandbox -f json -o bandit-report.json || true
-        bandit -r strategy_sandbox || true
+    - name: Install security environment
+      run: pixi install -e security
 
-    - name: Run Safety Check
+    - name: Run comprehensive security scans
       run: |
-        pip install safety
-        safety check --json --output safety-report.json || true
+        # Create reports directory
+        mkdir -p reports
+        
+        # Run all security scans using our Pixi tasks
+        echo "Running comprehensive security scans..."
+        pixi run -e security security-ci || echo "Security scans completed with warnings"
+
+    - name: Generate security summary
+      run: |
+        echo "## Security Scan Results" >> $GITHUB_STEP_SUMMARY
+        echo "| Tool | Status | Issues |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+        
+        # Check Bandit results
+        if [ -f reports/bandit-report.json ]; then
+          BANDIT_ISSUES=$(python3 -c "import json; data=json.load(open('reports/bandit-report.json')); print(len(data.get('results', [])))" 2>/dev/null || echo "0")
+          echo "| Bandit | ✅ | $BANDIT_ISSUES issues |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Bandit | ❌ | Failed to generate report |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Check Safety results
+        if [ -f reports/safety-report.json ]; then
+          echo "| Safety | ✅ | Check artifacts |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Safety | ❌ | Failed to generate report |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Check pip-audit results
+        if [ -f reports/pip-audit-report.json ]; then
+          echo "| pip-audit | ✅ | Check artifacts |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| pip-audit | ❌ | Failed to generate report |" >> $GITHUB_STEP_SUMMARY
+        fi
 
     - name: Upload security scan results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-scan-${{ github.sha }}
-        path: |
-          bandit-report.json
-          safety-report.json
+        path: reports/
         retention-days: 30
 
   # Summary job that reports overall workflow status
