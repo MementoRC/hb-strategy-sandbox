@@ -73,6 +73,7 @@ jobs:
       run: pixi install -e ${{ matrix.pixi-env }} --locked
 
     - name: Run tests based on type
+      shell: bash
       run: |
         if [ "${{ matrix.test-type }}" = "comprehensive" ]; then
           pixi run -e ${{ matrix.pixi-env }} ci-full
