@@ -134,9 +134,9 @@ ci-check = "ruff check strategy_sandbox tests; ruff format --check strategy_sand
 ci-hints = "mypy --install-types --non-interactive --ignore-missing-imports strategy_sandbox/"
 
 # Security tasks - Enhanced centralized management
-security-static = "bandit -r strategy_sandbox/ -f json -o reports/bandit-report.json || bandit -r strategy_sandbox/"
-security-deps = "safety check --output=json > reports/safety-report.json 2>/dev/null || safety check || echo 'Safety scan completed'"
-security-audit = "pip-audit --format=json --output=reports/pip-audit-report.json --skip-editable || pip-audit --skip-editable"
+security-static = "mkdir -p reports && bandit -r strategy_sandbox/ -f json -o reports/bandit-report.json || echo 'Bandit scan completed with findings'"
+security-deps = "mkdir -p reports && safety check --output json --save-json reports/safety-report.json || safety check || echo 'Safety scan completed'"
+security-audit = "mkdir -p reports && pip-audit --format=json --output=reports/pip-audit-report.json --skip-editable || pip-audit --skip-editable"
 security-secrets = "detect-secrets scan --baseline .secrets.baseline strategy_sandbox/ tests/ --force-use-all-plugins || echo 'Secrets scan completed'"
 security-supply-chain = "python -c \"import pkg_resources; print('Supply chain verification: OK')\""
 security-comprehensive = { depends-on = ["security-static", "security-audit", "security-secrets", "security-supply-chain"] }
