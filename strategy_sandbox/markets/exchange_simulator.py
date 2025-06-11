@@ -109,10 +109,9 @@ class ExchangeSimulator:
 
     async def _process_orders(self) -> None:
         """Process active orders for fills."""
-        for order_id, order in list(self._active_orders.items()):
-            if order.status == OrderStatus.OPEN:
-                if await self._should_fill_order(order):
-                    await self._fill_order(order)
+        for _order_id, order in list(self._active_orders.items()):
+            if order.status == OrderStatus.OPEN and await self._should_fill_order(order):
+                await self._fill_order(order)
 
     async def _should_fill_order(self, order: Order) -> bool:
         """Determine if an order should be filled with enhanced logic."""
@@ -356,10 +355,7 @@ class ExchangeSimulator:
         if not self._slippage_config.enable_partial_fills:
             return order.amount, False
 
-        if order.side == OrderSide.BUY:
-            available_levels = order_book.asks
-        else:
-            available_levels = order_book.bids
+        available_levels = order_book.asks if order.side == OrderSide.BUY else order_book.bids
 
         available_amount = Decimal("0")
         for level in available_levels:

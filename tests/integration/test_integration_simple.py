@@ -1,10 +1,11 @@
 """Simple integration tests for strategy sandbox workflow."""
 
-import pytest
 from decimal import Decimal
 
-from strategy_sandbox.core.environment import SandboxEnvironment, SandboxConfiguration
-from strategy_sandbox.core.protocols import Order, MarketEvent
+import pytest
+
+from strategy_sandbox.core.environment import SandboxConfiguration, SandboxEnvironment
+from strategy_sandbox.core.protocols import MarketEvent, Order
 
 
 class SimpleTestStrategy:
@@ -160,7 +161,7 @@ class TestSimpleSandboxIntegration:
 
         # Test that we can access current timestamp (value may be 0 initially)
         timestamp = market.current_timestamp
-        assert isinstance(timestamp, (int, float))
+        assert isinstance(timestamp, int | float)
 
     @pytest.mark.asyncio
     async def test_order_protocol_basic(self, config):
