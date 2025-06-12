@@ -1,11 +1,11 @@
 {
   "orders_placed": 1000,
-  "duration_seconds": 0.006932258605957031,
-  "orders_per_second": 144253.1297289861,
-  "avg_order_time_ms": 0.006932258605957031,
+  "duration_seconds": 0.007979631423950195,
+  "orders_per_second": 125319.0713794855,
+  "avg_order_time_ms": 0.007979631423950195,
   "avg_response_time": "0.01ms",
   "memory_usage": "50MB",
-  "throughput": "144253",
+  "throughput": "125319",
   "change_response_time": "+0%",
   "change_memory": "+0%",
   "change_throughput": "+0%"
