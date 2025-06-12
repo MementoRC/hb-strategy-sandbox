@@ -391,5 +391,5 @@ class TemplateEngine:
         try:
             dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
             return dt.strftime("%Y-%m-%d %H:%M:%S UTC")
-        except:
+        except Exception:
             return timestamp
