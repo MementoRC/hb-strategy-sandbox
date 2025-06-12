@@ -177,3 +177,45 @@ pixi.lock
 .claude/
 .aider*
 .mcp.json
+
+# Added by Task Master AI
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+# Dependency directories
+node_modules/
+# Environment variables
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+# Task files
+tasks.json
+tasks/
+
+# Development and testing artifacts
+performance_data/
+artifacts/
+test_output.json
+integration-coverage.xml
+reports/
+
+# Temporary development tools
+.cursor/
+.roo/
+.roomodes
+.taskmaster/
+.windsurfrules
+__do_not_eddit__*
+__do_not_edit__*
+
+# Environment files
+.env.example 
