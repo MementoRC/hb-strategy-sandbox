@@ -273,6 +273,12 @@ class DependencyAnalyzer:
         package_managers = self.detect_package_managers()
         dependencies = self.scan_dependencies(package_managers)
 
+        # Calculate package manager distribution
+        pm_distribution: dict[str, int] = {}
+        for dep in dependencies:
+            pm = dep.package_manager
+            pm_distribution[pm] = pm_distribution.get(pm, 0) + 1
+
         # Build dependency tree
         tree = {
             "project_path": str(self.project_path),
@@ -282,14 +288,8 @@ class DependencyAnalyzer:
             "summary": {
                 "total_dependencies": len(dependencies),
                 "vulnerable_dependencies": len([d for d in dependencies if d.has_vulnerabilities]),
-                "package_manager_distribution": dict[str, int](),
+                "package_manager_distribution": pm_distribution,
             },
         }
-
-        # Calculate package manager distribution
-        pm_dist: dict[str, int] = tree["summary"]["package_manager_distribution"]
-        for dep in dependencies:
-            pm = dep.package_manager
-            pm_dist[pm] = pm_dist.get(pm, 0) + 1
 
         return tree

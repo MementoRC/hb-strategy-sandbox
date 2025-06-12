@@ -60,6 +60,9 @@ class SimpleBuyLowSellHighStrategy:
 
     async def _place_buy_order(self, price: Decimal):
         """Place a buy order."""
+        if not self.sandbox:
+            return
+
         # Calculate amount to buy based on available balance
         quote_asset = self.trading_pair.split("-")[1]
         available_balance = self.sandbox.balance.get_available_balance(quote_asset)
@@ -80,6 +83,9 @@ class SimpleBuyLowSellHighStrategy:
 
     async def _place_sell_order(self, price: Decimal):
         """Place a sell order."""
+        if not self.sandbox:
+            return
+
         if self.position_size > Decimal("0"):
             order_candidate = OrderCandidate(
                 trading_pair=self.trading_pair,
