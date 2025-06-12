@@ -159,9 +159,8 @@ cython_debug/
 #  https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore
 .idea/
 
-# Pixi
+# Pixi environments (but keep lock file for CI reproducibility)
 .pixi/
-pixi.lock
 
 # VS Code
 .vscode/
@@ -219,3 +218,9 @@ __do_not_edit__*
 
 # Environment files
 .env.example 
+
+# Security and analysis reports
+reports/
+bandit-report.json
+safety-report.json
+pip-audit-report.json

@@ -5,6 +5,7 @@ Simple event system for MVP functionality.
 """
 
 import asyncio
+import contextlib
 import uuid
 from collections.abc import Callable
 from typing import Any
@@ -22,11 +23,8 @@ class SandboxEventSystem:
     def emit_event(self, event_type: MarketEvent, data: dict[str, Any]) -> None:
         """Emit a market event."""
         # Add to queue for async processing
-        try:
+        with contextlib.suppress(asyncio.QueueFull):
             self._event_queue.put_nowait((event_type, data))
-        except asyncio.QueueFull:
-            # Handle queue full scenario
-            pass
 
     def subscribe(self, event_type: MarketEvent, callback: Callable) -> str:
         """Subscribe to events and return subscription ID."""
@@ -39,7 +37,7 @@ class SandboxEventSystem:
 
     def unsubscribe(self, subscription_id: str) -> bool:
         """Unsubscribe from events."""
-        for event_type, subscribers in self._subscribers.items():
+        for _event_type, subscribers in self._subscribers.items():
             if subscription_id in subscribers:
                 del subscribers[subscription_id]
                 return True

@@ -99,7 +99,7 @@ class TestPerformanceBenchmarks:
         start_time = time.time()
 
         orders_placed = 0
-        for i in range(num_orders):
+        for _i in range(num_orders):
             order = OrderCandidate(
                 trading_pair="BTC-USDT",
                 side=OrderSide.BUY,
