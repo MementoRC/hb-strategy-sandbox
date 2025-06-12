@@ -39,6 +39,7 @@ dynamic = ["version"]
 [project.scripts]
 hb-performance = "strategy_sandbox.performance.cli:main"
 hb-reporting = "strategy_sandbox.reporting.cli:main"
+hb-security = "strategy_sandbox.security.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/MementoRC/hb-strategy-sandbox"
