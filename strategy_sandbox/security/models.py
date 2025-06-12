@@ -155,7 +155,7 @@ class SecurityMetrics:
                     severity_counts[severity] += 1
 
         # Package manager distribution
-        package_managers = {}
+        package_managers: dict[str, int] = {}
         for dep in self.dependencies:
             pm = dep.package_manager
             package_managers[pm] = package_managers.get(pm, 0) + 1

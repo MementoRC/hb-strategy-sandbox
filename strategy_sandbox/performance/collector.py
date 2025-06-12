@@ -301,7 +301,7 @@ class PerformanceCollector:
         if not baseline:
             return {"error": f"Baseline '{baseline_name}' not found"}
 
-        comparison = {
+        comparison: dict[str, Any] = {
             "baseline_build_id": baseline.build_id,
             "current_build_id": current_metrics.build_id,
             "baseline_timestamp": baseline.timestamp.isoformat(),

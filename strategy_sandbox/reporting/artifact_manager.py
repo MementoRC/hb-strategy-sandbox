@@ -137,7 +137,11 @@ class ArtifactManager:
                     json.dump(data, f, indent=2, default=str)
             elif format_type == "csv":
                 # Simple CSV generation for dict/list data
-                csv_content = self._generate_csv(data)
+                if isinstance(data, str):
+                    # If data is string, write directly as CSV content
+                    csv_content = data
+                else:
+                    csv_content = self._generate_csv(data)
                 with open(data_path, "w", encoding="utf-8") as f:
                     f.write(csv_content)
             else:
@@ -188,7 +192,7 @@ class ArtifactManager:
                     )
 
         # Sort by creation time, newest first
-        artifacts.sort(key=lambda x: x["created"], reverse=True)
+        artifacts.sort(key=lambda x: str(x["created"]), reverse=True)
         return artifacts
 
     def get_artifact_summary(self) -> dict[str, Any]:

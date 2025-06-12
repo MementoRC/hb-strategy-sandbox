@@ -212,7 +212,7 @@ class GitHubReporter:
         Returns:
             Report generation results.
         """
-        results = {"summary_added": False, "artifact_created": None}
+        results: dict[str, bool | Path | None] = {"summary_added": False, "artifact_created": None}
 
         # Generate step summary
         if include_summary:
@@ -251,7 +251,7 @@ class GitHubReporter:
         Returns:
             Report generation results.
         """
-        results = {"summary_added": False, "artifact_created": None}
+        results: dict[str, bool | Path | None] = {"summary_added": False, "artifact_created": None}
 
         # Load security data
         bandit_data = self._load_json_file(bandit_file) if bandit_file else None
@@ -289,7 +289,7 @@ class GitHubReporter:
         Returns:
             Report generation results.
         """
-        results = {"summary_added": False, "artifact_created": None}
+        results: dict[str, bool | Path | None] = {"summary_added": False, "artifact_created": None}
 
         # Load data files
         test_data = self._load_json_file(test_results_file) if test_results_file else None

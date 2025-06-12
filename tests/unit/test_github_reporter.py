@@ -4,9 +4,9 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open, patch
 
-from strategy_sandbox.reporting import GitHubReporter, TemplateEngine, ArtifactManager
+from strategy_sandbox.reporting import ArtifactManager, GitHubReporter, TemplateEngine
 
 
 class TestGitHubReporter:
@@ -192,15 +192,17 @@ class TestGitHubReporter:
             assert artifact_path.exists()
 
             # Verify content
-            with open(artifact_path, "r") as f:
+            with open(artifact_path) as f:
                 loaded_data = json.load(f)
 
             assert loaded_data == test_data
 
     def test_generate_performance_report(self):
         """Test comprehensive performance report generation."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            with patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": f"{temp_dir}/summary.md"}):
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": f"{temp_dir}/summary.md"}),
+        ):
                 reporter = GitHubReporter(temp_dir)
 
                 performance_metrics = {
@@ -472,7 +474,7 @@ class TestArtifactManager:
             assert artifact_path.exists()
 
             # Verify content
-            with open(artifact_path, "r") as f:
+            with open(artifact_path) as f:
                 loaded_data = json.load(f)
 
             assert loaded_data == test_data
@@ -490,7 +492,7 @@ class TestArtifactManager:
             assert artifact_path.exists()
 
             # Verify content
-            with open(artifact_path, "r") as f:
+            with open(artifact_path) as f:
                 loaded_content = f.read()
 
             assert loaded_content == text_content
