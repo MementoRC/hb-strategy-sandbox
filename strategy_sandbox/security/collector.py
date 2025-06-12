@@ -334,4 +334,3 @@ class SecurityCollector:
         metrics_files.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
 
         return metrics_files
-

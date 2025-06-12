@@ -195,4 +195,3 @@ class SecurityMetrics:
             environment=data.get("environment", {}),
             scan_duration=data.get("scan_duration"),
         )
-

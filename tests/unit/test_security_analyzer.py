@@ -199,4 +199,3 @@ dependencies = ["requests", "numpy"]
         assert "summary" in tree
         assert tree["summary"]["total_dependencies"] == 1
         assert tree["summary"]["vulnerable_dependencies"] == 0
-
