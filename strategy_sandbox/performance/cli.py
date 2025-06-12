@@ -9,115 +9,75 @@ from .collector import PerformanceCollector
 
 def main():
     """Main CLI entry point."""
-    parser = argparse.ArgumentParser(
-        description="Performance data collection and analysis tool"
-    )
-    
+    parser = argparse.ArgumentParser(description="Performance data collection and analysis tool")
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # Collect command
     collect_parser = subparsers.add_parser("collect", help="Collect performance metrics")
     collect_parser.add_argument(
-        "--results", 
-        required=True,
-        help="Path to benchmark results file (JSON)"
+        "--results", required=True, help="Path to benchmark results file (JSON)"
     )
     collect_parser.add_argument(
         "--storage-path",
         default="performance_data",
-        help="Directory for storing performance data (default: performance_data)"
+        help="Directory for storing performance data (default: performance_data)",
     )
     collect_parser.add_argument(
-        "--store-baseline",
-        action="store_true",
-        help="Store the collected metrics as a baseline"
+        "--store-baseline", action="store_true", help="Store the collected metrics as a baseline"
     )
     collect_parser.add_argument(
-        "--baseline-name",
-        default="default",
-        help="Name for the baseline (default: default)"
+        "--baseline-name", default="default", help="Name for the baseline (default: default)"
     )
-    collect_parser.add_argument(
-        "--compare-baseline",
-        help="Compare with existing baseline"
-    )
-    collect_parser.add_argument(
-        "--output",
-        help="Output file for results (JSON format)"
-    )
+    collect_parser.add_argument("--compare-baseline", help="Compare with existing baseline")
+    collect_parser.add_argument("--output", help="Output file for results (JSON format)")
 
     # Compare command
     compare_parser = subparsers.add_parser("compare", help="Compare performance metrics")
     compare_parser.add_argument(
-        "--current",
-        required=True,
-        help="Path to current benchmark results"
+        "--current", required=True, help="Path to current benchmark results"
     )
     compare_parser.add_argument(
-        "--baseline",
-        default="default",
-        help="Baseline name to compare against (default: default)"
+        "--baseline", default="default", help="Baseline name to compare against (default: default)"
     )
     compare_parser.add_argument(
-        "--storage-path",
-        default="performance_data",
-        help="Directory containing performance data"
+        "--storage-path", default="performance_data", help="Directory containing performance data"
     )
-    compare_parser.add_argument(
-        "--output",
-        help="Output file for comparison results"
-    )
+    compare_parser.add_argument("--output", help="Output file for comparison results")
     compare_parser.add_argument(
         "--fail-on-regression",
         action="store_true",
-        help="Exit with non-zero code if performance regression detected"
+        help="Exit with non-zero code if performance regression detected",
     )
     compare_parser.add_argument(
         "--regression-threshold",
         type=float,
         default=10.0,
-        help="Percentage threshold for regression detection (default: 10.0)"
+        help="Percentage threshold for regression detection (default: 10.0)",
     )
 
     # Baseline command
     baseline_parser = subparsers.add_parser("baseline", help="Manage baselines")
     baseline_parser.add_argument(
-        "action",
-        choices=["create", "list", "delete"],
-        help="Baseline action"
+        "action", choices=["create", "list", "delete"], help="Baseline action"
     )
     baseline_parser.add_argument(
-        "--results",
-        help="Path to benchmark results file (for create action)"
+        "--results", help="Path to benchmark results file (for create action)"
     )
+    baseline_parser.add_argument("--name", default="default", help="Baseline name")
     baseline_parser.add_argument(
-        "--name",
-        default="default",
-        help="Baseline name"
-    )
-    baseline_parser.add_argument(
-        "--storage-path",
-        default="performance_data",
-        help="Directory for storing performance data"
+        "--storage-path", default="performance_data", help="Directory for storing performance data"
     )
 
     # History command
     history_parser = subparsers.add_parser("history", help="View performance history")
     history_parser.add_argument(
-        "--storage-path",
-        default="performance_data",
-        help="Directory containing performance data"
+        "--storage-path", default="performance_data", help="Directory containing performance data"
     )
     history_parser.add_argument(
-        "--limit",
-        type=int,
-        default=10,
-        help="Number of recent entries to show (default: 10)"
+        "--limit", type=int, default=10, help="Number of recent entries to show (default: 10)"
     )
-    history_parser.add_argument(
-        "--output",
-        help="Output file for history data"
-    )
+    history_parser.add_argument("--output", help="Output file for history data")
 
     args = parser.parse_args()
 
@@ -142,19 +102,19 @@ def main():
 def handle_collect(args):
     """Handle collect command."""
     collector = PerformanceCollector(args.storage_path)
-    
+
     # Collect metrics
     metrics = collector.collect_metrics(args.results)
-    
+
     # Store in history
     history_file = collector.store_history(metrics)
     print(f"Stored performance metrics: {history_file}")
-    
+
     # Store as baseline if requested
     if args.store_baseline:
         baseline_file = collector.store_baseline(metrics, args.baseline_name)
         print(f"Stored baseline: {baseline_file}")
-    
+
     # Compare with baseline if requested
     comparison_result = None
     if args.compare_baseline:
@@ -162,22 +122,19 @@ def handle_collect(args):
         if "error" not in comparison_result:
             print(f"Comparison with baseline '{args.compare_baseline}':")
             print_comparison_summary(comparison_result)
-    
+
     # Output results
-    output_data = {
-        "metrics": metrics.to_dict(),
-        "comparison": comparison_result
-    }
-    
+    output_data = {"metrics": metrics.to_dict(), "comparison": comparison_result}
+
     if args.output:
-        with open(args.output, 'w') as f:
+        with open(args.output, "w") as f:
             json.dump(output_data, f, indent=2)
         print(f"Results written to: {args.output}")
     else:
         print(f"Build ID: {metrics.build_id}")
         print(f"Timestamp: {metrics.timestamp}")
         print(f"Benchmark results: {len(metrics.results)}")
-        
+
         # Print summary stats
         stats = metrics.calculate_summary_stats()
         if stats:
@@ -189,30 +146,30 @@ def handle_collect(args):
 def handle_compare(args):
     """Handle compare command."""
     collector = PerformanceCollector(args.storage_path)
-    
+
     # Collect current metrics
     current_metrics = collector.collect_metrics(args.current)
-    
+
     # Compare with baseline
     comparison_result = collector.compare_with_baseline(current_metrics, args.baseline)
-    
+
     if "error" in comparison_result:
         print(f"Error: {comparison_result['error']}", file=sys.stderr)
         sys.exit(1)
-    
+
     # Print comparison
     print_comparison_summary(comparison_result)
-    
+
     # Check for regressions if requested
     if args.fail_on_regression:
         has_regression = check_for_regressions(comparison_result, args.regression_threshold)
         if has_regression:
             print(f"\nPerformance regression detected (threshold: {args.regression_threshold}%)")
             sys.exit(1)
-    
+
     # Output results
     if args.output:
-        with open(args.output, 'w') as f:
+        with open(args.output, "w") as f:
             json.dump(comparison_result, f, indent=2)
         print(f"\nComparison results written to: {args.output}")
 
@@ -220,20 +177,20 @@ def handle_compare(args):
 def handle_baseline(args):
     """Handle baseline command."""
     collector = PerformanceCollector(args.storage_path)
-    
+
     if args.action == "create":
         if not args.results:
             print("Error: --results required for create action", file=sys.stderr)
             sys.exit(1)
-        
+
         metrics = collector.collect_metrics(args.results)
         baseline_file = collector.store_baseline(metrics, args.name)
         print(f"Created baseline '{args.name}': {baseline_file}")
-        
+
     elif args.action == "list":
         baseline_dir = collector.baseline_path
         baselines = list(baseline_dir.glob("*_baseline.json"))
-        
+
         if not baselines:
             print("No baselines found")
         else:
@@ -241,7 +198,7 @@ def handle_baseline(args):
             for baseline_file in baselines:
                 name = baseline_file.stem.replace("_baseline", "")
                 print(f"  {name}")
-                
+
     elif args.action == "delete":
         baseline_file = collector.baseline_path / f"{args.name}_baseline.json"
         if baseline_file.exists():
@@ -255,29 +212,29 @@ def handle_history(args):
     """Handle history command."""
     collector = PerformanceCollector(args.storage_path)
     history = collector.get_recent_history(args.limit)
-    
+
     if not history:
         print("No performance history found")
         return
-    
+
     if args.output:
         history_data = [metrics.to_dict() for metrics in history]
-        with open(args.output, 'w') as f:
+        with open(args.output, "w") as f:
             json.dump(history_data, f, indent=2)
         print(f"History data written to: {args.output}")
     else:
         print(f"Performance History (last {len(history)} entries):")
         print()
-        
+
         for metrics in history:
             print(f"Build ID: {metrics.build_id}")
             print(f"Timestamp: {metrics.timestamp}")
             print(f"Results: {len(metrics.results)}")
-            
+
             stats = metrics.calculate_summary_stats()
             if stats:
                 print(f"Avg execution time: {stats.get('avg_execution_time', 0):.4f}s")
-                if 'avg_throughput' in stats:
+                if "avg_throughput" in stats:
                     print(f"Avg throughput: {stats['avg_throughput']:.2f} ops/s")
             print("-" * 50)
 
@@ -287,27 +244,33 @@ def print_comparison_summary(comparison_result):
     print(f"Baseline: {comparison_result['baseline_build_id']}")
     print(f"Current:  {comparison_result['current_build_id']}")
     print()
-    
+
     for comp in comparison_result["comparisons"]:
         print(f"Benchmark: {comp['name']}")
-        
+
         # Execution time
         et = comp["execution_time"]
-        print(f"  Execution time: {et['current']:.4f}s vs {et['baseline']:.4f}s "
-              f"({et['change_percent']:+.1f}% - {et['change_direction']})")
-        
+        print(
+            f"  Execution time: {et['current']:.4f}s vs {et['baseline']:.4f}s "
+            f"({et['change_percent']:+.1f}% - {et['change_direction']})"
+        )
+
         # Memory usage
         if "memory_usage" in comp:
             mem = comp["memory_usage"]
-            print(f"  Memory usage: {mem['current']:.1f}MB vs {mem['baseline']:.1f}MB "
-                  f"({mem['change_percent']:+.1f}% - {mem['change_direction']})")
-        
+            print(
+                f"  Memory usage: {mem['current']:.1f}MB vs {mem['baseline']:.1f}MB "
+                f"({mem['change_percent']:+.1f}% - {mem['change_direction']})"
+            )
+
         # Throughput
         if "throughput" in comp:
             thr = comp["throughput"]
-            print(f"  Throughput: {thr['current']:.1f} vs {thr['baseline']:.1f} ops/s "
-                  f"({thr['change_percent']:+.1f}% - {thr['change_direction']})")
-        
+            print(
+                f"  Throughput: {thr['current']:.1f} vs {thr['baseline']:.1f} ops/s "
+                f"({thr['change_percent']:+.1f}% - {thr['change_direction']})"
+            )
+
         print()
 
 
@@ -318,19 +281,19 @@ def check_for_regressions(comparison_result, threshold: float) -> bool:
         et = comp["execution_time"]
         if et["change_direction"] == "regression" and abs(et["change_percent"]) > threshold:
             return True
-        
+
         # Check memory regression
         if "memory_usage" in comp:
             mem = comp["memory_usage"]
             if mem["change_direction"] == "regression" and abs(mem["change_percent"]) > threshold:
                 return True
-        
+
         # Check throughput regression
         if "throughput" in comp:
             thr = comp["throughput"]
             if thr["change_direction"] == "regression" and abs(thr["change_percent"]) > threshold:
                 return True
-    
+
     return False
 
 
