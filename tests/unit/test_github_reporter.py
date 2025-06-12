@@ -12,6 +12,7 @@ from strategy_sandbox.reporting import GitHubReporter, TemplateEngine, ArtifactM
 class TestGitHubReporter:
     """Test cases for GitHubReporter."""
 
+    @patch.dict(os.environ, {}, clear=True)
     def test_reporter_initialization_without_github(self):
         """Test reporter initialization outside GitHub Actions."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -74,6 +75,7 @@ class TestGitHubReporter:
         mock_file.assert_called_once_with("/tmp/summary.md", "a", encoding="utf-8")
         mock_file().write.assert_called_once_with("# Test Summary\nThis is a test.\n")
 
+    @patch.dict(os.environ, {}, clear=True)
     def test_add_to_summary_no_path(self):
         """Test step summary addition without GITHUB_STEP_SUMMARY."""
         reporter = GitHubReporter()
@@ -277,6 +279,7 @@ class TestGitHubReporter:
 
         assert url == "https://github.com/user/test-repo/actions/runs/987654321"
 
+    @patch.dict(os.environ, {}, clear=True)
     def test_get_workflow_url_missing_info(self):
         """Test workflow URL with missing information."""
         reporter = GitHubReporter()
