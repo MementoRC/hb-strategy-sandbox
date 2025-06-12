@@ -1,15 +1,15 @@
 """Artifact management for GitHub Actions workflow integration."""
 
 import json
-from pathlib import Path
-from typing import Dict, List, Optional, Union, Any
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 
 class ArtifactManager:
     """Manages creation and organization of workflow artifacts."""
 
-    def __init__(self, artifact_path: Union[str, Path] = "./artifacts"):
+    def __init__(self, artifact_path: str | Path = "./artifacts"):
         """Initialize artifact manager.
 
         Args:
@@ -27,8 +27,8 @@ class ArtifactManager:
             path.mkdir(exist_ok=True)
 
     def create_artifact(
-        self, name: str, content: Union[str, Dict, List], content_type: str = "text/plain"
-    ) -> Optional[Path]:
+        self, name: str, content: str | dict | list, content_type: str = "text/plain"
+    ) -> Path | None:
         """Create an artifact file.
 
         Args:
@@ -44,7 +44,7 @@ class ArtifactManager:
             file_path = self._get_artifact_path(name, content_type)
 
             # Write content based on type
-            if content_type == "application/json" or isinstance(content, (dict, list)):
+            if content_type == "application/json" or isinstance(content, dict | list):
                 with open(file_path, "w", encoding="utf-8") as f:
                     json.dump(content, f, indent=2, default=str)
             else:
@@ -59,8 +59,8 @@ class ArtifactManager:
             return None
 
     def create_report_artifact(
-        self, report_name: str, report_data: Dict[str, Any], format_type: str = "json"
-    ) -> Optional[Path]:
+        self, report_name: str, report_data: dict[str, Any], format_type: str = "json"
+    ) -> Path | None:
         """Create a structured report artifact.
 
         Args:
@@ -87,7 +87,7 @@ class ArtifactManager:
 
     def create_log_artifact(
         self, log_name: str, log_content: str, log_level: str = "info"
-    ) -> Optional[Path]:
+    ) -> Path | None:
         """Create a log artifact.
 
         Args:
@@ -114,8 +114,8 @@ class ArtifactManager:
             return None
 
     def create_data_artifact(
-        self, data_name: str, data: Union[Dict, List, str], format_type: str = "json"
-    ) -> Optional[Path]:
+        self, data_name: str, data: dict | list | str, format_type: str = "json"
+    ) -> Path | None:
         """Create a data artifact.
 
         Args:
@@ -151,7 +151,7 @@ class ArtifactManager:
             print(f"Error creating data artifact {data_name}: {e}")
             return None
 
-    def list_artifacts(self, artifact_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    def list_artifacts(self, artifact_type: str | None = None) -> list[dict[str, Any]]:
         """List all artifacts.
 
         Args:
@@ -191,7 +191,7 @@ class ArtifactManager:
         artifacts.sort(key=lambda x: x["created"], reverse=True)
         return artifacts
 
-    def get_artifact_summary(self) -> Dict[str, Any]:
+    def get_artifact_summary(self) -> dict[str, Any]:
         """Get summary of all artifacts.
 
         Returns:
@@ -254,7 +254,7 @@ class ArtifactManager:
         else:
             return self.artifact_path / name
 
-    def _generate_html_report(self, report_name: str, report_data: Dict[str, Any]) -> str:
+    def _generate_html_report(self, report_name: str, report_data: dict[str, Any]) -> str:
         """Generate HTML report from data."""
         html = f"""<!DOCTYPE html>
 <html>
@@ -275,7 +275,7 @@ class ArtifactManager:
         <h1>{report_name} Report</h1>
         <p>Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
     </div>
-    
+
     <div class="section">
         <h2>Report Data</h2>
         <div class="data">
@@ -286,7 +286,7 @@ class ArtifactManager:
 </html>"""
         return html
 
-    def _generate_markdown_report(self, report_name: str, report_data: Dict[str, Any]) -> str:
+    def _generate_markdown_report(self, report_name: str, report_data: dict[str, Any]) -> str:
         """Generate Markdown report from data."""
         markdown = f"""# {report_name} Report
 
@@ -300,7 +300,7 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
         return markdown
 
-    def _generate_csv(self, data: Union[Dict, List]) -> str:
+    def _generate_csv(self, data: dict | list) -> str:
         """Generate simple CSV from data."""
         if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
             # List of dictionaries

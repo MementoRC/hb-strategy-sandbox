@@ -1,19 +1,19 @@
 """GitHub Actions integration for step summaries and artifact generation."""
 
-import os
 import json
-from pathlib import Path
-from typing import Dict, List, Optional, Union, Any
+import os
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
-from .template_engine import TemplateEngine
 from .artifact_manager import ArtifactManager
+from .template_engine import TemplateEngine
 
 
 class GitHubReporter:
     """Main class for GitHub Actions reporting integration."""
 
-    def __init__(self, artifact_path: Optional[str] = None):
+    def __init__(self, artifact_path: str | None = None):
         """Initialize GitHub reporter with environment detection.
 
         Args:
@@ -33,7 +33,7 @@ class GitHubReporter:
         # Track if we're in GitHub Actions
         self.is_github_actions = bool(os.environ.get("GITHUB_ACTIONS"))
 
-    def _collect_github_environment(self) -> Dict[str, str]:
+    def _collect_github_environment(self) -> dict[str, str]:
         """Collect GitHub Actions environment variables."""
         github_vars = [
             "GITHUB_ACTIONS",
@@ -82,9 +82,9 @@ class GitHubReporter:
     def create_build_status_summary(
         self,
         build_status: str = "success",
-        test_results: Optional[Dict[str, Any]] = None,
-        performance_data: Optional[Dict[str, Any]] = None,
-        security_data: Optional[Dict[str, Any]] = None,
+        test_results: dict[str, Any] | None = None,
+        performance_data: dict[str, Any] | None = None,
+        security_data: dict[str, Any] | None = None,
     ) -> str:
         """Create a comprehensive build status summary.
 
@@ -111,8 +111,8 @@ class GitHubReporter:
 
     def create_performance_summary(
         self,
-        performance_metrics: Dict[str, Any],
-        baseline_comparison: Optional[Dict[str, Any]] = None,
+        performance_metrics: dict[str, Any],
+        baseline_comparison: dict[str, Any] | None = None,
     ) -> str:
         """Create performance benchmark summary.
 
@@ -134,8 +134,8 @@ class GitHubReporter:
 
     def create_security_summary(
         self,
-        bandit_results: Optional[Dict[str, Any]] = None,
-        pip_audit_results: Optional[Dict[str, Any]] = None,
+        bandit_results: dict[str, Any] | None = None,
+        pip_audit_results: dict[str, Any] | None = None,
     ) -> str:
         """Create security scan summary.
 
@@ -156,8 +156,8 @@ class GitHubReporter:
         return self.template_engine.render_security_summary(context)
 
     def create_artifact(
-        self, name: str, content: Union[str, Dict, List], content_type: str = "text/plain"
-    ) -> Optional[Path]:
+        self, name: str, content: str | dict | list, content_type: str = "text/plain"
+    ) -> Path | None:
         """Create an artifact file.
 
         Args:
@@ -171,8 +171,8 @@ class GitHubReporter:
         return self.artifact_manager.create_artifact(name, content, content_type)
 
     def create_detailed_report_artifact(
-        self, report_type: str, data: Dict[str, Any]
-    ) -> Optional[Path]:
+        self, report_type: str, data: dict[str, Any]
+    ) -> Path | None:
         """Create a detailed report artifact.
 
         Args:
@@ -196,11 +196,11 @@ class GitHubReporter:
 
     def generate_performance_report(
         self,
-        performance_metrics: Dict[str, Any],
-        baseline_comparison: Optional[Dict[str, Any]] = None,
+        performance_metrics: dict[str, Any],
+        baseline_comparison: dict[str, Any] | None = None,
         include_summary: bool = True,
         include_artifact: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate comprehensive performance report.
 
         Args:
@@ -235,11 +235,11 @@ class GitHubReporter:
 
     def generate_security_report(
         self,
-        bandit_file: Optional[str] = None,
-        pip_audit_file: Optional[str] = None,
+        bandit_file: str | None = None,
+        pip_audit_file: str | None = None,
         include_summary: bool = True,
         include_artifact: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate comprehensive security report.
 
         Args:
@@ -274,10 +274,10 @@ class GitHubReporter:
     def generate_build_report(
         self,
         build_status: str = "success",
-        test_results_file: Optional[str] = None,
-        performance_file: Optional[str] = None,
-        security_files: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        test_results_file: str | None = None,
+        performance_file: str | None = None,
+        security_files: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         """Generate comprehensive build status report.
 
         Args:
@@ -317,7 +317,7 @@ class GitHubReporter:
 
         return results
 
-    def _load_json_file(self, file_path: str) -> Optional[Dict[str, Any]]:
+    def _load_json_file(self, file_path: str) -> dict[str, Any] | None:
         """Load JSON data from file.
 
         Args:
@@ -327,13 +327,13 @@ class GitHubReporter:
             Loaded data or None if failed.
         """
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
             print(f"Warning: Failed to load {file_path}: {e}")
             return None
 
-    def _get_workflow_url(self) -> Optional[str]:
+    def _get_workflow_url(self) -> str | None:
         """Get GitHub workflow run URL.
 
         Returns:
@@ -347,7 +347,7 @@ class GitHubReporter:
 
         return None
 
-    def get_environment_info(self) -> Dict[str, Any]:
+    def get_environment_info(self) -> dict[str, Any]:
         """Get comprehensive environment information.
 
         Returns:

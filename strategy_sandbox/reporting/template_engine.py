@@ -1,7 +1,7 @@
 """Template engine for generating formatted reports and summaries."""
 
-from typing import Dict, Any
 from datetime import datetime
+from typing import Any
 
 
 class TemplateEngine:
@@ -11,7 +11,7 @@ class TemplateEngine:
         """Initialize template engine."""
         pass
 
-    def render_build_status(self, context: Dict[str, Any]) -> str:
+    def render_build_status(self, context: dict[str, Any]) -> str:
         """Render build status summary.
 
         Args:
@@ -63,7 +63,7 @@ class TemplateEngine:
 
         return markdown
 
-    def render_performance_summary(self, context: Dict[str, Any]) -> str:
+    def render_performance_summary(self, context: dict[str, Any]) -> str:
         """Render performance benchmark summary.
 
         Args:
@@ -149,7 +149,7 @@ class TemplateEngine:
 
         return markdown
 
-    def render_security_summary(self, context: Dict[str, Any]) -> str:
+    def render_security_summary(self, context: dict[str, Any]) -> str:
         """Render security scan summary.
 
         Args:
@@ -248,7 +248,7 @@ class TemplateEngine:
 
         return markdown
 
-    def _render_test_results(self, test_results: Dict[str, Any]) -> str:
+    def _render_test_results(self, test_results: dict[str, Any]) -> str:
         """Render test results section."""
         if not test_results:
             return "*No test results available.*\n"
@@ -279,7 +279,7 @@ class TemplateEngine:
 
         return markdown
 
-    def _render_performance_summary(self, performance_data: Dict[str, Any]) -> str:
+    def _render_performance_summary(self, performance_data: dict[str, Any]) -> str:
         """Render performance data summary."""
         if not performance_data:
             return "*No performance data available.*\n"
@@ -305,7 +305,7 @@ class TemplateEngine:
 
         return markdown
 
-    def _render_security_summary(self, security_data: Dict[str, Any]) -> str:
+    def _render_security_summary(self, security_data: dict[str, Any]) -> str:
         """Render security data summary."""
         if not security_data:
             return "*No security scan data available.*\n"
@@ -344,7 +344,7 @@ class TemplateEngine:
 
         return markdown
 
-    def _get_status_info(self, status: str) -> Dict[str, str]:
+    def _get_status_info(self, status: str) -> dict[str, str]:
         """Get status display information."""
         status_map = {
             "success": {
