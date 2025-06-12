@@ -287,7 +287,7 @@ class DependencyAnalyzer:
         }
 
         # Calculate package manager distribution
-        pm_dist = tree["summary"]["package_manager_distribution"]
+        pm_dist: dict[str, int] = tree["summary"]["package_manager_distribution"]
         for dep in dependencies:
             pm = dep.package_manager
             pm_dist[pm] = pm_dist.get(pm, 0) + 1

@@ -137,11 +137,7 @@ class ArtifactManager:
                     json.dump(data, f, indent=2, default=str)
             elif format_type == "csv":
                 # Simple CSV generation for dict/list data
-                if isinstance(data, str):
-                    # If data is string, write directly as CSV content
-                    csv_content = data
-                else:
-                    csv_content = self._generate_csv(data)
+                csv_content = data if isinstance(data, str) else self._generate_csv(data)
                 with open(data_path, "w", encoding="utf-8") as f:
                     f.write(csv_content)
             else:

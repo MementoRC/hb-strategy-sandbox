@@ -199,7 +199,7 @@ class SecurityCollector:
         current_stats = current_metrics.calculate_summary_stats()
         baseline_stats = baseline.calculate_summary_stats()
 
-        comparison = {
+        comparison: dict[str, Any] = {
             "baseline_info": {
                 "build_id": baseline.build_id,
                 "timestamp": baseline.timestamp.isoformat(),

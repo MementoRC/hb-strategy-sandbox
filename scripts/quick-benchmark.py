@@ -42,7 +42,7 @@ def quick_initialization_benchmark() -> float:
 
 def run_quick_benchmarks() -> dict[str, Any]:
     """Run quick benchmarks and return results."""
-    results = {"timestamp": time.time(), "benchmarks": {}}
+    results: dict[str, Any] = {"timestamp": time.time(), "benchmarks": {}}
 
     # Import benchmark
     import_time = quick_import_benchmark()
