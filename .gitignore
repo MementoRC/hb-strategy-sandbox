@@ -217,7 +217,7 @@ __do_not_eddit__*
 __do_not_edit__*
 
 # Environment files
-.env.example 
+.env.example
 
 # Security and analysis reports
 reports/

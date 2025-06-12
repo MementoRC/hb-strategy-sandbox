@@ -385,7 +385,7 @@ jobs:
       run: |
         # Create reports directory
         mkdir -p reports
-        
+
         # Run all security scans using our Pixi tasks
         echo "Running comprehensive security scans..."
         pixi run -e security security-ci || echo "Security scans completed with warnings"
@@ -395,7 +395,7 @@ jobs:
         echo "## Security Scan Results" >> $GITHUB_STEP_SUMMARY
         echo "| Tool | Status | Issues |" >> $GITHUB_STEP_SUMMARY
         echo "|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
-        
+
         # Check Bandit results
         if [ -f reports/bandit-report.json ]; then
           BANDIT_ISSUES=$(python3 -c "import json; data=json.load(open('reports/bandit-report.json')); print(len(data.get('results', [])))" 2>/dev/null || echo "0")
@@ -403,14 +403,14 @@ jobs:
         else
           echo "| Bandit | ❌ | Failed to generate report |" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         # Check Safety results
         if [ -f reports/safety-report.json ]; then
           echo "| Safety | ✅ | Check artifacts |" >> $GITHUB_STEP_SUMMARY
         else
           echo "| Safety | ❌ | Failed to generate report |" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         # Check pip-audit results
         if [ -f reports/pip-audit-report.json ]; then
           echo "| pip-audit | ✅ | Check artifacts |" >> $GITHUB_STEP_SUMMARY

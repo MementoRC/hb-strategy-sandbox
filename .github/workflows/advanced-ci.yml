@@ -29,7 +29,7 @@ jobs:
     name: Test ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.test-type }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -39,7 +39,7 @@ jobs:
             python-version: "3.12"
             test-type: "comprehensive"
             pixi-env: "full"
-          - os: ubuntu-latest  
+          - os: ubuntu-latest
             python-version: "3.11"
             test-type: "integration"
             pixi-env: "default"
@@ -98,7 +98,7 @@ jobs:
     name: Comprehensive Security Scan
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -146,17 +146,17 @@ jobs:
         echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
         echo "| Tool | Status | Issues |" >> $GITHUB_STEP_SUMMARY
         echo "|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
-        
+
         # Check if reports exist and summarize
         if [ -f "reports/bandit-report.json" ]; then
           issues=$(jq '.results | length' reports/bandit-report.json 2>/dev/null || echo "0")
           echo "| Bandit | ✅ | $issues |" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         if [ -f "reports/safety-report.json" ]; then
           echo "| Safety | ✅ | Checked |" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         if [ -f "reports/pip-audit-report.json" ]; then
           vulnerabilities=$(jq '.vulnerabilities | length' reports/pip-audit-report.json 2>/dev/null || echo "0")
           echo "| Pip-Audit | ✅ | $vulnerabilities |" >> $GITHUB_STEP_SUMMARY
@@ -176,7 +176,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: github.event_name == 'pull_request' || github.event.inputs.run_performance == 'true'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -233,7 +233,7 @@ jobs:
     name: Advanced Documentation Pipeline
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -255,18 +255,18 @@ jobs:
       run: |
         # Install link checker
         pip install linkchecker
-        
+
         # Check internal links in built documentation
         linkchecker --check-extern site/ --ignore-url=".*localhost.*" --no-warnings || true
 
     - name: Generate API documentation coverage
       run: |
         echo "## 📚 Documentation Coverage" >> $GITHUB_STEP_SUMMARY
-        
+
         # Count Python files vs documented modules
         py_files=$(find strategy_sandbox -name "*.py" | grep -v __pycache__ | wc -l)
         md_files=$(find docs -name "*.md" | wc -l)
-        
+
         echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
         echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
         echo "| Python Files | $py_files |" >> $GITHUB_STEP_SUMMARY
@@ -285,7 +285,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: github.event.inputs.run_security_full == 'true'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -312,7 +312,7 @@ jobs:
         CMD ["python", "-m", "strategy_sandbox"]
         EOF
         fi
-        
+
         docker build -t hb-strategy-sandbox:latest .
 
     - name: Run Trivy security scan
@@ -334,7 +334,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: github.ref == 'refs/heads/development'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -349,7 +349,7 @@ jobs:
       run: |
         # Install SBOM generation tool
         pip install cyclone-spdx
-        
+
         # Generate SBOM
         mkdir -p reports
         cyclone-spdx strategy_sandbox --output-file reports/sbom.spdx.json
@@ -367,32 +367,32 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test-matrix, security-comprehensive, docs-advanced]
     if: always()
-    
+
     steps:
     - name: Check CI status
       run: |
         echo "## 🎯 Advanced CI Pipeline Results" >> $GITHUB_STEP_SUMMARY
         echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
         echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
-        
+
         if [ "${{ needs.test-matrix.result }}" = "success" ]; then
           echo "| Matrix Testing | ✅ PASSED |" >> $GITHUB_STEP_SUMMARY
         else
           echo "| Matrix Testing | ❌ FAILED |" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         if [ "${{ needs.security-comprehensive.result }}" = "success" ]; then
           echo "| Security Scan | ✅ PASSED |" >> $GITHUB_STEP_SUMMARY
         else
           echo "| Security Scan | ⚠️ REVIEW REQUIRED |" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         if [ "${{ needs.docs-advanced.result }}" = "success" ]; then
           echo "| Documentation | ✅ PASSED |" >> $GITHUB_STEP_SUMMARY
         else
           echo "| Documentation | ❌ FAILED |" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         # Determine overall status
         if [ "${{ needs.test-matrix.result }}" = "success" ] && [ "${{ needs.docs-advanced.result }}" = "success" ]; then
           echo "## 🎉 CI Status: SUCCESS" >> $GITHUB_STEP_SUMMARY

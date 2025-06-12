@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from strategy_sandbox.performance import PerformanceCollector, PerformanceMetrics, BenchmarkResult
+from strategy_sandbox.performance import BenchmarkResult, PerformanceCollector, PerformanceMetrics
 
 
 class TestPerformanceCollector:

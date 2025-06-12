@@ -203,23 +203,23 @@ class TestGitHubReporter:
             tempfile.TemporaryDirectory() as temp_dir,
             patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": f"{temp_dir}/summary.md"}),
         ):
-                reporter = GitHubReporter(temp_dir)
+            reporter = GitHubReporter(temp_dir)
 
-                performance_metrics = {
-                    "results": [
-                        {"name": "benchmark_test", "execution_time": 0.05, "throughput": 2000.0}
-                    ]
-                }
+            performance_metrics = {
+                "results": [
+                    {"name": "benchmark_test", "execution_time": 0.05, "throughput": 2000.0}
+                ]
+            }
 
-                results = reporter.generate_performance_report(
-                    performance_metrics=performance_metrics,
-                    include_summary=True,
-                    include_artifact=True,
-                )
+            results = reporter.generate_performance_report(
+                performance_metrics=performance_metrics,
+                include_summary=True,
+                include_artifact=True,
+            )
 
-                assert "summary_added" in results
-                assert "artifact_created" in results
-                assert results["artifact_created"] is not None
+            assert "summary_added" in results
+            assert "artifact_created" in results
+            assert results["artifact_created"] is not None
 
     def test_generate_security_report_with_files(self):
         """Test security report generation with file loading."""

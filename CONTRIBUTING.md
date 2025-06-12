@@ -27,12 +27,12 @@ We follow a GitFlow-inspired workflow with the following branches:
    ```bash
    # Install development environment
    pixi install
-   
+
    # Run tests during development
    pixi run test-unit
    pixi run lint
    pixi run typecheck
-   
+
    # Run full test suite before pushing
    pixi run test
    ```
@@ -41,10 +41,10 @@ We follow a GitFlow-inspired workflow with the following branches:
    ```bash
    git add .
    git commit -m "feat: add your feature description
-   
+
    - Detailed description of changes
    - Any breaking changes or important notes
-   
+
    🤖 Generated with [Claude Code](https://claude.ai/code)
    Co-Authored-By: Your Name <your.email@example.com>"
    ```
@@ -78,7 +78,7 @@ We follow a GitFlow-inspired workflow with the following branches:
 ### For `development` branch:
 - Require pull request reviews (1+ reviewers)
 - Require status checks to pass:
-  - `lint` 
+  - `lint`
   - `test (ubuntu-latest, 3.11)`
 - Require branches to be up to date before merging
 - Allow force pushes: No
@@ -88,7 +88,7 @@ We follow a GitFlow-inspired workflow with the following branches:
 
 ### Prerequisites
 
-- Python 3.10+ 
+- Python 3.10+
 - [Pixi](https://pixi.sh/) (recommended) or pip/conda
 
 ### Setup with Pixi (Recommended)
@@ -111,7 +111,7 @@ pixi run test
 ### Setup with pip
 
 ```bash
-# Clone repository  
+# Clone repository
 git clone https://github.com/MementoRC/hb-strategy-sandbox.git
 cd hb-strategy-sandbox
 
@@ -145,7 +145,7 @@ pixi run test
 
 # Run specific test types
 pixi run test-unit
-pixi run test-integration 
+pixi run test-integration
 pixi run test-performance
 
 # Run tests with coverage
@@ -173,7 +173,7 @@ async def test_order_placement_with_insufficient_balance(sandbox):
     \"\"\"Test that orders fail when insufficient balance.\"\"\"
     # Setup: insufficient balance
     sandbox.balance.set_balance("USDT", Decimal("10"))
-    
+
     # Action: try to place large order
     order = OrderCandidate(
         trading_pair="BTC-USDT",
@@ -181,7 +181,7 @@ async def test_order_placement_with_insufficient_balance(sandbox):
         order_type=OrderType.MARKET,
         amount=Decimal("1.0"),  # Would cost ~$50k
     )
-    
+
     # Assert: order placement fails
     order_id = sandbox.order.place_order(order)
     assert order_id is None
