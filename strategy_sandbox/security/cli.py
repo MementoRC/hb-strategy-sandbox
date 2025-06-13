@@ -46,6 +46,7 @@ def scan_command(args: argparse.Namespace) -> None:
             print(f"Baseline saved to: {baseline_file}")
 
         # Compare with baseline if requested
+        comparison = None
         if args.compare_baseline:
             comparison = collector.compare_with_baseline(metrics, args.baseline_name)
             if comparison:
