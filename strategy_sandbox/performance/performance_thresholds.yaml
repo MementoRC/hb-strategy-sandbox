@@ -36,12 +36,12 @@ alerting_config:
       description: "Both relative and absolute thresholds exceeded"
       conditions:
         - "relative_threshold_exceeded AND absolute_threshold_exceeded"
-    
+
     warning:
       description: "Either relative or absolute threshold exceeded"
       conditions:
         - "relative_threshold_exceeded OR absolute_threshold_exceeded"
-    
+
     info:
       description: "Performance change detected but within acceptable limits"
       conditions:
@@ -67,11 +67,11 @@ trend_analysis:
     short_term: 5                    # Last 5 builds for short-term trends
     medium_term: 20                  # Last 20 builds for medium-term trends
     long_term: 100                   # Last 100 builds for long-term trends
-  
+
   trend_detection:
     correlation_threshold: 0.7       # Correlation coefficient threshold for trend detection
     minimum_data_points: 5           # Minimum data points needed for trend analysis
-    
+
 # Improvement detection (for positive changes)
 improvement_detection:
   enabled: true
@@ -79,7 +79,7 @@ improvement_detection:
     execution_time:
       relative_improvement: -0.05    # 5% improvement in execution time
     memory_usage:
-      relative_improvement: -0.05    # 5% improvement in memory usage  
+      relative_improvement: -0.05    # 5% improvement in memory usage
     throughput:
       relative_improvement: 0.05     # 5% improvement in throughput
 
@@ -89,12 +89,12 @@ baseline_config:
   update_criteria:
     consecutive_improvements: 3      # Update baseline after 3 consecutive improvements
     stability_period_days: 7         # Baseline must be stable for 7 days before update
-  
+
   retention:
     keep_baselines: 10               # Keep last 10 baseline versions
     max_age_days: 90                 # Remove baselines older than 90 days
 
-# Reporting configuration  
+# Reporting configuration
 reporting:
   default_format: "markdown"         # Default report format (markdown, json, github)
   include_sections:
@@ -103,7 +103,7 @@ reporting:
     - detailed_comparisons
     - statistical_summary
     - trend_analysis
-  
+
   github_integration:
     step_summary: true               # Include in GitHub Actions step summary
     pr_comment: false                # Post as PR comment
@@ -116,7 +116,7 @@ visualization:
     - "time_series"                  # Time series plots
     - "comparison_bars"              # Bar charts for comparisons
     - "trend_lines"                  # Trend line analysis
-  
+
   export_formats:
     - "png"
     - "svg"

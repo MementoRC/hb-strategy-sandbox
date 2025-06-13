@@ -176,9 +176,9 @@ class TestPerformanceBenchmarks:
         print(f"Balance operations per second: {operations_per_second:.2f}")
 
         # Assert performance threshold
-        assert operations_per_second > 1000, (
-            f"Balance operations too slow: {operations_per_second} ops/sec"
-        )
+        assert (
+            operations_per_second > 1000
+        ), f"Balance operations too slow: {operations_per_second} ops/sec"
 
     @pytest.mark.asyncio
     async def test_event_system_performance(self):
