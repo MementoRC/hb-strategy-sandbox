@@ -3,8 +3,10 @@
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from .collector import PerformanceCollector
+from .comparator import ComparisonMode, PerformanceComparator
 
 
 def main():
@@ -32,8 +34,10 @@ def main():
     collect_parser.add_argument("--compare-baseline", help="Compare with existing baseline")
     collect_parser.add_argument("--output", help="Output file for results (JSON format)")
 
-    # Compare command
-    compare_parser = subparsers.add_parser("compare", help="Compare performance metrics")
+    # Compare command (enhanced with PerformanceComparator)
+    compare_parser = subparsers.add_parser(
+        "compare", help="Compare performance metrics with advanced analysis"
+    )
     compare_parser.add_argument(
         "--current", required=True, help="Path to current benchmark results"
     )
@@ -43,6 +47,21 @@ def main():
     compare_parser.add_argument(
         "--storage-path", default="performance_data", help="Directory containing performance data"
     )
+    compare_parser.add_argument(
+        "--threshold-config", help="Path to custom threshold configuration file"
+    )
+    compare_parser.add_argument(
+        "--mode",
+        choices=["single", "trend"],
+        default="single",
+        help="Comparison mode: single baseline or trend analysis (default: single)",
+    )
+    compare_parser.add_argument(
+        "--format",
+        choices=["markdown", "json", "github"],
+        default="markdown",
+        help="Report output format (default: markdown)",
+    )
     compare_parser.add_argument("--output", help="Output file for comparison results")
     compare_parser.add_argument(
         "--fail-on-regression",
@@ -50,10 +69,10 @@ def main():
         help="Exit with non-zero code if performance regression detected",
     )
     compare_parser.add_argument(
-        "--regression-threshold",
-        type=float,
-        default=10.0,
-        help="Percentage threshold for regression detection (default: 10.0)",
+        "--history-limit",
+        type=int,
+        default=10,
+        help="Number of historical builds to include for trend analysis (default: 10)",
     )
 
     # Baseline command
@@ -144,34 +163,59 @@ def handle_collect(args):
 
 
 def handle_compare(args):
-    """Handle compare command."""
+    """Handle compare command with enhanced PerformanceComparator."""
     collector = PerformanceCollector(args.storage_path)
+
+    # Initialize comparator with custom threshold config if provided
+    comparator = PerformanceComparator(args.threshold_config)
 
     # Collect current metrics
     current_metrics = collector.collect_metrics(args.current)
 
-    # Compare with baseline
-    comparison_result = collector.compare_with_baseline(current_metrics, args.baseline)
-
-    if "error" in comparison_result:
-        print(f"Error: {comparison_result['error']}", file=sys.stderr)
+    # Load baseline metrics
+    baseline_metrics = collector.load_baseline(args.baseline)
+    if not baseline_metrics:
+        print(f"Error: Baseline '{args.baseline}' not found", file=sys.stderr)
         sys.exit(1)
 
-    # Print comparison
-    print_comparison_summary(comparison_result)
+    # Perform comparison based on mode
+    if args.mode == "trend":
+        # Get historical metrics for trend analysis
+        historical_metrics = collector.get_recent_history(args.history_limit)
+        if not historical_metrics:
+            print(
+                "Warning: No historical data available, falling back to single baseline comparison"
+            )
+            comparison_result = comparator.compare_with_baseline(
+                current_metrics, baseline_metrics, ComparisonMode.SINGLE_BASELINE
+            )
+        else:
+            comparison_result = comparator.compare_with_trend(current_metrics, historical_metrics)
+    else:
+        comparison_result = comparator.compare_with_baseline(
+            current_metrics, baseline_metrics, ComparisonMode.SINGLE_BASELINE
+        )
+
+    # Generate and display report
+    report = comparator.generate_report(comparison_result, args.format)
+
+    if args.output:
+        with open(args.output, "w") as f:
+            f.write(report)
+        print(f"Comparison report written to: {args.output}")
+    else:
+        print(report)
 
     # Check for regressions if requested
     if args.fail_on_regression:
-        has_regression = check_for_regressions(comparison_result, args.regression_threshold)
-        if has_regression:
-            print(f"\nPerformance regression detected (threshold: {args.regression_threshold}%)")
+        if comparison_result.regressions_count > 0:
+            print(
+                f"\nPerformance regression detected: {comparison_result.regressions_count} critical regressions"
+            )
             sys.exit(1)
-
-    # Output results
-    if args.output:
-        with open(args.output, "w") as f:
-            json.dump(comparison_result, f, indent=2)
-        print(f"\nComparison results written to: {args.output}")
+        elif comparison_result.warnings_count > 0:
+            print(f"\nPerformance warnings detected: {comparison_result.warnings_count} warnings")
+            sys.exit(2)  # Warning exit code
 
 
 def handle_baseline(args):
