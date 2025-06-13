@@ -5,7 +5,6 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
-import pytest
 import yaml
 
 from strategy_sandbox.performance import BenchmarkResult, PerformanceMetrics
