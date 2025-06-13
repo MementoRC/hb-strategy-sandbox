@@ -1,11 +1,7 @@
 """Tests for dynamic report generation system."""
 
-import json
 import tempfile
-from pathlib import Path
-from unittest.mock import Mock, patch
-
-import pytest
+from unittest.mock import patch
 
 from strategy_sandbox.reporting import GitHubReporter
 from strategy_sandbox.reporting.report_generator import (
@@ -589,9 +585,7 @@ class TestReportGenerator:
         # Test warning status
         generator._performance_trends.clear()
         security_data = {
-            "bandit_results": {
-                "metrics": {"_totals": {"SEVERITY.HIGH": 1, "SEVERITY.MEDIUM": 2}}
-            }
+            "bandit_results": {"metrics": {"_totals": {"SEVERITY.HIGH": 1, "SEVERITY.MEDIUM": 2}}}
         }
         status = generator._calculate_overall_status(None, None, security_data)
         assert status == "warning"
