@@ -93,10 +93,7 @@ class ReportGenerator:
         Args:
             insight: Insight data as dict or BuildInsight instance.
         """
-        if isinstance(insight, dict):
-            insight_obj = BuildInsight(**insight)
-        else:
-            insight_obj = insight
+        insight_obj = BuildInsight(**insight) if isinstance(insight, dict) else insight
 
         self._build_insights.append(insight_obj)
 
