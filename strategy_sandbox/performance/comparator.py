@@ -509,7 +509,11 @@ class PerformanceComparator:
         self, current_metrics: PerformanceMetrics, historical_metrics: list[PerformanceMetrics]
     ) -> dict[str, Any]:
         """Analyze performance trends over historical data."""
-        trend_analysis: dict[str, Any] = {"trend_direction": "stable", "trend_strength": 0.0, "trend_details": {}}
+        trend_analysis: dict[str, Any] = {
+            "trend_direction": "stable",
+            "trend_strength": 0.0,
+            "trend_details": {},
+        }
 
         # For each benchmark, analyze trend over time
         for current_result in current_metrics.results:
