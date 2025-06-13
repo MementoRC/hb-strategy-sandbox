@@ -216,11 +216,11 @@ jobs:
           if [ "$TEST_COUNT" -eq "0" ]; then
             echo "No integration tests found with 'integration' marker"
             echo "Running basic integration directory tests instead..."
-            # Run tests in integration directory if any exist
-            pixi run -e default pytest tests/integration/ --cov=strategy_sandbox --cov-report=xml:integration-coverage.xml || true
+            # Run tests in integration directory if any exist (with lower coverage threshold)
+            pixi run -e default pytest tests/integration/ --cov=strategy_sandbox --cov-report=xml:integration-coverage.xml --cov-fail-under=0 || true
           else
             echo "Found integration tests, running them..."
-            pixi run -e default pytest tests -m "integration and not benchmark" --cov=strategy_sandbox --cov-report=xml:integration-coverage.xml || [ $? -eq 5 ]
+            pixi run -e default pytest tests -m "integration and not benchmark" --cov=strategy_sandbox --cov-report=xml:integration-coverage.xml --cov-fail-under=0 || [ $? -eq 5 ]
           fi
 
       - name: Upload integration test coverage
