@@ -94,9 +94,9 @@ class TestSBOMGenerator:
     def test_generate_cyclonedx_json(self, sbom_generator):
         """Test CycloneDX JSON SBOM generation."""
         sbom = sbom_generator.generate_sbom(
-            output_format="cyclonedx", 
+            output_format="cyclonedx",
             output_type="json",
-            include_dev_dependencies=False  # Explicitly exclude dev dependencies
+            include_dev_dependencies=False,  # Explicitly exclude dev dependencies
         )
 
         # Validate CycloneDX structure
@@ -125,7 +125,7 @@ class TestSBOMGenerator:
         # Check vulnerabilities
         assert "vulnerabilities" in sbom
         assert len(sbom["vulnerabilities"]) == 1  # Only requests has vulnerability
-        
+
         vuln = sbom["vulnerabilities"][0]
         assert vuln["id"] == "CVE-2023-12345"
         assert vuln["ratings"][0]["severity"] == "MEDIUM"
@@ -133,9 +133,7 @@ class TestSBOMGenerator:
     def test_generate_cyclonedx_include_dev_dependencies(self, sbom_generator):
         """Test CycloneDX generation including dev dependencies."""
         sbom = sbom_generator.generate_sbom(
-            output_format="cyclonedx", 
-            output_type="json",
-            include_dev_dependencies=True
+            output_format="cyclonedx", output_type="json", include_dev_dependencies=True
         )
 
         # Should include all 3 components including pytest
@@ -144,9 +142,7 @@ class TestSBOMGenerator:
     def test_generate_cyclonedx_exclude_vulnerabilities(self, sbom_generator):
         """Test CycloneDX generation without vulnerabilities."""
         sbom = sbom_generator.generate_sbom(
-            output_format="cyclonedx",
-            output_type="json", 
-            include_vulnerabilities=False
+            output_format="cyclonedx", output_type="json", include_vulnerabilities=False
         )
 
         # Should not have vulnerabilities section
@@ -155,9 +151,9 @@ class TestSBOMGenerator:
     def test_generate_spdx_json(self, sbom_generator):
         """Test SPDX JSON SBOM generation."""
         sbom = sbom_generator.generate_sbom(
-            output_format="spdx", 
+            output_format="spdx",
             output_type="json",
-            include_dev_dependencies=False  # Explicitly exclude dev dependencies
+            include_dev_dependencies=False,  # Explicitly exclude dev dependencies
         )
 
         # Validate SPDX structure
@@ -189,8 +185,7 @@ class TestSBOMGenerator:
         # Check annotations for vulnerabilities
         assert "annotations" in sbom
         vuln_annotations = [
-            ann for ann in sbom["annotations"] 
-            if "Vulnerability:" in ann["annotationComment"]
+            ann for ann in sbom["annotations"] if "Vulnerability:" in ann["annotationComment"]
         ]
         assert len(vuln_annotations) == 1  # Only requests has vulnerability
 
@@ -201,19 +196,13 @@ class TestSBOMGenerator:
         assert purl == "pkg:pypi/requests@2.28.0"
 
         # Test conda package
-        conda_dep = DependencyInfo(
-            name="python",
-            version="3.11.0",
-            package_manager="conda"
-        )
+        conda_dep = DependencyInfo(name="python", version="3.11.0", package_manager="conda")
         purl = sbom_generator._generate_purl(conda_dep)
         assert purl == "pkg:conda/python@3.11.0"
 
         # Test generic package
         generic_dep = DependencyInfo(
-            name="custom-package",
-            version="1.0.0",
-            package_manager="unknown"
+            name="custom-package", version="1.0.0", package_manager="unknown"
         )
         purl = sbom_generator._generate_purl(generic_dep)
         assert purl == "pkg:generic/custom-package@1.0.0"
@@ -265,6 +254,7 @@ class TestSBOMGenerator:
 
         # Verify it's valid YAML
         import yaml
+
         with open(output_path, encoding="utf-8") as f:
             loaded_data = yaml.safe_load(f)
         assert loaded_data["spdxVersion"] == "SPDX-2.3"
@@ -303,10 +293,9 @@ class TestSBOMGenerator:
     def test_generate_vulnerability_report(self, sbom_generator, tmp_path):
         """Test vulnerability report generation."""
         report_path = tmp_path / "vulnerability_report.json"
-        
+
         report = sbom_generator.generate_vulnerability_report(
-            output_path=report_path,
-            include_fix_recommendations=True
+            output_path=report_path, include_fix_recommendations=True
         )
 
         # Validate report structure
@@ -337,10 +326,9 @@ class TestSBOMGenerator:
     def test_generate_compliance_report(self, sbom_generator, tmp_path):
         """Test compliance report generation."""
         report_path = tmp_path / "compliance_report.json"
-        
+
         report = sbom_generator.generate_compliance_report(
-            compliance_frameworks=["NIST", "SOX"],
-            output_path=report_path
+            compliance_frameworks=["NIST", "SOX"], output_path=report_path
         )
 
         # Validate report structure
@@ -386,25 +374,25 @@ class TestSBOMGenerator:
             "version": "1.0",
             "components": [
                 {"name": "comp1", "version": "1.1"},
-                {"name": "comp2", "version": "1.2"}
-            ]
+                {"name": "comp2", "version": "1.2"},
+            ],
         }
 
         xml_result = sbom_generator._dict_to_xml(test_data, "root")
-        
+
         assert "<root>" in xml_result
         assert "</root>" in xml_result
         assert "<name>test</name>" in xml_result
         assert "<version>1.0</version>" in xml_result
         assert "<name>comp1</name>" in xml_result
 
-    @patch.object(SBOMGenerator, '_generate_cyclonedx')
+    @patch.object(SBOMGenerator, "_generate_cyclonedx")
     def test_generate_sbom_calls_correct_method(self, mock_cyclonedx, sbom_generator):
         """Test that generate_sbom calls the correct format method."""
         mock_cyclonedx.return_value = {"test": "data"}
-        
+
         result = sbom_generator.generate_sbom(output_format="cyclonedx")
-        
+
         mock_cyclonedx.assert_called_once()
         assert result == {"test": "data"}
 
@@ -427,10 +415,8 @@ class TestSBOMGenerator:
     def test_compliance_report_custom_frameworks(self, sbom_generator):
         """Test compliance report with custom frameworks."""
         custom_frameworks = ["Custom1", "Custom2"]
-        
-        report = sbom_generator.generate_compliance_report(
-            compliance_frameworks=custom_frameworks
-        )
+
+        report = sbom_generator.generate_compliance_report(compliance_frameworks=custom_frameworks)
 
         assert report["frameworks"] == custom_frameworks
         assert "Custom1" in report["compliance_status"]

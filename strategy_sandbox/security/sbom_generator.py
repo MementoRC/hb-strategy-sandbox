@@ -63,7 +63,9 @@ class SBOMGenerator:
                 dependencies, include_dev_dependencies, include_vulnerabilities
             )
         elif output_format == "spdx":
-            return self._generate_spdx(dependencies, include_dev_dependencies, include_vulnerabilities)
+            return self._generate_spdx(
+                dependencies, include_dev_dependencies, include_vulnerabilities
+            )
         else:
             raise ValueError(f"Unsupported SBOM format: {output_format}")
 
@@ -137,10 +139,12 @@ class SBOMGenerator:
 
             # Add source information
             if dep.source:
-                component["externalReferences"].append({
-                    "type": "distribution",
-                    "url": dep.source,
-                })
+                component["externalReferences"].append(
+                    {
+                        "type": "distribution",
+                        "url": dep.source,
+                    }
+                )
 
             # Add package manager metadata
             component["properties"] = [
@@ -217,7 +221,7 @@ class SBOMGenerator:
         """
         # SPDX 2.3 structure
         document_id = f"SPDXRef-DOCUMENT-{uuid.uuid4().hex[:8]}"
-        
+
         sbom: dict[str, Any] = {
             "spdxVersion": "SPDX-2.3",
             "dataLicense": "CC0-1.0",
@@ -251,7 +255,7 @@ class SBOMGenerator:
                 continue
 
             package_id = f"SPDXRef-Package-{dep.name}-{i}"
-            
+
             package = {
                 "SPDXID": package_id,
                 "name": dep.name,
@@ -283,33 +287,39 @@ class SBOMGenerator:
             # Add package manager annotation
             if "annotations" not in sbom:
                 sbom["annotations"] = []
-            
-            sbom["annotations"].append({
-                "spdxId": package_id,
-                "annotationType": "OTHER",
-                "annotator": "Tool: SBOMGenerator",
-                "annotationDate": datetime.now().isoformat() + "Z",
-                "annotationComment": f"Package manager: {dep.package_manager}",
-            })
+
+            sbom["annotations"].append(
+                {
+                    "spdxId": package_id,
+                    "annotationType": "OTHER",
+                    "annotator": "Tool: SBOMGenerator",
+                    "annotationDate": datetime.now().isoformat() + "Z",
+                    "annotationComment": f"Package manager: {dep.package_manager}",
+                }
+            )
 
             sbom["packages"].append(package)
 
             # Add relationship to root
-            sbom["relationships"].append({
-                "spdxElementId": "SPDXRef-Package-Root",
-                "relationshipType": "DEPENDS_ON",
-                "relatedSpdxElement": package_id,
-            })
+            sbom["relationships"].append(
+                {
+                    "spdxElementId": "SPDXRef-Package-Root",
+                    "relationshipType": "DEPENDS_ON",
+                    "relatedSpdxElement": package_id,
+                }
+            )
 
             # Add dependency relationships
             for dep_name in dep.dependencies:
                 # Find dependency package ID (simplified for now)
                 dep_package_id = f"SPDXRef-Package-{dep_name}"
-                sbom["relationships"].append({
-                    "spdxElementId": package_id,
-                    "relationshipType": "DEPENDS_ON",
-                    "relatedSpdxElement": dep_package_id,
-                })
+                sbom["relationships"].append(
+                    {
+                        "spdxElementId": package_id,
+                        "relationshipType": "DEPENDS_ON",
+                        "relatedSpdxElement": dep_package_id,
+                    }
+                )
 
         # Add vulnerability information as annotations if requested
         if include_vulnerabilities:
@@ -317,13 +327,15 @@ class SBOMGenerator:
                 if dep.vulnerabilities:
                     package_id = f"SPDXRef-Package-{dep.name}"
                     for vuln in dep.vulnerabilities:
-                        sbom["annotations"].append({
-                            "spdxId": package_id,
-                            "annotationType": "OTHER",
-                            "annotator": "Tool: SBOMGenerator",
-                            "annotationDate": datetime.now().isoformat() + "Z",
-                            "annotationComment": f"Vulnerability: {vuln.id} ({vuln.severity}) - {vuln.description}",
-                        })
+                        sbom["annotations"].append(
+                            {
+                                "spdxId": package_id,
+                                "annotationType": "OTHER",
+                                "annotator": "Tool: SBOMGenerator",
+                                "annotationDate": datetime.now().isoformat() + "Z",
+                                "annotationComment": f"Vulnerability: {vuln.id} ({vuln.severity}) - {vuln.description}",
+                            }
+                        )
 
         return sbom
 
@@ -358,11 +370,26 @@ class SBOMGenerator:
         """
         # Common development dependency patterns
         dev_patterns = [
-            "test", "pytest", "mock", "coverage", "lint", "ruff", "mypy",
-            "pre-commit", "black", "flake8", "isort", "bandit", "safety",
-            "sphinx", "mkdocs", "jupyter", "notebook", "ipython",
+            "test",
+            "pytest",
+            "mock",
+            "coverage",
+            "lint",
+            "ruff",
+            "mypy",
+            "pre-commit",
+            "black",
+            "flake8",
+            "isort",
+            "bandit",
+            "safety",
+            "sphinx",
+            "mkdocs",
+            "jupyter",
+            "notebook",
+            "ipython",
         ]
-        
+
         name_lower = dependency.name.lower()
         return any(pattern in name_lower for pattern in dev_patterns)
 
@@ -422,6 +449,7 @@ class SBOMGenerator:
         Returns:
             XML string representation.
         """
+
         # Simplified XML conversion - in production, use proper XML library
         def _to_xml(obj: Any, tag: str) -> str:
             if isinstance(obj, dict):
@@ -454,7 +482,7 @@ class SBOMGenerator:
             Vulnerability report data.
         """
         dependencies = self.dependency_analyzer.scan_dependencies()
-        
+
         # Build vulnerability report
         report = {
             "report_type": "vulnerability_analysis",
@@ -498,7 +526,7 @@ class SBOMGenerator:
 
                 if include_fix_recommendations and vuln.fix_versions:
                     vuln_info["fix_versions"] = vuln.fix_versions
-                    
+
                     # Add to recommendations
                     recommendation = f"Update {dep.name} from {dep.version} to {vuln.fix_versions[0]} to fix {vuln.id}"
                     if recommendation not in report["recommendations"]:
@@ -512,7 +540,7 @@ class SBOMGenerator:
         if output_path:
             output_path = Path(output_path)
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(report, f, indent=2, ensure_ascii=False)
 
@@ -536,7 +564,7 @@ class SBOMGenerator:
             compliance_frameworks = ["NIST", "SOX", "GDPR", "HIPAA"]
 
         dependencies = self.dependency_analyzer.scan_dependencies()
-        
+
         report = {
             "report_type": "compliance_analysis",
             "generated_at": datetime.now().isoformat(),
@@ -555,22 +583,26 @@ class SBOMGenerator:
         # General compliance findings
         vulnerable_count = len([d for d in dependencies if d.has_vulnerabilities])
         if vulnerable_count > 0:
-            report["findings"].append({
-                "type": "security",
-                "severity": "high",
-                "description": f"Found {vulnerable_count} dependencies with known vulnerabilities",
-                "affected_frameworks": compliance_frameworks,
-            })
+            report["findings"].append(
+                {
+                    "type": "security",
+                    "severity": "high",
+                    "description": f"Found {vulnerable_count} dependencies with known vulnerabilities",
+                    "affected_frameworks": compliance_frameworks,
+                }
+            )
 
         # License compliance
         unlicensed_count = len([d for d in dependencies if not d.license])
         if unlicensed_count > 0:
-            report["findings"].append({
-                "type": "license",
-                "severity": "medium",
-                "description": f"Found {unlicensed_count} dependencies without license information",
-                "affected_frameworks": ["GDPR", "SOX"],
-            })
+            report["findings"].append(
+                {
+                    "type": "license",
+                    "severity": "medium",
+                    "description": f"Found {unlicensed_count} dependencies without license information",
+                    "affected_frameworks": ["GDPR", "SOX"],
+                }
+            )
 
         # Add recommendations
         if vulnerable_count > 0:
@@ -582,13 +614,15 @@ class SBOMGenerator:
         if output_path:
             output_path = Path(output_path)
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(report, f, indent=2, ensure_ascii=False)
 
         return report
 
-    def _assess_compliance_framework(self, dependencies: list[DependencyInfo], framework: str) -> dict[str, Any]:
+    def _assess_compliance_framework(
+        self, dependencies: list[DependencyInfo], framework: str
+    ) -> dict[str, Any]:
         """Assess compliance for a specific framework.
 
         Args:
@@ -601,7 +635,7 @@ class SBOMGenerator:
         # Simplified compliance assessment
         vulnerable_deps = [d for d in dependencies if d.has_vulnerabilities]
         unlicensed_deps = [d for d in dependencies if not d.license]
-        
+
         # Framework-specific assessment
         if framework == "NIST":
             # NIST focuses on cybersecurity
