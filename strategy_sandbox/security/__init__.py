@@ -7,10 +7,12 @@ from .models import (
     SecurityMetrics,
     VulnerabilityInfo,
 )
+from .sbom_generator import SBOMGenerator
 
 __all__ = [
     "DependencyAnalyzer",
     "SecurityCollector",
+    "SBOMGenerator",
     "DependencyInfo",
     "SecurityMetrics",
     "VulnerabilityInfo",

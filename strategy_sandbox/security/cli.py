@@ -6,6 +6,7 @@ import sys
 
 from ..reporting.github_reporter import GitHubReporter
 from .collector import SecurityCollector
+from .sbom_generator import SBOMGenerator
 
 
 def scan_command(args: argparse.Namespace) -> None:
@@ -154,6 +155,128 @@ def list_command(args: argparse.Namespace) -> None:
         print()
 
 
+def sbom_command(args: argparse.Namespace) -> None:
+    """Execute SBOM generation command."""
+    generator = SBOMGenerator()
+
+    print(f"Generating SBOM for {args.project_path}")
+
+    try:
+        # Generate SBOM
+        sbom_data = generator.generate_sbom(
+            output_format=args.format,
+            output_type=args.output_type,
+            include_dev_dependencies=args.include_dev,
+            include_vulnerabilities=args.include_vulns,
+        )
+
+        # Save SBOM to file
+        if args.output:
+            output_path = generator.save_sbom(
+                sbom_data=sbom_data,
+                output_path=args.output,
+                output_format=args.format,
+                output_type=args.output_type,
+            )
+            print(f"SBOM saved to: {output_path}")
+        else:
+            # Print to stdout if no output file specified
+            if args.output_type == "json":
+                print(json.dumps(sbom_data, indent=2, ensure_ascii=False))
+            else:
+                print("Output file required for non-JSON formats")
+
+        # Print summary
+        if args.format == "cyclonedx":
+            component_count = len(sbom_data.get("components", []))
+            vuln_count = len(sbom_data.get("vulnerabilities", []))
+            print("\nSBOM Summary (CycloneDX):")
+            print(f"  Components: {component_count}")
+            if args.include_vulns:
+                print(f"  Vulnerabilities: {vuln_count}")
+        elif args.format == "spdx":
+            package_count = len(sbom_data.get("packages", [])) - 1  # Exclude root package
+            print("\nSBOM Summary (SPDX):")
+            print(f"  Packages: {package_count}")
+
+    except Exception as e:
+        print(f"Error generating SBOM: {e}")
+        sys.exit(1)
+
+
+def vulnerability_report_command(args: argparse.Namespace) -> None:
+    """Execute vulnerability report generation command."""
+    generator = SBOMGenerator()
+
+    print(f"Generating vulnerability report for {args.project_path}")
+
+    try:
+        # Generate vulnerability report
+        report = generator.generate_vulnerability_report(
+            output_path=args.output,
+            include_fix_recommendations=args.include_fixes,
+        )
+
+        # Print summary
+        summary = report["summary"]
+        print("\nVulnerability Report Summary:")
+        print(f"  Total dependencies: {summary['total_dependencies']}")
+        print(f"  Vulnerable dependencies: {summary['vulnerable_dependencies']}")
+        print(f"  Total vulnerabilities: {summary['total_vulnerabilities']}")
+
+        if summary["severity_breakdown"]:
+            print("\nVulnerabilities by severity:")
+            for severity, count in summary["severity_breakdown"].items():
+                if count > 0:
+                    print(f"  {severity.title()}: {count}")
+
+        if args.include_fixes and report["recommendations"]:
+            print(f"\nRecommendations: {len(report['recommendations'])}")
+
+        if args.output:
+            print(f"Full report saved to: {args.output}")
+
+    except Exception as e:
+        print(f"Error generating vulnerability report: {e}")
+        sys.exit(1)
+
+
+def compliance_command(args: argparse.Namespace) -> None:
+    """Execute compliance report generation command."""
+    generator = SBOMGenerator()
+
+    frameworks = args.frameworks or ["NIST", "SOX", "GDPR", "HIPAA"]
+    print(f"Generating compliance report for {args.project_path}")
+    print(f"Frameworks: {', '.join(frameworks)}")
+
+    try:
+        # Generate compliance report
+        report = generator.generate_compliance_report(
+            compliance_frameworks=frameworks,
+            output_path=args.output,
+        )
+
+        # Print compliance status
+        print("\nCompliance Status:")
+        for framework, status in report["compliance_status"].items():
+            level = status["compliance_level"]
+            risk_score = status["risk_score"]
+            print(f"  {framework}: {level.upper()} (Risk Score: {risk_score})")
+
+        # Print findings summary
+        if report["findings"]:
+            print(f"\nFindings: {len(report['findings'])}")
+            for finding in report["findings"]:
+                print(f"  - {finding['description']} ({finding['severity']})")
+
+        if args.output:
+            print(f"Full compliance report saved to: {args.output}")
+
+    except Exception as e:
+        print(f"Error generating compliance report: {e}")
+        sys.exit(1)
+
+
 def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -223,6 +346,58 @@ def main() -> None:
     # List command
     subparsers.add_parser("list", help="List saved security scan results")
 
+    # SBOM command
+    sbom_parser = subparsers.add_parser("sbom", help="Generate Software Bill of Materials")
+    sbom_parser.add_argument("project_path", type=str, help="Path to the project to analyze")
+    sbom_parser.add_argument(
+        "--format",
+        choices=["cyclonedx", "spdx"],
+        default="cyclonedx",
+        help="SBOM format (default: cyclonedx)",
+    )
+    sbom_parser.add_argument(
+        "--output-type",
+        choices=["json", "xml", "yaml"],
+        default="json",
+        help="Output file type (default: json)",
+    )
+    sbom_parser.add_argument("--output", "-o", type=str, help="Output file for SBOM")
+    sbom_parser.add_argument(
+        "--include-dev", action="store_true", help="Include development dependencies"
+    )
+    sbom_parser.add_argument(
+        "--include-vulns",
+        action="store_true",
+        default=True,
+        help="Include vulnerability information (default: True)",
+    )
+
+    # Vulnerability report command
+    vuln_parser = subparsers.add_parser("vulnerabilities", help="Generate vulnerability report")
+    vuln_parser.add_argument("project_path", type=str, help="Path to the project to analyze")
+    vuln_parser.add_argument(
+        "--output", "-o", type=str, help="Output file for vulnerability report"
+    )
+    vuln_parser.add_argument(
+        "--include-fixes",
+        action="store_true",
+        default=True,
+        help="Include fix recommendations (default: True)",
+    )
+
+    # Compliance command
+    compliance_parser = subparsers.add_parser("compliance", help="Generate compliance report")
+    compliance_parser.add_argument("project_path", type=str, help="Path to the project to analyze")
+    compliance_parser.add_argument(
+        "--output", "-o", type=str, help="Output file for compliance report"
+    )
+    compliance_parser.add_argument(
+        "--frameworks",
+        nargs="+",
+        choices=["NIST", "SOX", "GDPR", "HIPAA"],
+        help="Compliance frameworks to assess (default: all)",
+    )
+
     args = parser.parse_args()
 
     if not args.command:
@@ -236,6 +411,12 @@ def main() -> None:
         report_command(args)
     elif args.command == "list":
         list_command(args)
+    elif args.command == "sbom":
+        sbom_command(args)
+    elif args.command == "vulnerabilities":
+        vulnerability_report_command(args)
+    elif args.command == "compliance":
+        compliance_command(args)
 
 
 if __name__ == "__main__":
