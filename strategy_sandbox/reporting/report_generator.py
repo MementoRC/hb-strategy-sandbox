@@ -314,8 +314,8 @@ class ReportGenerator:
         auto_insights = self._generate_auto_insights(test_results, performance_data, security_data)
         if auto_insights:
             markdown += "## 🤖 Auto-Generated Recommendations\n\n"
-            for insight in auto_insights:
-                markdown += f"- **{insight['title']}**: {insight['description']}\n"
+            for auto_insight in auto_insights:
+                markdown += f"- **{auto_insight['title']}**: {auto_insight['description']}\n"
 
         return markdown
 
