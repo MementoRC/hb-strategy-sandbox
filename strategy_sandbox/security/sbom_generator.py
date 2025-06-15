@@ -135,11 +135,11 @@ class SBOMGenerator:
 
             # Add license information if available
             if dep.license:
-                component["licenses"].append({"license": {"name": dep.license}})
+                component["licenses"].append({"license": {"name": dep.license}})  # type: ignore[attr-defined]
 
             # Add source information
             if dep.source:
-                component["externalReferences"].append(
+                component["externalReferences"].append(  # type: ignore[attr-defined]
                     {
                         "type": "distribution",
                         "url": dep.source,
@@ -148,7 +148,7 @@ class SBOMGenerator:
 
             # Add package manager metadata
             component["properties"] = [
-                {"name": "package_manager", "value": dep.package_manager},
+                {"name": "package_manager", "value": dep.package_manager},  # type: ignore[list-item]
             ]
 
             # Add dependency relationships
@@ -513,8 +513,8 @@ class SBOMGenerator:
             for vuln in dep.vulnerabilities:
                 # Update severity breakdown
                 severity = vuln.severity.lower()
-                if severity in report["summary"]["severity_breakdown"]:
-                    report["summary"]["severity_breakdown"][severity] += 1
+                if severity in report["summary"]["severity_breakdown"]:  # type: ignore[index]
+                    report["summary"]["severity_breakdown"][severity] += 1  # type: ignore[index]
 
                 vuln_info = {
                     "id": vuln.id,
@@ -530,11 +530,11 @@ class SBOMGenerator:
                     # Add to recommendations
                     recommendation = f"Update {dep.name} from {dep.version} to {vuln.fix_versions[0]} to fix {vuln.id}"
                     if recommendation not in report["recommendations"]:
-                        report["recommendations"].append(recommendation)
+                        report["recommendations"].append(recommendation)  # type: ignore[attr-defined]
 
-                package_info["vulnerabilities"].append(vuln_info)
+                package_info["vulnerabilities"].append(vuln_info)  # type: ignore[attr-defined]
 
-            report["vulnerable_packages"].append(package_info)
+            report["vulnerable_packages"].append(package_info)  # type: ignore[attr-defined]
 
         # Save report if path provided
         if output_path:
@@ -578,12 +578,12 @@ class SBOMGenerator:
         # Analyze compliance for each framework
         for framework in compliance_frameworks:
             status = self._assess_compliance_framework(dependencies, framework)
-            report["compliance_status"][framework] = status
+            report["compliance_status"][framework] = status  # type: ignore[index]
 
         # General compliance findings
         vulnerable_count = len([d for d in dependencies if d.has_vulnerabilities])
         if vulnerable_count > 0:
-            report["findings"].append(
+            report["findings"].append(  # type: ignore[attr-defined]
                 {
                     "type": "security",
                     "severity": "high",
@@ -595,7 +595,7 @@ class SBOMGenerator:
         # License compliance
         unlicensed_count = len([d for d in dependencies if not d.license])
         if unlicensed_count > 0:
-            report["findings"].append(
+            report["findings"].append(  # type: ignore[attr-defined]
                 {
                     "type": "license",
                     "severity": "medium",
@@ -606,9 +606,9 @@ class SBOMGenerator:
 
         # Add recommendations
         if vulnerable_count > 0:
-            report["recommendations"].append("Address all known vulnerabilities in dependencies")
+            report["recommendations"].append("Address all known vulnerabilities in dependencies")  # type: ignore[attr-defined]
         if unlicensed_count > 0:
-            report["recommendations"].append("Document license information for all dependencies")
+            report["recommendations"].append("Document license information for all dependencies")  # type: ignore[attr-defined]
 
         # Save report if path provided
         if output_path:
