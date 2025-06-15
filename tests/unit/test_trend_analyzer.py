@@ -1,6 +1,5 @@
 """Tests for trend analysis and alerting system."""
 
-import json
 import tempfile
 import time
 from datetime import datetime, timedelta

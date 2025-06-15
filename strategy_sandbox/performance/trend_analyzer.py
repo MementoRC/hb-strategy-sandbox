@@ -11,7 +11,7 @@ from typing import Any, TypedDict
 import yaml
 
 from .comparator import AlertSeverity, PerformanceAlert
-from .models import BenchmarkResult, PerformanceMetrics
+from .models import PerformanceMetrics
 
 
 class BenchmarkData(TypedDict):
