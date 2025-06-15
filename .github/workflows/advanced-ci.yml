@@ -66,8 +66,9 @@ jobs:
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
         environments: ${{ matrix.pixi-env }}
-        pixi-version: latest
+        pixi-version: v0.41.4
         cache: true
+      continue-on-error: false
 
     - name: Install dependencies
       run: pixi install -e ${{ matrix.pixi-env }} --locked
@@ -107,7 +108,7 @@ jobs:
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
         environments: security
-        pixi-version: latest
+        pixi-version: v0.41.4
         cache: true
 
     - name: Install security tools
@@ -185,7 +186,7 @@ jobs:
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
         environments: performance
-        pixi-version: latest
+        pixi-version: v0.41.4
         cache: true
 
     - name: Install performance tools
@@ -242,7 +243,7 @@ jobs:
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
         environments: docs
-        pixi-version: latest
+        pixi-version: v0.41.4
         cache: true
 
     - name: Install documentation tools
@@ -342,7 +343,7 @@ jobs:
     - name: Set up Pixi
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
-        pixi-version: latest
+        pixi-version: v0.41.4
         cache: true
 
     - name: Generate SBOM
