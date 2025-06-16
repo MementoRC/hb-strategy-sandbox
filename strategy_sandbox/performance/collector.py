@@ -38,7 +38,9 @@ class PerformanceCollector:
         try:
             cpu_count = psutil.cpu_count()
             memory = psutil.virtual_memory()
-            disk = psutil.disk_usage("/")
+            # Use platform-specific disk path: Unix root or Windows system drive
+            disk_path = "/" if os.name != "nt" else os.getcwd()[:3]
+            disk = psutil.disk_usage(disk_path)
 
             return {
                 "platform": platform.platform(),

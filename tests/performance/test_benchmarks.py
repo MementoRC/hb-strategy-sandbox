@@ -114,6 +114,10 @@ class TestPerformanceBenchmarks:
         end_time = time.time()
         duration = end_time - start_time
 
+        # Windows timing protection: ensure minimum duration to prevent division by zero
+        if duration <= 0:
+            duration = 0.001  # 1ms minimum to prevent mathematical errors
+
         # Calculate metrics
         orders_per_second = orders_placed / duration
         avg_order_time = duration / orders_placed * 1000  # ms
@@ -171,6 +175,11 @@ class TestPerformanceBenchmarks:
 
         end_time = time.time()
         duration = end_time - start_time
+
+        # Windows timing protection: ensure minimum duration to prevent division by zero
+        if duration <= 0:
+            duration = 0.001  # 1ms minimum to prevent mathematical errors
+
         operations_per_second = num_operations / duration
 
         print(f"Balance operations per second: {operations_per_second:.2f}")
@@ -217,6 +226,11 @@ class TestPerformanceBenchmarks:
 
         end_time = time.time()
         duration = end_time - start_time
+
+        # Windows timing protection: ensure minimum duration to prevent division by zero
+        if duration <= 0:
+            duration = 0.001  # 1ms minimum to prevent mathematical errors
+
         events_per_second = num_events / duration
 
         print(f"Events per second: {events_per_second:.2f}")

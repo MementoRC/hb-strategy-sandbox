@@ -334,7 +334,7 @@ class SecurityDashboardGenerator:
 ### 📈 Security Metrics
 
 - **Security Score**: {security_score["score"]}/100
-- **Health Score**: {dependency_health["health_score"]}/100  
+- **Health Score**: {dependency_health["health_score"]}/100
 - **Total Vulnerabilities**: {security_score["total_vulnerabilities"]}
 - **Vulnerable Dependencies**: {security_score["vulnerable_dependencies"]}/{security_score["total_dependencies"]}
 
