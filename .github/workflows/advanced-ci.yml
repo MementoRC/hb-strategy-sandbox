@@ -76,12 +76,20 @@ jobs:
     - name: Run tests based on type
       shell: bash
       run: |
+        # Add debugging for Windows issues
+        echo "OS: ${{ matrix.os }}, Test type: ${{ matrix.test-type }}, Environment: ${{ matrix.pixi-env }}"
+        
+        # Show Python and pytest version
+        pixi run -e ${{ matrix.pixi-env }} python --version
+        pixi run -e ${{ matrix.pixi-env }} pytest --version
+        
         if [ "${{ matrix.test-type }}" = "comprehensive" ]; then
           pixi run -e ${{ matrix.pixi-env }} ci-full
         elif [ "${{ matrix.test-type }}" = "integration" ]; then
           pixi run -e ${{ matrix.pixi-env }} test-integration
         else
-          pixi run -e ${{ matrix.pixi-env }} test-unit
+          # Run unit tests with same pattern as main CI for consistency
+          pixi run -e ${{ matrix.pixi-env }} pytest tests/unit -m "not integration and not benchmark" --maxfail=5 -x
         fi
 
     - name: Upload test results
