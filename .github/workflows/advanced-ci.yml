@@ -377,13 +377,13 @@ jobs:
     name: Advanced CI Status
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [security-comprehensive, sbom-generation]
+    needs: [test-matrix, security-comprehensive]
     if: always()
     steps:
       - name: Check status of preceding jobs
         run: |
-          if [[ "${{ needs.security-comprehensive.result }}" == "success" && \
-                "${{ needs.sbom-generation.result }}" == "success" ]]; then
+          if [[ "${{ needs.test-matrix.result }}" == "success" && \
+                "${{ needs.security-comprehensive.result }}" == "success" ]]; then
             echo "All advanced CI jobs passed successfully."
           else
             echo "One or more advanced CI jobs failed or were cancelled."
