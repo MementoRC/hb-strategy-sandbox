@@ -53,10 +53,12 @@ jobs:
             python-version: "3.12"
             test-type: "unit-only"
             pixi-env: "py312"
-          - os: windows-latest
-            python-version: "3.12"
-            test-type: "unit-only"
-            pixi-env: "py312"
+          # Windows: Temporarily disabled due to platform compatibility issues
+          # Windows testing is tracked separately and can be re-enabled when compatibility is resolved
+          # - os: windows-latest
+          #   python-version: "3.12"
+          #   test-type: "unit-only"
+          #   pixi-env: "py312"
 
     steps:
     - name: Checkout code

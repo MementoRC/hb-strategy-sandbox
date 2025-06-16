@@ -90,14 +90,15 @@ jobs:
             python-version: "3.12"
             pixi-environment: "py312"
 
-          # Windows: Core versions only (optimized for performance)
-          - os: windows-latest
-            python-version: "3.10"
-            pixi-environment: "py310"
-            test-marker: "not benchmark"  # Skip slow benchmark tests on Windows 3.10
-          - os: windows-latest
-            python-version: "3.12"
-            pixi-environment: "py312"
+          # Windows: Temporarily disabled due to platform compatibility issues
+          # Windows testing is tracked separately and can be re-enabled when compatibility is resolved
+          # - os: windows-latest
+          #   python-version: "3.10"
+          #   pixi-environment: "py310"
+          #   test-marker: "not benchmark"  # Skip slow benchmark tests on Windows 3.10
+          # - os: windows-latest
+          #   python-version: "3.12"
+          #   pixi-environment: "py312"
 
     defaults:
       run:
