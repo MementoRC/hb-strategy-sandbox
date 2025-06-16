@@ -125,22 +125,22 @@ jobs:
           # Exclude benchmark tests from CI blocking - they're for performance monitoring only
           # Use optimized test selection for specific matrix combinations
           if [[ "${{ matrix.test-marker }}" != "" ]]; then
-            # Optimized for Windows Python 3.10 - skip slow tests
-            pixi run -e ${{ matrix.pixi-environment }} pytest tests -m "not integration and ${{ matrix.test-marker }}" --cov=strategy_sandbox --cov-report=xml:coverage.xml --maxfail=5 -x
+            # Optimized for Windows Python 3.10 - skip slow tests, focus on unit tests
+            pixi run -e ${{ matrix.pixi-environment }} pytest tests/unit -m "not integration and ${{ matrix.test-marker }}" --cov=strategy_sandbox --cov-report=xml:coverage.xml --maxfail=5 -x
           else
-            # Standard test execution for other platforms
-            pixi run -e ${{ matrix.pixi-environment }} pytest tests -m "not integration and not benchmark" --cov=strategy_sandbox --cov-report=xml:coverage.xml
+            # Standard test execution for other platforms - use unit tests for consistency
+            pixi run -e ${{ matrix.pixi-environment }} pytest tests/unit -m "not integration and not benchmark" --cov=strategy_sandbox --cov-report=xml:coverage.xml
           fi
 
       - name: Run integration tests (basic)
         run: |
           # Run basic integration tests without service dependencies
           # Skip integration tests on Windows Python 3.10 for performance
-          if [[ "${{ matrix.os }}" == "windows-latest" && "${{ matrix.python-version }}" == "3.10" ]]; then
-            echo "Skipping integration tests on Windows Python 3.10 for performance optimization"
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            echo "Skipping integration tests on Windows for compatibility - covered by dedicated integration job"
           else
-            # Run integration tests that don't require external services
-            pixi run -e ${{ matrix.pixi-environment }} pytest tests -m "integration and not benchmark" --cov=strategy_sandbox --cov-append || [ $? -eq 5 ]
+            # Run integration tests that don't require external services (Linux/macOS only)
+            pixi run -e ${{ matrix.pixi-environment }} pytest tests/integration -m "integration and not benchmark" --cov=strategy_sandbox --cov-append || [ $? -eq 5 ]
           fi
 
       - name: Upload coverage to Codecov
