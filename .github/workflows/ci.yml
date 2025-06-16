@@ -431,6 +431,25 @@ jobs:
         path: reports/
         retention-days: 30
 
+  # Development status aggregation job for branch protection rules
+  development-status:
+    name: Development Status
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [lint, test, integration-tests]
+    if: always()
+    steps:
+      - name: Check status of preceding jobs
+        run: |
+          if [[ "${{ needs.lint.result }}" == "success" && \
+                "${{ needs.test.result }}" == "success" && \
+                "${{ needs.integration-tests.result }}" == "success" ]]; then
+            echo "All development jobs passed successfully."
+          else
+            echo "One or more development jobs failed or were cancelled."
+            exit 1
+          fi
+
   # Summary job that reports overall workflow status
   ci-status:
     name: CI Status Summary

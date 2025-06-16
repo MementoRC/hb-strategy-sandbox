@@ -372,9 +372,27 @@ jobs:
         path: reports/sbom.spdx.json
         retention-days: 90
 
+  # Advanced CI status aggregation job for branch protection rules
+  advanced-ci-status:
+    name: Advanced CI Status
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [security-comprehensive, sbom-generation]
+    if: always()
+    steps:
+      - name: Check status of preceding jobs
+        run: |
+          if [[ "${{ needs.security-comprehensive.result }}" == "success" && \
+                "${{ needs.sbom-generation.result }}" == "success" ]]; then
+            echo "All advanced CI jobs passed successfully."
+          else
+            echo "One or more advanced CI jobs failed or were cancelled."
+            exit 1
+          fi
+
   # Final status aggregation
   ci-status-advanced:
-    name: Advanced CI Status
+    name: Advanced CI Status Summary
     runs-on: ubuntu-latest
     needs: [test-matrix, security-comprehensive, docs-advanced]
     if: always()
