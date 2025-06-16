@@ -2,6 +2,7 @@
 
 from .analyzer import DependencyAnalyzer
 from .collector import SecurityCollector
+from .dashboard_generator import SecurityDashboardGenerator
 from .models import (
     DependencyInfo,
     SecurityMetrics,
@@ -12,6 +13,7 @@ from .sbom_generator import SBOMGenerator
 __all__ = [
     "DependencyAnalyzer",
     "SecurityCollector",
+    "SecurityDashboardGenerator",
     "SBOMGenerator",
     "DependencyInfo",
     "SecurityMetrics",
