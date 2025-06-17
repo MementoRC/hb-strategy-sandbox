@@ -86,10 +86,16 @@ jobs:
         pixi run -e ${{ matrix.pixi-env }} pytest --version
         
         if [ "${{ matrix.test-type }}" = "comprehensive" ]; then
-          # Run comprehensive tests with coverage for complete CI validation
-          pixi run -e ${{ matrix.pixi-env }} pytest tests --cov=strategy_sandbox --cov-report=xml:coverage.xml --cov-report=term-missing
+          # Run comprehensive tests step by step for better CI reliability
+          echo "🧪 Running comprehensive test suite..."
+          pixi run -e ${{ matrix.pixi-env }} pytest tests --cov=strategy_sandbox --cov-report=xml:coverage.xml --maxfail=5 -v
+          
+          echo "🔍 Running lint checks..."
           pixi run -e ${{ matrix.pixi-env }} lint
+          
+          echo "🔍 Running type checks..."
           pixi run -e ${{ matrix.pixi-env }} typecheck
+          
         elif [ "${{ matrix.test-type }}" = "integration" ]; then
           pixi run -e ${{ matrix.pixi-env }} test-integration
         else
