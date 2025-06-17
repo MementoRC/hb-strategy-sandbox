@@ -73,8 +73,8 @@ class TestSecurityDashboardGenerator:
         )
         self.mock_github_reporter.add_to_summary.return_value = True
         self.mock_github_reporter.create_detailed_report_artifact.return_value = Path(
-            "/tmp/artifact.json"
-        )
+            tempfile.gettempdir()
+        ) / "artifact.json"
 
         result = self.dashboard_generator.generate_security_dashboard()
 

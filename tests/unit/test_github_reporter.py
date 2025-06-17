@@ -28,7 +28,7 @@ class TestGitHubReporter:
         os.environ,
         {
             "GITHUB_ACTIONS": "true",
-            "GITHUB_STEP_SUMMARY": "/tmp/step_summary.md",
+            "GITHUB_STEP_SUMMARY": str(Path(tempfile.gettempdir()) / "step_summary.md"),
             "GITHUB_WORKFLOW": "CI",
             "GITHUB_RUN_ID": "123456",
             "GITHUB_REPOSITORY": "user/repo",
@@ -40,7 +40,7 @@ class TestGitHubReporter:
             reporter = GitHubReporter(temp_dir)
 
             assert reporter.is_github_actions
-            assert reporter.summary_path == "/tmp/step_summary.md"
+            assert reporter.summary_path == str(Path(tempfile.gettempdir()) / "step_summary.md")
             assert "GITHUB_WORKFLOW" in reporter.github_env
             assert reporter.github_env["GITHUB_WORKFLOW"] == "CI"
 
@@ -64,15 +64,16 @@ class TestGitHubReporter:
             assert "NON_GITHUB_VAR" not in env
 
     @patch("builtins.open", new_callable=mock_open)
-    @patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": "/tmp/summary.md"})
+    @patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": str(Path(tempfile.gettempdir()) / "summary.md")})
     def test_add_to_summary_success(self, mock_file):
         """Test successful step summary addition."""
         reporter = GitHubReporter()
+        expected_path = str(Path(tempfile.gettempdir()) / "summary.md")
 
         result = reporter.add_to_summary("# Test Summary\nThis is a test.")
 
         assert result is True
-        mock_file.assert_called_once_with("/tmp/summary.md", "a", encoding="utf-8")
+        mock_file.assert_called_once_with(expected_path, "a", encoding="utf-8")
         mock_file().write.assert_called_once_with("# Test Summary\nThis is a test.\n")
 
     @patch.dict(os.environ, {}, clear=True)

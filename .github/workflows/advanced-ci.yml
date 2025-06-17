@@ -377,17 +377,29 @@ jobs:
     name: Advanced CI Status
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [test-matrix, security-comprehensive, docs-advanced]
+    needs: [test-matrix, security-comprehensive, docs-advanced, performance-monitoring]
     if: always()
     steps:
       - name: Check status of preceding jobs
         run: |
+          # Check required jobs (always running)
           if [[ "${{ needs.test-matrix.result }}" == "success" && \
                 "${{ needs.security-comprehensive.result }}" == "success" && \
                 "${{ needs.docs-advanced.result }}" == "success" ]]; then
-            echo "All advanced CI jobs passed successfully."
+            echo "All required advanced CI jobs passed successfully."
+            
+            # Check conditional performance job if it ran
+            if [[ "${{ needs.performance-monitoring.result }}" != "skipped" ]]; then
+              if [[ "${{ needs.performance-monitoring.result }}" == "success" ]]; then
+                echo "Performance monitoring also passed."
+              else
+                echo "Performance monitoring failed but continuing as it's non-blocking."
+              fi
+            else
+              echo "Performance monitoring was skipped (conditional job)."
+            fi
           else
-            echo "One or more advanced CI jobs failed or were cancelled."
+            echo "One or more required advanced CI jobs failed or were cancelled."
             exit 1
           fi
 
@@ -395,7 +407,7 @@ jobs:
   ci-status-advanced:
     name: Advanced CI Status Summary
     runs-on: ubuntu-latest
-    needs: [test-matrix, security-comprehensive, docs-advanced]
+    needs: [test-matrix, security-comprehensive, docs-advanced, performance-monitoring]
     if: always()
 
     steps:
@@ -421,6 +433,15 @@ jobs:
           echo "| Documentation | ✅ PASSED |" >> $GITHUB_STEP_SUMMARY
         else
           echo "| Documentation | ❌ FAILED |" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Report performance monitoring status
+        if [ "${{ needs.performance-monitoring.result }}" = "skipped" ]; then
+          echo "| Performance Monitor | ⏩ SKIPPED |" >> $GITHUB_STEP_SUMMARY
+        elif [ "${{ needs.performance-monitoring.result }}" = "success" ]; then
+          echo "| Performance Monitor | ✅ PASSED |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Performance Monitor | ⚠️ ISSUES (NON-BLOCKING) |" >> $GITHUB_STEP_SUMMARY
         fi
 
         # Determine overall status
