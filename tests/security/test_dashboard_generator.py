@@ -72,9 +72,9 @@ class TestSecurityDashboardGenerator:
             mock_vulnerability_data
         )
         self.mock_github_reporter.add_to_summary.return_value = True
-        self.mock_github_reporter.create_detailed_report_artifact.return_value = Path(
-            tempfile.gettempdir()
-        ) / "artifact.json"
+        self.mock_github_reporter.create_detailed_report_artifact.return_value = (
+            Path(tempfile.gettempdir()) / "artifact.json"
+        )
 
         result = self.dashboard_generator.generate_security_dashboard()
 

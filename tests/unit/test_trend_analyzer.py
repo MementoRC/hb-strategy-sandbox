@@ -39,7 +39,9 @@ class TestTrendAnalyzer:
                 "step_summary_format": "Alert: {severity} - {benchmark_name}",
             },
             "severity_icons": {"critical": "🚨", "warning": "⚠️"},
-            "cooldown_storage": str(Path(tempfile.gettempdir()) / f"test_cooldown_{time.time()}.json"),  # Unique file per test
+            "cooldown_storage": str(
+                Path(tempfile.gettempdir()) / f"test_cooldown_{time.time()}.json"
+            ),  # Unique file per test
         }
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -322,7 +324,9 @@ class TestTrendAnalyzer:
         new_analyzer = TrendAnalyzer(alert_config_path=temp_config_file)
         assert len(new_analyzer.cooldown_data) > 0
 
-    @patch.dict("os.environ", {"GITHUB_STEP_SUMMARY": str(Path(tempfile.gettempdir()) / "test_summary")})
+    @patch.dict(
+        "os.environ", {"GITHUB_STEP_SUMMARY": str(Path(tempfile.gettempdir()) / "test_summary")}
+    )
     def test_add_step_summary(self, trend_analyzer):
         """Test step summary addition."""
         expected_path = str(Path(tempfile.gettempdir()) / "test_summary")
@@ -360,7 +364,10 @@ class TestTrendAnalyzer:
 
         # Mock environment variable and file operations
         with (
-            patch.dict("os.environ", {"GITHUB_STEP_SUMMARY": str(Path(tempfile.gettempdir()) / "test_summary")}),
+            patch.dict(
+                "os.environ",
+                {"GITHUB_STEP_SUMMARY": str(Path(tempfile.gettempdir()) / "test_summary")},
+            ),
             patch("builtins.open", mock_open()),
         ):
             summary = trend_analyzer.trigger_alerts(alerts)

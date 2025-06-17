@@ -64,7 +64,9 @@ class TestGitHubReporter:
             assert "NON_GITHUB_VAR" not in env
 
     @patch("builtins.open", new_callable=mock_open)
-    @patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": str(Path(tempfile.gettempdir()) / "summary.md")})
+    @patch.dict(
+        os.environ, {"GITHUB_STEP_SUMMARY": str(Path(tempfile.gettempdir()) / "summary.md")}
+    )
     def test_add_to_summary_success(self, mock_file):
         """Test successful step summary addition."""
         reporter = GitHubReporter()

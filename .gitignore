@@ -224,3 +224,7 @@ reports/
 bandit-report.json
 safety-report.json
 pip-audit-report.json
+
+# Benchmark and performance results
+benchmark-results.json
+*.benchmark.json
