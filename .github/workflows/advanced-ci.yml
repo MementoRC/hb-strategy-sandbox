@@ -38,7 +38,7 @@ jobs:
           - os: ubuntu-latest
             python-version: "3.12"
             test-type: "comprehensive"
-            pixi-env: "full"
+            pixi-env: "default"
           - os: ubuntu-latest
             python-version: "3.11"
             test-type: "integration"
