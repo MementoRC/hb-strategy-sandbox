@@ -86,7 +86,10 @@ jobs:
         pixi run -e ${{ matrix.pixi-env }} pytest --version
         
         if [ "${{ matrix.test-type }}" = "comprehensive" ]; then
-          pixi run -e ${{ matrix.pixi-env }} ci-full
+          # Run comprehensive tests with coverage for complete CI validation
+          pixi run -e ${{ matrix.pixi-env }} pytest tests --cov=strategy_sandbox --cov-report=xml:coverage.xml --cov-report=term-missing
+          pixi run -e ${{ matrix.pixi-env }} lint
+          pixi run -e ${{ matrix.pixi-env }} typecheck
         elif [ "${{ matrix.test-type }}" = "integration" ]; then
           pixi run -e ${{ matrix.pixi-env }} test-integration
         else
@@ -103,6 +106,7 @@ jobs:
           .coverage*
           reports/
         retention-days: 7
+      continue-on-error: true  # Allow missing coverage files for some test types
 
   # Enhanced security pipeline
   security-comprehensive:
