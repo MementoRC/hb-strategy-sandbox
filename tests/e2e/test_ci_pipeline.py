@@ -185,7 +185,7 @@ class TestCIPipelineEndToEnd:
         assert artifacts_dir.exists(), "Artifacts directory not created"
 
         # Verify artifact files exist
-        for artifact_name in result.artifacts.keys():
+        for artifact_name in result.artifacts:
             artifact_file = artifacts_dir / artifact_name
             assert artifact_file.exists(), f"Artifact file not found: {artifact_name}"
 
