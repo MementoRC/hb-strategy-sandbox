@@ -78,6 +78,23 @@ class TemplateEngine:
 
         markdown = "# ⚡ Performance Benchmark Report\n\n"
 
+        # Check for regression alerts first
+        if metrics.get("regressions_detected"):
+            markdown += "## 🚨 Performance Regressions Detected\n\n"
+
+            regression_details = metrics.get("regression_details", {})
+            for test_name, data in regression_details.items():
+                if data.get("status") == "regression":
+                    severity = data.get("severity", "unknown")
+                    ratio = data.get("ratio", 1.0)
+                    markdown += f"- **{test_name}**: {severity} regression ({ratio:.1f}x slower than baseline)\n"
+                elif data.get("status") == "warning":
+                    severity = data.get("severity", "unknown")
+                    ratio = data.get("ratio", 1.0)
+                    markdown += f"- **{test_name}**: {severity} performance warning ({ratio:.1f}x baseline)\n"
+
+            markdown += "\n"
+
         # Basic metrics
         if "results" in metrics:
             markdown += "## Benchmark Results\n\n"
