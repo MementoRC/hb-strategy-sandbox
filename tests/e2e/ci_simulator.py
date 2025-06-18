@@ -3,10 +3,8 @@
 import json
 import os
 import tempfile
-import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-from unittest.mock import patch
+from typing import Any
 
 from strategy_sandbox.performance.collector import PerformanceCollector
 from strategy_sandbox.performance.trend_analyzer import TrendAnalyzer
@@ -20,15 +18,15 @@ class CISimulatorResult:
     """Result from CI pipeline simulation."""
 
     def __init__(self):
-        self.artifacts: Dict[str, str] = {}
+        self.artifacts: dict[str, str] = {}
         self.step_summary: str = ""
-        self.detected_regressions: List[str] = []
-        self.detected_vulnerabilities: List[str] = []
-        self.performance_data: Dict[str, Any] = {}
-        self.security_data: Dict[str, Any] = {}
-        self.reports: Dict[str, str] = {}
+        self.detected_regressions: list[str] = []
+        self.detected_vulnerabilities: list[str] = []
+        self.performance_data: dict[str, Any] = {}
+        self.security_data: dict[str, Any] = {}
+        self.reports: dict[str, str] = {}
         self.success: bool = True
-        self.errors: List[str] = []
+        self.errors: list[str] = []
 
     def add_artifact(self, name: str, content: str) -> None:
         """Add an artifact to the results."""
@@ -43,7 +41,7 @@ class CISimulatorResult:
 class CISimulator:
     """Simulates CI pipeline execution for testing."""
 
-    def __init__(self, test_repo: Optional[Path] = None):
+    def __init__(self, test_repo: Path | None = None):
         """Initialize CI simulator."""
         self.test_repo = test_repo or Path(tempfile.mkdtemp())
         self.artifacts_dir = self.test_repo / "artifacts"
@@ -55,7 +53,9 @@ class CISimulator:
         self.github_reporter = GitHubReporter()
         self.dependency_analyzer = DependencyAnalyzer(str(self.test_repo))
         self.sbom_generator = SBOMGenerator(self.dependency_analyzer)
-        self.security_dashboard = SecurityDashboardGenerator(self.sbom_generator, self.github_reporter)
+        self.security_dashboard = SecurityDashboardGenerator(
+            self.sbom_generator, self.github_reporter
+        )
 
         # Track simulation state
         self.has_performance_regression = False
@@ -153,12 +153,12 @@ build-backend = "hatchling.build"
         with open(self.test_repo / "pyproject.toml", "w") as f:
             f.write(pyproject_content)
 
-    def _run_performance_monitoring(self) -> Dict[str, Any]:
+    def _run_performance_monitoring(self) -> dict[str, Any]:
         """Run performance monitoring pipeline."""
         try:
             # Create benchmark results file - use regression data if set, otherwise sample data
             benchmark_file = self.test_repo / "benchmark-results.json"
-            
+
             if self.has_performance_regression:
                 # Regression data was already created by add_performance_regression()
                 pass  # File should already exist with regression data
@@ -169,7 +169,7 @@ build-backend = "hatchling.build"
                     "duration_seconds": 5.2,
                     "memory_usage": "45MB",
                     "orders_per_second": 19.2,
-                    "avg_order_time_ms": 52.1
+                    "avg_order_time_ms": 52.1,
                 }
                 with open(benchmark_file, "w") as f:
                     json.dump(sample_data, f, indent=2)
@@ -182,7 +182,7 @@ build-backend = "hatchling.build"
             if self.has_performance_regression and benchmark_file.exists():
                 with open(benchmark_file) as f:
                     regression_data = json.load(f)
-                
+
                 # Add regression information to performance data
                 if "test_slow_function" in regression_data:
                     performance_data["regressions_detected"] = True
@@ -193,7 +193,7 @@ build-backend = "hatchling.build"
         except Exception as e:
             return {"error": str(e), "component": "performance_monitoring"}
 
-    def _run_security_scanning(self) -> Dict[str, Any]:
+    def _run_security_scanning(self) -> dict[str, Any]:
         """Run security scanning pipeline."""
         try:
             security_data = {}
@@ -224,7 +224,7 @@ build-backend = "hatchling.build"
                 output_format="cyclonedx",
                 output_type="json",
                 include_dev_dependencies=False,
-                include_vulnerabilities=True
+                include_vulnerabilities=True,
             )
             security_data["sbom"] = sbom_data
 
@@ -237,7 +237,7 @@ build-backend = "hatchling.build"
         except Exception as e:
             return {"error": str(e), "component": "security_scanning"}
 
-    def _run_trend_analysis(self, performance_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_trend_analysis(self, performance_data: dict[str, Any]) -> dict[str, Any]:
         """Run trend analysis on performance data."""
         try:
             # Simulate trend analysis
@@ -272,8 +272,8 @@ build-backend = "hatchling.build"
             return {"error": str(e), "component": "trend_analysis"}
 
     def _run_reporting(
-        self, performance_data: Dict[str, Any], security_data: Dict[str, Any]
-    ) -> Dict[str, str]:
+        self, performance_data: dict[str, Any], security_data: dict[str, Any]
+    ) -> dict[str, str]:
         """Run reporting pipeline."""
         reports = {}
 
@@ -291,23 +291,24 @@ build-backend = "hatchling.build"
                     # Convert our vulnerability format to pip-audit format
                     dependencies = []
                     for vuln in security_data["vulnerabilities"]:
-                        dependencies.append({
-                            "name": vuln["package"],
-                            "version": vuln["version"],
-                            "vulns": [{
-                                "id": vuln["vulnerability"],
-                                "description": vuln["description"],
-                                "severity": vuln["severity"]
-                            }]
-                        })
-                    
-                    pip_audit_data = {
-                        "dependencies": dependencies
-                    }
-                
+                        dependencies.append(
+                            {
+                                "name": vuln["package"],
+                                "version": vuln["version"],
+                                "vulns": [
+                                    {
+                                        "id": vuln["vulnerability"],
+                                        "description": vuln["description"],
+                                        "severity": vuln["severity"],
+                                    }
+                                ],
+                            }
+                        )
+
+                    pip_audit_data = {"dependencies": dependencies}
+
                 sec_report_md = self.github_reporter.create_security_summary(
-                    bandit_results=None,
-                    pip_audit_results=pip_audit_data
+                    bandit_results=None, pip_audit_results=pip_audit_data
                 )
                 reports["security_report.md"] = sec_report_md
 
@@ -315,8 +316,11 @@ build-backend = "hatchling.build"
             build_report = self.github_reporter.create_build_status_summary(
                 build_status="success",
                 test_results={"passed": 203, "failed": 0, "total": 203},
-                performance_data={"coverage": {"line_rate": 85.5, "branch_rate": 78.2}, "build_time": 45.2},
-                security_data={}
+                performance_data={
+                    "coverage": {"line_rate": 85.5, "branch_rate": 78.2},
+                    "build_time": 45.2,
+                },
+                security_data={},
             )
             reports["build_status.md"] = build_report
 
@@ -337,7 +341,7 @@ build-backend = "hatchling.build"
             return {"error": str(e), "component": "reporting"}
 
     def _generate_step_summary(
-        self, performance_data: Dict[str, Any], security_data: Dict[str, Any]
+        self, performance_data: dict[str, Any], security_data: dict[str, Any]
     ) -> str:
         """Generate GitHub Actions step summary."""
         summary_parts = ["# CI Pipeline Summary\n"]
@@ -377,10 +381,10 @@ build-backend = "hatchling.build"
 
     def _collect_results(
         self,
-        performance_data: Dict[str, Any],
-        security_data: Dict[str, Any],
-        trend_data: Dict[str, Any],
-        reports: Dict[str, str],
+        performance_data: dict[str, Any],
+        security_data: dict[str, Any],
+        trend_data: dict[str, Any],
+        reports: dict[str, str],
     ) -> CISimulatorResult:
         """Collect and organize simulation results."""
         result = CISimulatorResult()

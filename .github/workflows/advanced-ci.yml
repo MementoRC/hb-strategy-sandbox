@@ -80,22 +80,22 @@ jobs:
       run: |
         # Add debugging for Windows issues
         echo "OS: ${{ matrix.os }}, Test type: ${{ matrix.test-type }}, Environment: ${{ matrix.pixi-env }}"
-        
+
         # Show Python and pytest version
         pixi run -e ${{ matrix.pixi-env }} python --version
         pixi run -e ${{ matrix.pixi-env }} pytest --version
-        
+
         if [ "${{ matrix.test-type }}" = "comprehensive" ]; then
           # Run comprehensive tests step by step for better CI reliability
           echo "🧪 Running comprehensive test suite..."
           pixi run -e ${{ matrix.pixi-env }} pytest tests --cov=strategy_sandbox --cov-report=xml:coverage.xml --maxfail=5 -v
-          
+
           echo "🔍 Running lint checks..."
           pixi run -e ${{ matrix.pixi-env }} lint
-          
+
           echo "🔍 Running type checks..."
           pixi run -e ${{ matrix.pixi-env }} typecheck
-          
+
         elif [ "${{ matrix.test-type }}" = "integration" ]; then
           pixi run -e ${{ matrix.pixi-env }} test-integration
         else
@@ -397,7 +397,7 @@ jobs:
                 "${{ needs.security-comprehensive.result }}" == "success" && \
                 "${{ needs.docs-advanced.result }}" == "success" ]]; then
             echo "All required advanced CI jobs passed successfully."
-            
+
             # Check conditional performance job if it ran
             if [[ "${{ needs.performance-monitoring.result }}" != "skipped" ]]; then
               if [[ "${{ needs.performance-monitoring.result }}" == "success" ]]; then
