@@ -1,6 +1,7 @@
 """Tests for security dashboard generator."""
 
 import json
+import os
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -405,6 +406,7 @@ class TestSecurityDashboardGenerator:
         assert trend_data["trend_analysis"]["vulnerability_trend"] == "decreasing"  # 5 -> 2
 
     @patch("tempfile.mkdtemp")
+    @patch.dict(os.environ, {}, clear=True)  # Ensure clean environment without GITHUB_STEP_SUMMARY
     def test_integration_with_real_components(self, mock_mkdtemp):
         """Test integration with real SBOMGenerator and GitHubReporter components."""
         # Create temporary directory for test
