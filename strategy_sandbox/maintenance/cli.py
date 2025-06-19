@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from .health_monitor import CIHealthMonitor
 from .scheduler import MaintenanceScheduler
@@ -87,7 +88,7 @@ Examples:
     return parser
 
 
-def format_output(data: any, format_type: str) -> str:
+def format_output(data: Any, format_type: str) -> str:
     """Format output data based on the specified format."""
     if format_type == "json":
         return json.dumps(data, indent=2, default=str)
@@ -95,7 +96,7 @@ def format_output(data: any, format_type: str) -> str:
         return format_text_output(data)
 
 
-def format_text_output(data: any) -> str:
+def format_text_output(data: Any) -> str:
     """Format data as human-readable text."""
     if isinstance(data, dict):
         lines = []
