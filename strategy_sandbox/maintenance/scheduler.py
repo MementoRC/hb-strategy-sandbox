@@ -5,7 +5,7 @@ import time
 from collections.abc import Callable
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 
@@ -42,11 +42,11 @@ class MaintenanceTask:
         self.enabled = enabled
         self.description = description
         self.params = kwargs
-        self.last_run = None
-        self.next_run = None
+        self.last_run: Optional[datetime] = None
+        self.next_run: Optional[datetime] = None
         self.run_count = 0
         self.error_count = 0
-        self.last_error = None
+        self.last_error: Optional[str] = None
 
         self._calculate_next_run()
 
@@ -361,7 +361,7 @@ class MaintenanceScheduler:
         logger.info("Starting data cleanup")
 
         retention_config = self.config.get("data_retention", {})
-        cleanup_result = {
+        cleanup_result: dict[str, Any] = {
             "files_removed": 0,
             "space_freed_mb": 0,
             "directories_processed": [],
@@ -467,7 +467,7 @@ class MaintenanceScheduler:
         """
         logger.info(f"Starting maintenance {'(dry run)' if dry_run else '(live)'}")
 
-        maintenance_result = {
+        maintenance_result: dict[str, Any] = {
             "start_time": datetime.now().isoformat(),
             "dry_run": dry_run,
             "operations": [],

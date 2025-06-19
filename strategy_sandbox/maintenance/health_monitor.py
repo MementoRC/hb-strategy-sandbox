@@ -5,7 +5,7 @@ import shutil
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import psutil
 import yaml
@@ -45,7 +45,7 @@ class CIHealthMonitor:
 
         # Health metrics storage
         self.metrics: dict[str, Any] = {}
-        self.last_health_check = None
+        self.last_health_check: Optional[datetime] = None
 
     def _load_config(self) -> dict[str, Any]:
         """Load monitoring configuration from YAML file."""
@@ -112,7 +112,7 @@ class CIHealthMonitor:
 
     def _collect_storage_metrics(self) -> dict[str, Any]:
         """Collect storage usage metrics for key directories."""
-        storage_metrics = {}
+        storage_metrics: dict[str, Any] = {}
 
         directories_to_check = [
             ("project_root", self.project_path),
@@ -140,7 +140,7 @@ class CIHealthMonitor:
 
     def _check_component_health(self) -> dict[str, Any]:
         """Check health of individual CI components."""
-        component_health = {}
+        component_health: dict[str, Any] = {}
 
         # Performance component health
         try:
@@ -158,7 +158,7 @@ class CIHealthMonitor:
             package_managers = self.dependency_analyzer.detect_package_managers()
             component_health["security"] = {
                 "status": "healthy" if package_managers else "configuration_issue",
-                "detected_package_managers": package_managers,
+                "detected_package_managers": list(package_managers),
             }
         except Exception as e:
             component_health["security"] = {"status": "error", "error": str(e)}
@@ -278,7 +278,7 @@ class CIHealthMonitor:
         """Run comprehensive diagnostics on all CI components."""
         logger.info("Running CI diagnostics")
 
-        diagnostics = {
+        diagnostics: dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "performance": self._diagnose_performance_component(),
             "security": self._diagnose_security_component(),
