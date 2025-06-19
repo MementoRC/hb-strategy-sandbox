@@ -198,7 +198,7 @@ class TestCIHealthMonitor:
 
         # Mock dependencies with vulnerabilities - need more than 5 high to trigger warning
         mock_vulns = []
-        for i in range(6):  # Create 6 high severity vulnerabilities
+        for _ in range(6):  # Create 6 high severity vulnerabilities
             mock_vuln = Mock()
             mock_vuln.severity = "high"
             mock_vulns.append(mock_vuln)
@@ -223,7 +223,7 @@ class TestCIHealthMonitor:
 
         # Create mock metrics with degrading performance
         metrics_list = []
-        for i, exec_time in enumerate([100, 105, 110, 115, 120]):
+        for _, exec_time in enumerate([100, 105, 110, 115, 120]):
             mock_result = Mock()
             mock_result.execution_time = exec_time
 

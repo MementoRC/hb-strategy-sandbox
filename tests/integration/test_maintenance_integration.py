@@ -306,7 +306,7 @@ dependencies = ["numpy>=1.20.0", "pandas>=1.0.0"]
             assert isinstance(metrics, dict)
 
             # Some entries might have errors, but shouldn't crash
-            for key, value in metrics.items():
+            for _, value in metrics.items():
                 assert isinstance(value, dict)
 
     def test_task_execution_history_tracking(self, temp_project_dir):

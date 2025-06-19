@@ -475,7 +475,7 @@ class CIHealthMonitor:
 
         # Check component health
         component_health = self.metrics.get("component_health", {})
-        for component, health in component_health.items():
+        for _, health in component_health.items():
             if isinstance(health, dict):
                 status = health.get("status", "unknown")
                 if status == "error":
