@@ -45,7 +45,7 @@ class CIHealthMonitor:
 
         # Health metrics storage
         self.metrics: dict[str, Any] = {}
-        self.last_health_check: Optional[datetime] = None
+        self.last_health_check: datetime | None = None
 
     def _load_config(self) -> dict[str, Any]:
         """Load monitoring configuration from YAML file."""

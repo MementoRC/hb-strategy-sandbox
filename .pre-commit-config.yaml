@@ -20,7 +20,7 @@ repos:
     rev: v1.7.1
     hooks:
       - id: mypy
-        additional_dependencies: [types-setuptools]
+        additional_dependencies: [types-setuptools, types-PyYAML]
         exclude: ^(tests/|docs/)
 
   # Security scanning - temporarily disabled due to version conflicts
