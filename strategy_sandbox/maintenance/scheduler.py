@@ -5,7 +5,7 @@ import time
 from collections.abc import Callable
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
@@ -42,11 +42,11 @@ class MaintenanceTask:
         self.enabled = enabled
         self.description = description
         self.params = kwargs
-        self.last_run: Optional[datetime] = None
-        self.next_run: Optional[datetime] = None
+        self.last_run: datetime | None = None
+        self.next_run: datetime | None = None
         self.run_count = 0
         self.error_count = 0
-        self.last_error: Optional[str] = None
+        self.last_error: str | None = None
 
         self._calculate_next_run()
 
