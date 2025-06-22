@@ -56,9 +56,9 @@ class SimpleBenchmarkStrategy:
 class TestPerformanceBenchmarks:
     """Performance benchmark test cases."""
 
-    @pytest.mark.asyncio
-    async def test_simulation_throughput(self, benchmark):
+    def test_simulation_throughput(self, benchmark):
         """Benchmark simulation throughput."""
+        import asyncio
 
         async def run_simulation():
             config = SandboxConfiguration(
@@ -74,8 +74,11 @@ class TestPerformanceBenchmarks:
             await sandbox.run(duration=timedelta(seconds=10))
             return sandbox.performance_metrics
 
-        # Benchmark the simulation
-        result = await benchmark(run_simulation)
+        # Benchmark the async simulation using sync wrapper
+        def run_simulation_sync():
+            return asyncio.run(run_simulation())
+
+        result = benchmark(run_simulation_sync)
 
         # Verify we got reasonable performance
         assert result["duration_seconds"] > 0
@@ -185,9 +188,9 @@ class TestPerformanceBenchmarks:
         print(f"Balance operations per second: {operations_per_second:.2f}")
 
         # Assert performance threshold
-        assert operations_per_second > 1000, (
-            f"Balance operations too slow: {operations_per_second} ops/sec"
-        )
+        assert (
+            operations_per_second > 1000
+        ), f"Balance operations too slow: {operations_per_second} ops/sec"
 
     @pytest.mark.asyncio
     async def test_event_system_performance(self):
