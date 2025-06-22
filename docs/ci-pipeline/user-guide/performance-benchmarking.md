@@ -24,9 +24,9 @@ def test_simulation_throughput(benchmark):
     """Benchmark simulation execution speed."""
     env = SandboxEnvironment()
     env.initialize()
-    
+
     result = benchmark(run_simulation, env, duration=10.0)
-    
+
     # Assertions for correctness
     assert result is not None
     assert result.trades_executed >= 0
@@ -45,14 +45,14 @@ For more complex benchmarking scenarios:
 @pytest.mark.benchmark(group="memory")
 def test_memory_usage(benchmark):
     """Benchmark memory consumption during operations."""
-    
+
     @benchmark
     def memory_intensive_operation():
         # Setup large data structures
         data = generate_large_dataset(10000)
         processor = DataProcessor()
         return processor.analyze(data)
-    
+
     result = memory_intensive_operation()
     assert len(result) > 0
 
@@ -66,7 +66,7 @@ def test_order_processing_speed(benchmark):
     """Benchmark order processing throughput."""
     exchange = ExchangeSimulator()
     orders = generate_test_orders(1000)
-    
+
     result = benchmark(exchange.process_orders, orders)
     assert result.success_rate > 0.95
 ```
@@ -83,11 +83,11 @@ thresholds:
   execution_time:
     warning: 10.0  # seconds
     critical: 15.0
-    
+
   memory_usage:
     warning: 500.0  # MB
     critical: 1000.0
-    
+
   throughput:
     warning: -5.0   # percentage decrease
     critical: -15.0
@@ -98,7 +98,7 @@ benchmark_thresholds:
     execution_time:
       warning: 5.0
       critical: 10.0
-      
+
   test_order_processing_speed:
     throughput:
       warning: -2.0
@@ -122,25 +122,25 @@ Set up alerting rules in `strategy_sandbox/performance/alert_config.yaml`:
 # Alert configuration
 alerts:
   enabled: true
-  
+
   # Alert channels
   channels:
     github_step_summary: true
     pr_comments: true
     artifacts: true
-    
+
   # Alert rules
   rules:
     regression_detection:
       enabled: true
       threshold: 10.0  # percentage
       consecutive_builds: 2
-      
+
     anomaly_detection:
       enabled: true
       sensitivity: 0.95
       window_size: 10
-      
+
     baseline_drift:
       enabled: true
       max_drift: 25.0  # percentage
@@ -151,7 +151,7 @@ notifications:
   performance_improvement:
     enabled: true
     threshold: 5.0  # percentage
-    
+
   new_baseline_required:
     enabled: true
     age_threshold: 30  # days
@@ -278,7 +278,7 @@ Use benchmark results to identify performance issues:
 def test_computation_intensive(benchmark):
     """Identify CPU bottlenecks."""
     result = benchmark(heavy_computation, large_dataset)
-    
+
     # Check if CPU utilization is optimal
     assert result.cpu_efficiency > 0.8
 ```
@@ -294,7 +294,7 @@ def test_memory_efficiency(benchmark):
         teardown=cleanup_memory_test,
         rounds=10
     )
-    
+
     # Verify memory is released properly
     assert result.memory_leaked < 10  # MB
 ```
@@ -310,7 +310,7 @@ def test_file_operations(benchmark):
             temp_dir,
             file_count=1000
         )
-        
+
     assert result.files_per_second > 100
 ```
 
@@ -465,15 +465,15 @@ import pstats
 def test_with_profiling(benchmark):
     """Benchmark with profiling support."""
     profiler = cProfile.Profile()
-    
+
     def profiled_function():
         profiler.enable()
         result = function_under_test()
         profiler.disable()
         return result
-    
+
     result = benchmark(profiled_function)
-    
+
     # Save profile data for analysis
     stats = pstats.Stats(profiler)
     stats.dump_stats('profile_data.prof')

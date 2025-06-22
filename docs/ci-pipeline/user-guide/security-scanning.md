@@ -18,7 +18,7 @@ The system scans your project dependencies for known vulnerabilities using multi
 
 #### Supported Package Managers
 - **pip/PyPI**: Python package scanning
-- **pixi**: Conda-forge package scanning  
+- **pixi**: Conda-forge package scanning
 - **conda**: Conda package analysis
 - **requirements.txt**: Direct dependency file analysis
 
@@ -65,21 +65,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Environment
         uses: prefix-dev/setup-pixi@v0.5.1
-        
+
       - name: Run Security Scan
         run: |
           pixi run security-comprehensive
-          
+
       - name: Generate SBOM
         run: |
           python -m strategy_sandbox.security.sbom_generator \
             --format cyclonedx \
             --output artifacts/sbom.json \
             --include-vulnerabilities
-            
+
       - name: Generate Security Dashboard
         run: |
           python -m strategy_sandbox.security.dashboard_generator \
@@ -98,7 +98,7 @@ vulnerability_policy:
     critical: 0    # Block any critical vulnerabilities
     high: 2        # Block if more than 2 high severity
     medium: 10     # Block if more than 10 medium severity
-    
+
   # Warning thresholds (alert but don't fail)
   warning:
     high: 1        # Warn on any high severity
@@ -139,19 +139,19 @@ sbom:
     supplier: "Your Organization"
     manufacturer: "Your Organization"
     authors: ["Development Team <dev@yourorg.com>"]
-    
+
   # Component filtering
   include:
     dev_dependencies: false
     test_dependencies: false
     transitive_depth: 3  # Maximum dependency depth
-    
+
   # Vulnerability inclusion
   vulnerabilities:
     include: true
     severity_threshold: "low"  # Include all severities
     include_fixed: false       # Exclude already fixed
-    
+
   # License analysis
   licenses:
     analyze: true
@@ -213,9 +213,9 @@ The pipeline automatically runs security scans:
 # Pixi task configuration
 [tool.pixi.tasks]
 security-comprehensive = { depends-on = [
-  "security-static", 
-  "security-audit", 
-  "security-secrets", 
+  "security-static",
+  "security-audit",
+  "security-secrets",
   "security-supply-chain"
 ] }
 

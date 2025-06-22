@@ -13,7 +13,7 @@ CURRENT_BRANCH = status_result.current_branch
 
 # Auto-detect PR
 open_prs = mcp__git__github_list_pull_requests(
-    repo_owner=REPO_OWNER, repo_name=REPO_NAME, 
+    repo_owner=REPO_OWNER, repo_name=REPO_NAME,
     state="open", head=f"{REPO_OWNER}:{CURRENT_BRANCH}",
     per_page=5
 )
@@ -64,7 +64,7 @@ mcp__git__git_commit(
 
 # Push with upstream
 mcp__git__git_push(
-    repo_path=PROJECT_ROOT, remote="origin", 
+    repo_path=PROJECT_ROOT, remote="origin",
     branch="feature/task-X", set_upstream=True
 )
 ```

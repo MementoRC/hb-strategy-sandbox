@@ -35,21 +35,21 @@ graph TB
     A[GitHub Actions] --> B[Performance Collector]
     A --> C[Security Analyzer]
     A --> D[Report Generator]
-    
+
     B --> E[Trend Analyzer]
     B --> F[Performance Comparator]
-    
+
     C --> G[SBOM Generator]
     C --> H[Dashboard Generator]
-    
+
     D --> I[GitHub Reporter]
     D --> J[Artifact Manager]
-    
+
     E --> K[Alert System]
     F --> K
     G --> L[Security Dashboard]
     H --> L
-    
+
     I --> M[GitHub Step Summary]
     J --> N[Artifacts Storage]
 ```

@@ -13,42 +13,42 @@ graph TB
         SA[Security Analyzer]
         SC[System Collector]
     end
-    
+
     subgraph "Analysis Layer"
         PA[Performance Analyzer]
         TA[Trend Analyzer]
         DA[Dependency Analyzer]
         SG[SBOM Generator]
     end
-    
+
     subgraph "Reporting Layer"
         RG[Report Generator]
         GR[GitHub Reporter]
         AM[Artifact Manager]
         DG[Dashboard Generator]
     end
-    
+
     subgraph "Storage Layer"
         FS[File System]
         GH[GitHub Storage]
         AR[Artifacts Repository]
     end
-    
+
     PC --> PA
     PC --> TA
     SA --> DA
     SA --> SG
-    
+
     PA --> RG
     TA --> RG
     DA --> DG
     SG --> DG
-    
+
     RG --> GR
     RG --> AM
     DG --> GR
     DG --> AM
-    
+
     GR --> GH
     AM --> AR
     AM --> FS
@@ -73,20 +73,20 @@ The performance module handles all aspects of performance monitoring and analysi
 ```python
 class PerformanceCollector:
     """Main collector for performance metrics."""
-    
+
     def __init__(self, config_path: Optional[Path] = None):
         self.config = self._load_config(config_path)
         self.metrics = PerformanceMetrics()
-        
+
     def collect_system_info(self) -> Dict[str, Any]:
         """Collect system and environment information."""
-        
+
     def process_benchmark_results(self, benchmark_file: Path) -> BenchmarkData:
         """Process pytest-benchmark JSON output."""
-        
+
     def store_baseline(self, metrics: PerformanceMetrics, tag: str):
         """Store performance baseline."""
-        
+
     def compare_with_baseline(self, current: PerformanceMetrics) -> ComparisonResult:
         """Compare current metrics with baseline."""
 ```
@@ -100,7 +100,7 @@ class PerformanceMetrics:
     environment: SystemInfo
     benchmarks: List[BenchmarkResult]
     system_metrics: SystemMetrics
-    
+
 @dataclass
 class BenchmarkResult:
     """Individual benchmark result."""
@@ -125,27 +125,27 @@ class BenchmarkResult:
 ```python
 class PerformanceComparator:
     """Compares performance metrics and detects regressions."""
-    
+
     def __init__(self, config: ThresholdConfig):
         self.config = config
         self.statistical_engine = StatisticalAnalyzer()
-        
+
     def compare_benchmarks(
-        self, 
-        current: PerformanceMetrics, 
+        self,
+        current: PerformanceMetrics,
         baseline: PerformanceMetrics
     ) -> ComparisonReport:
         """Compare current metrics against baseline."""
-        
+
     def detect_regressions(
-        self, 
+        self,
         comparison: ComparisonReport
     ) -> List[PerformanceAlert]:
         """Detect performance regressions."""
-        
+
     def calculate_statistical_significance(
-        self, 
-        current: BenchmarkResult, 
+        self,
+        current: BenchmarkResult,
         baseline: BenchmarkResult
     ) -> StatisticalResult:
         """Calculate statistical significance of changes."""
@@ -163,28 +163,28 @@ class PerformanceComparator:
 ```python
 class TrendAnalyzer:
     """Analyzes performance trends over time."""
-    
+
     def __init__(self, config: TrendConfig):
         self.config = config
         self.window_size = config.window_size
         self.anomaly_threshold = config.anomaly_threshold
-        
+
     def analyze_trends(
-        self, 
+        self,
         historical_data: List[PerformanceMetrics]
     ) -> TrendAnalysis:
         """Analyze performance trends in historical data."""
-        
+
     def detect_anomalies(
-        self, 
-        metrics: List[float], 
+        self,
+        metrics: List[float],
         window_size: int = None
     ) -> List[AnomalyPoint]:
         """Detect anomalies in metric values."""
-        
+
     def calculate_correlation(
-        self, 
-        metric1: List[float], 
+        self,
+        metric1: List[float],
         metric2: List[float]
     ) -> CorrelationResult:
         """Calculate correlation between two metrics."""
@@ -206,20 +206,20 @@ The security module handles vulnerability scanning, SBOM generation, and securit
 ```python
 class DependencyAnalyzer:
     """Analyzes project dependencies for security vulnerabilities."""
-    
+
     def __init__(self, project_path: Path):
         self.project_path = project_path
         self.vulnerability_sources = self._initialize_sources()
-        
+
     def scan_dependencies(self) -> SecurityScanResult:
         """Scan all project dependencies for vulnerabilities."""
-        
+
     def detect_package_managers(self) -> List[PackageManager]:
         """Detect active package managers in project."""
-        
+
     def generate_dependency_tree(self) -> DependencyTree:
         """Generate complete dependency tree."""
-        
+
     def assess_risk_score(self, vulnerabilities: List[Vulnerability]) -> RiskScore:
         """Calculate overall security risk score."""
 ```
@@ -235,7 +235,7 @@ class DependencyAnalyzer:
 ```python
 class SBOMGenerator:
     """Generates Software Bill of Materials in various formats."""
-    
+
     def __init__(self, analyzer: DependencyAnalyzer):
         self.analyzer = analyzer
         self.format_generators = {
@@ -243,19 +243,19 @@ class SBOMGenerator:
             'spdx': self._generate_spdx,
             'custom': self._generate_custom
         }
-        
+
     def generate_sbom(
-        self, 
-        format_type: str, 
+        self,
+        format_type: str,
         include_vulnerabilities: bool = True
     ) -> SBOMDocument:
         """Generate SBOM in specified format."""
-        
+
     def generate_vulnerability_report(self) -> VulnerabilityReport:
         """Generate detailed vulnerability report."""
-        
+
     def generate_compliance_report(
-        self, 
+        self,
         frameworks: List[str]
     ) -> ComplianceReport:
         """Generate compliance report for specified frameworks."""
@@ -273,20 +273,20 @@ class SBOMGenerator:
 ```python
 class SecurityDashboardGenerator:
     """Generates comprehensive security dashboards."""
-    
+
     def __init__(self, scan_results: SecurityScanResult):
         self.scan_results = scan_results
         self.scoring_engine = SecurityScoringEngine()
-        
+
     def generate_security_dashboard(self) -> SecurityDashboard:
         """Generate complete security dashboard."""
-        
+
     def calculate_security_score(self) -> SecurityScore:
         """Calculate overall security score."""
-        
+
     def analyze_dependency_health(self) -> DependencyHealth:
         """Analyze health of project dependencies."""
-        
+
     def generate_recommendations(self) -> List[SecurityRecommendation]:
         """Generate actionable security recommendations."""
 ```
@@ -307,26 +307,26 @@ The reporting module handles all aspects of report generation and distribution.
 ```python
 class GitHubReporter:
     """Handles GitHub Actions integration and reporting."""
-    
+
     def __init__(self):
         self.github_env = self._collect_github_environment()
         self.step_summary_path = os.getenv('GITHUB_STEP_SUMMARY')
-        
+
     def add_to_summary(self, content: str, title: str = None):
         """Add content to GitHub step summary."""
-        
+
     def create_artifact(self, name: str, content: Union[str, dict]):
         """Create GitHub Actions artifact."""
-        
+
     def generate_performance_report(
-        self, 
-        metrics: PerformanceMetrics, 
+        self,
+        metrics: PerformanceMetrics,
         comparison: ComparisonReport
     ) -> str:
         """Generate performance report for GitHub."""
-        
+
     def generate_security_report(
-        self, 
+        self,
         dashboard: SecurityDashboard
     ) -> str:
         """Generate security report for GitHub."""
@@ -344,12 +344,12 @@ class GitHubReporter:
 ```python
 class ReportGenerator:
     """Generates comprehensive reports from multiple data sources."""
-    
+
     def __init__(self, github_reporter: Optional[GitHubReporter] = None):
         self.github_reporter = github_reporter or GitHubReporter()
         self.template_engine = TemplateEngine()
         self.artifact_manager = ArtifactManager()
-        
+
     def generate_comprehensive_report(
         self,
         performance_data: PerformanceMetrics,
@@ -357,15 +357,15 @@ class ReportGenerator:
         coverage_data: CoverageData = None
     ) -> ComprehensiveReport:
         """Generate complete project health report."""
-        
+
     def generate_performance_dashboard(
-        self, 
+        self,
         performance_data: PerformanceMetrics
     ) -> PerformanceDashboard:
         """Generate performance-specific dashboard."""
-        
+
     def generate_build_dashboard(
-        self, 
+        self,
         build_context: BuildContext
     ) -> BuildDashboard:
         """Generate build status dashboard."""
@@ -383,25 +383,25 @@ class ReportGenerator:
 ```python
 class ArtifactManager:
     """Manages report artifacts and storage."""
-    
+
     def __init__(self, artifacts_dir: Path = None):
         self.artifacts_dir = artifacts_dir or Path("artifacts")
         self.metadata_store = ArtifactMetadataStore()
-        
+
     def create_artifact(
-        self, 
-        name: str, 
+        self,
+        name: str,
         content: Union[str, dict, bytes],
         metadata: ArtifactMetadata = None
     ) -> ArtifactInfo:
         """Create and store artifact."""
-        
+
     def list_artifacts(self, pattern: str = None) -> List[ArtifactInfo]:
         """List available artifacts."""
-        
+
     def get_artifact_summary(self) -> ArtifactSummary:
         """Get summary of all artifacts."""
-        
+
     def cleanup_old_artifacts(self, retention_days: int = 30):
         """Clean up old artifacts based on retention policy."""
 ```
@@ -475,14 +475,14 @@ class PerformanceConfig:
     baseline_path: Path
     thresholds: ThresholdConfig
     trend_analysis: TrendConfig
-    
+
 @dataclass
 class SecurityConfig:
     """Security scanning configuration."""
     vulnerability_sources: List[str]
     sbom_formats: List[str]
     policy: SecurityPolicy
-    
+
 @dataclass
 class ReportingConfig:
     """Reporting configuration."""
@@ -502,14 +502,14 @@ from strategy_sandbox.performance.collector import BaseCollector
 
 class CustomMetricsCollector(BaseCollector):
     """Custom metrics collector implementation."""
-    
+
     def collect(self) -> Dict[str, Any]:
         """Collect custom metrics."""
         return {
             "custom_metric_1": self._collect_metric_1(),
             "custom_metric_2": self._collect_metric_2()
         }
-        
+
     def _collect_metric_1(self) -> float:
         """Implement custom metric collection."""
         pass
@@ -524,7 +524,7 @@ from strategy_sandbox.performance.comparator import BaseAnalyzer
 
 class CustomPerformanceAnalyzer(BaseAnalyzer):
     """Custom performance analysis."""
-    
+
     def analyze(self, data: PerformanceMetrics) -> AnalysisResult:
         """Implement custom analysis logic."""
         pass
@@ -539,7 +539,7 @@ from strategy_sandbox.reporting.report_generator import BaseReportFormat
 
 class CustomReportFormat(BaseReportFormat):
     """Custom report format implementation."""
-    
+
     def generate(self, data: ReportData) -> str:
         """Generate custom format report."""
         pass
@@ -556,10 +556,10 @@ Each component includes comprehensive unit tests:
 class TestPerformanceCollector:
     def test_system_info_collection(self):
         """Test system information collection."""
-        
+
     def test_benchmark_processing(self):
         """Test benchmark data processing."""
-        
+
     def test_baseline_storage(self):
         """Test baseline storage and retrieval."""
 ```
@@ -573,7 +573,7 @@ Integration tests verify component interactions:
 class TestPipelineIntegration:
     def test_performance_to_reporting_flow(self):
         """Test performance data flow to reporting."""
-        
+
     def test_security_to_dashboard_flow(self):
         """Test security data flow to dashboard."""
 ```
@@ -587,7 +587,7 @@ E2E tests validate complete pipeline execution:
 class TestCIPipelineEndToEnd:
     def test_complete_pipeline_execution(self):
         """Test full pipeline execution."""
-        
+
     def test_artifact_generation(self):
         """Test artifact generation and storage."""
 ```
@@ -604,9 +604,9 @@ from typing import List
 
 class AsyncPerformanceCollector:
     """Asynchronous performance collector."""
-    
+
     async def collect_multiple_sources(
-        self, 
+        self,
         sources: List[DataSource]
     ) -> List[MetricsData]:
         """Collect from multiple sources concurrently."""
@@ -652,7 +652,7 @@ class BenchmarkInput(BaseModel):
     name: str
     value: float
     unit: str
-    
+
     @validator('value')
     def value_must_be_positive(cls, v):
         if v < 0:
@@ -673,7 +673,7 @@ def secure_file_processing(self, file_path: Path):
     # Validate file path
     if not file_path.is_file():
         raise ValueError("Invalid file path")
-    
+
     # Use temporary directory for processing
     with tempfile.TemporaryDirectory() as temp_dir:
         # Process file in isolated environment
@@ -708,10 +708,10 @@ Internal metrics collection for pipeline health:
 ```python
 class PipelineHealthMonitor:
     """Monitor pipeline health and performance."""
-    
+
     def check_component_health(self) -> HealthStatus:
         """Check health of all pipeline components."""
-        
+
     def collect_internal_metrics(self) -> PipelineMetrics:
         """Collect internal pipeline metrics."""
 ```

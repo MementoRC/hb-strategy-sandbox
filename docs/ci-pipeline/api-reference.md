@@ -19,13 +19,13 @@ Main class for collecting performance metrics from various sources.
 ```python
 class PerformanceCollector:
     """Collects performance metrics from benchmark results and system information."""
-    
+
     def __init__(self, config_path: Optional[Path] = None):
         """Initialize the collector with optional configuration."""
-        
+
     def collect_system_info(self) -> Dict[str, Any]:
         """Collect system and environment information.
-        
+
         Returns:
             Dictionary containing system metrics including:
             - CPU information and usage
@@ -34,31 +34,31 @@ class PerformanceCollector:
             - Network interface information
             - Python environment details
         """
-        
+
     def process_benchmark_results(self, benchmark_file: Path) -> BenchmarkData:
         """Process pytest-benchmark JSON output.
-        
+
         Args:
             benchmark_file: Path to pytest-benchmark JSON results file
-            
+
         Returns:
             Structured benchmark data with processed metrics
         """
-        
+
     def store_baseline(self, metrics: PerformanceMetrics, tag: str = "main"):
         """Store performance baseline for future comparisons.
-        
+
         Args:
             metrics: Performance metrics to store as baseline
             tag: Baseline identifier (default: "main")
         """
-        
+
     def load_baseline(self, tag: str = "main") -> Optional[PerformanceMetrics]:
         """Load stored performance baseline.
-        
+
         Args:
             tag: Baseline identifier to load
-            
+
         Returns:
             Performance metrics if baseline exists, None otherwise
         """
@@ -72,16 +72,16 @@ Data class for performance metrics.
 @dataclass
 class PerformanceMetrics:
     """Container for performance metrics and metadata."""
-    
+
     timestamp: datetime
     environment: SystemInfo
     benchmarks: List[BenchmarkResult]
     system_metrics: SystemMetrics
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert metrics to dictionary format."""
-        
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'PerformanceMetrics':
         """Create metrics from dictionary data."""
@@ -96,36 +96,36 @@ Analyzes performance changes and detects regressions.
 ```python
 class PerformanceComparator:
     """Compares performance metrics and detects regressions."""
-    
+
     def __init__(self, config: ThresholdConfig):
         """Initialize with threshold configuration."""
-        
+
     def compare_benchmarks(
-        self, 
-        current: PerformanceMetrics, 
+        self,
+        current: PerformanceMetrics,
         baseline: PerformanceMetrics
     ) -> ComparisonReport:
         """Compare current metrics against baseline.
-        
+
         Args:
             current: Current performance metrics
             baseline: Baseline metrics for comparison
-            
+
         Returns:
             Detailed comparison report with regression analysis
         """
-        
+
     def detect_regressions(
-        self, 
+        self,
         comparison: ComparisonReport,
         thresholds: Optional[ThresholdConfig] = None
     ) -> List[PerformanceAlert]:
         """Detect performance regressions based on thresholds.
-        
+
         Args:
             comparison: Comparison report to analyze
             thresholds: Optional custom thresholds
-            
+
         Returns:
             List of performance alerts for detected regressions
         """
@@ -142,27 +142,27 @@ Scans project dependencies for security vulnerabilities.
 ```python
 class DependencyAnalyzer:
     """Analyzes project dependencies for security vulnerabilities."""
-    
+
     def __init__(self, project_path: Path):
         """Initialize analyzer for project at given path."""
-        
+
     def scan_dependencies(self) -> SecurityScanResult:
         """Scan all project dependencies for vulnerabilities.
-        
+
         Returns:
             Complete security scan results with vulnerability data
         """
-        
+
     def detect_package_managers(self) -> List[PackageManager]:
         """Detect active package managers in project.
-        
+
         Returns:
             List of detected package managers (pip, pixi, conda, etc.)
         """
-        
+
     def generate_dependency_tree(self) -> DependencyTree:
         """Generate complete dependency tree.
-        
+
         Returns:
             Hierarchical dependency tree with relationships
         """
@@ -177,30 +177,30 @@ Generates Software Bill of Materials in various formats.
 ```python
 class SBOMGenerator:
     """Generates Software Bill of Materials in multiple formats."""
-    
+
     def __init__(self, analyzer: DependencyAnalyzer):
         """Initialize with dependency analyzer."""
-        
+
     def generate_sbom(
-        self, 
-        format_type: str, 
+        self,
+        format_type: str,
         include_vulnerabilities: bool = True,
         include_dev_dependencies: bool = False
     ) -> SBOMDocument:
         """Generate SBOM in specified format.
-        
+
         Args:
             format_type: SBOM format ('cyclonedx', 'spdx', 'custom')
             include_vulnerabilities: Include vulnerability data
             include_dev_dependencies: Include development dependencies
-            
+
         Returns:
             Complete SBOM document
         """
-        
+
     def generate_vulnerability_report(self) -> VulnerabilityReport:
         """Generate detailed vulnerability report.
-        
+
         Returns:
             Structured vulnerability report with remediation suggestions
         """
@@ -217,37 +217,37 @@ Integrates with GitHub Actions for rich reporting.
 ```python
 class GitHubReporter:
     """Handles GitHub Actions integration and reporting."""
-    
+
     def __init__(self):
         """Initialize with GitHub environment detection."""
-        
+
     def add_to_summary(self, content: str, title: Optional[str] = None):
         """Add content to GitHub step summary.
-        
+
         Args:
             content: Markdown content to add
             title: Optional section title
         """
-        
+
     def create_artifact(self, name: str, content: Union[str, dict]):
         """Create GitHub Actions artifact.
-        
+
         Args:
             name: Artifact name
             content: Artifact content (string or dictionary)
         """
-        
+
     def generate_performance_report(
-        self, 
-        metrics: PerformanceMetrics, 
+        self,
+        metrics: PerformanceMetrics,
         comparison: Optional[ComparisonReport] = None
     ) -> str:
         """Generate performance report for GitHub.
-        
+
         Args:
             metrics: Performance metrics data
             comparison: Optional comparison against baseline
-            
+
         Returns:
             Formatted markdown report
         """
@@ -263,7 +263,7 @@ class GitHubReporter:
 @dataclass
 class BenchmarkResult:
     """Individual benchmark result data."""
-    
+
     name: str                    # Benchmark test name
     mean: float                  # Mean execution time
     std: float                   # Standard deviation
@@ -271,7 +271,7 @@ class BenchmarkResult:
     max: float                   # Maximum execution time
     unit: str                    # Time unit (e.g., 'seconds')
     ops: Optional[float] = None  # Operations per second
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary format."""
 ```
@@ -282,17 +282,17 @@ class BenchmarkResult:
 @dataclass
 class SecurityScanResult:
     """Security scan results container."""
-    
+
     scanner_name: str
     scanner_version: str
     scan_timestamp: datetime
     project_path: Path
     vulnerabilities: List[Vulnerability]
     metadata: Dict[str, Any]
-    
+
     def get_vulnerabilities_by_severity(self, severity: str) -> List[Vulnerability]:
         """Filter vulnerabilities by severity level."""
-        
+
     def calculate_risk_score(self) -> float:
         """Calculate overall security risk score."""
 ```
@@ -303,7 +303,7 @@ class SecurityScanResult:
 @dataclass
 class Vulnerability:
     """Security vulnerability information."""
-    
+
     id: str                              # Vulnerability ID (CVE, GHSA, etc.)
     package_name: str                    # Affected package name
     package_version: str                 # Affected package version
@@ -326,11 +326,11 @@ thresholds:
   execution_time:
     warning: 10.0      # Warning threshold (percentage)
     critical: 25.0     # Critical threshold (percentage)
-    
+
   memory_usage:
     warning: 15.0
     critical: 30.0
-    
+
   throughput:
     warning: -10.0     # Negative for decreases
     critical: -25.0
@@ -352,7 +352,7 @@ vulnerability_policy:
     critical: 0        # Block any critical vulnerabilities
     high: 2            # Block if more than 2 high severity
     medium: 10         # Block if more than 10 medium severity
-    
+
   grace_period:
     critical: 0        # Fix immediately
     high: 7            # 7 days to fix
@@ -459,7 +459,7 @@ from strategy_sandbox.performance.collector import BaseCollector
 
 class CustomMetricsCollector(BaseCollector):
     """Custom metrics collector implementation."""
-    
+
     def collect(self) -> Dict[str, Any]:
         """Collect custom metrics."""
         return {
@@ -477,7 +477,7 @@ from strategy_sandbox.performance.comparator import BaseAnalyzer
 
 class CustomPerformanceAnalyzer(BaseAnalyzer):
     """Custom performance analysis implementation."""
-    
+
     def analyze(self, data: PerformanceMetrics) -> AnalysisResult:
         """Implement custom analysis logic."""
         # Custom analysis implementation
@@ -493,7 +493,7 @@ from strategy_sandbox.reporting.report_generator import BaseReportFormat
 
 class CustomReportFormat(BaseReportFormat):
     """Custom report format implementation."""
-    
+
     def generate(self, data: ReportData) -> str:
         """Generate custom format report."""
         # Custom format implementation
@@ -510,7 +510,7 @@ class CustomReportFormat(BaseReportFormat):
     python -m strategy_sandbox.performance.collector \
       --benchmark-file reports/benchmark.json \
       --output performance_report.json
-    
+
     python -m strategy_sandbox.reporting.github_reporter \
       --performance-data performance_report.json
 ```

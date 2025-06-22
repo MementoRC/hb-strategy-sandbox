@@ -19,7 +19,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```bash
    # Check if benchmark file exists
    ls -la reports/benchmark.json
-   
+
    # Verify pytest-benchmark is generating output
    pytest tests/performance/ --benchmark-json=reports/benchmark.json
    ```
@@ -36,7 +36,7 @@ This guide provides solutions for common issues encountered when using the HB St
 3. **Ensure benchmark tests are properly marked:**
    ```python
    import pytest
-   
+
    @pytest.mark.benchmark
    def test_performance(benchmark):
        result = benchmark(function_to_test)
@@ -101,7 +101,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```bash
    # Run with higher priority
    nice -n -10 pytest tests/performance/
-   
+
    # Disable CPU frequency scaling
    sudo cpupower frequency-set --governor performance
    ```
@@ -132,7 +132,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```bash
    # Test OSV database access
    curl -I https://osv.dev/api/v1/vulns
-   
+
    # Test GitHub Advisory access
    curl -I https://api.github.com/advisories
    ```
@@ -248,7 +248,7 @@ This guide provides solutions for common issues encountered when using the HB St
    # Add debug logging
    import os
    import logging
-   
+
    logger = logging.getLogger(__name__)
    summary_path = os.getenv('GITHUB_STEP_SUMMARY')
    logger.info(f"Step summary path: {summary_path}")
@@ -267,7 +267,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```bash
    # Check report file sizes
    du -h reports/
-   
+
    # Compress large reports
    gzip reports/*.json
    ```
@@ -304,7 +304,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```bash
    # Check YAML syntax
    python -c "import yaml; yaml.safe_load(open('config.yaml'))"
-   
+
    # Use yamllint for detailed validation
    yamllint strategy_sandbox/performance/alert_config.yaml
    ```
@@ -312,7 +312,7 @@ This guide provides solutions for common issues encountered when using the HB St
 2. **Check configuration schema:**
    ```python
    from strategy_sandbox.performance.models import ThresholdConfig
-   
+
    # Validate configuration
    config = ThresholdConfig.from_file("config.yaml")
    print(config.validate())
@@ -377,7 +377,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```bash
    # Clear environment cache
    pixi clean cache
-   
+
    # Recreate environment
    pixi install --force-reinstall
    ```
@@ -386,7 +386,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```bash
    # Verify environment setup
    pixi info
-   
+
    # Check specific environment
    pixi list -e default
    ```
@@ -395,7 +395,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```bash
    # Show dependency tree
    pixi tree
-   
+
    # Check for conflicts
    pixi check
    ```
@@ -413,7 +413,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```bash
    # Add missing package
    pixi add package-name
-   
+
    # Install from specific channel
    pixi add conda-forge::package-name
    ```
@@ -423,7 +423,7 @@ This guide provides solutions for common issues encountered when using the HB St
    # In pyproject.toml
    [tool.pixi.dependencies]
    package-name = ">=1.0.0"
-   
+
    [tool.pixi.pypi-dependencies]
    pypi-package = ">=2.0.0"
    ```
@@ -449,7 +449,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```bash
    # Run tests in parallel
    pytest -n auto tests/
-   
+
    # Use faster test selection
    pytest -m "not slow" tests/
    ```
@@ -481,7 +481,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```bash
    # Check memory usage during tests
    pytest tests/ --memray
-   
+
    # Monitor disk space
    df -h
    ```
@@ -490,7 +490,7 @@ This guide provides solutions for common issues encountered when using the HB St
    ```python
    # Use memory-efficient data structures
    import sys
-   
+
    # Clean up after tests
    @pytest.fixture(autouse=True)
    def cleanup():
