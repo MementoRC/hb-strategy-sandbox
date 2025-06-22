@@ -20,14 +20,14 @@ Examples:
   %(prog)s health --summary                    # Show health summary
   %(prog)s health --collect                    # Collect health metrics
   %(prog)s health --diagnostics                # Run diagnostics
-  
+
   %(prog)s tasks --list                        # List all maintenance tasks
   %(prog)s tasks --run health_check            # Run specific task
   %(prog)s tasks --run-pending                 # Run all pending tasks
-  
+
   %(prog)s maintenance --perform               # Perform full maintenance
   %(prog)s maintenance --perform --dry-run     # Preview maintenance actions
-  
+
   %(prog)s config --show                       # Show current configuration
         """,
     )
