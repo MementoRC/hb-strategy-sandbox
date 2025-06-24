@@ -196,10 +196,6 @@ node_modules/
 *.sln
 *.sw?
 # OS specific
-# Task files
-tasks.json
-tasks/
-
 # Development and testing artifacts
 performance_data/
 artifacts/
@@ -228,3 +224,7 @@ pip-audit-report.json
 # Benchmark and performance results
 benchmark-results.json
 *.benchmark.json
+
+# Task files
+# tasks.json
+# tasks/
