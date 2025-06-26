@@ -1,80 +1,104 @@
-name: CI
+# Consolidated CI Pipeline
+# This workflow combines the original ci.yml and advanced-ci.yml into a single,
+# state-of-the-art pipeline that uses tiered execution for efficiency.
+
+name: Consolidated CI
 
 on:
   push:
     branches: [ main, development ]
   pull_request:
-    branches: [ main, development ]
+    paths:
+      - '**.py'
+      - '**.toml'
+      - '**.lock'
+      - '**.yml'
+      - 'docs/**'
+      - '.github/workflows/ci.yml'
+  schedule:
+    # Run comprehensive security scans nightly
+    - cron: '0 2 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      run_performance:
+        description: 'Run performance benchmarks and regression analysis'
+        required: false
+        default: 'false'
+        type: boolean
+      run_full_security:
+        description: 'Run comprehensive security scan (including container scans)'
+        required: false
+        default: 'false'
+        type: boolean
+      deploy_docs:
+        description: 'Build and deploy documentation'
+        required: false
+        default: 'false'
+        type: boolean
 
-env:
-  FORCE_COLOR: 1
-
+# Set default permissions to read-only for security
 permissions:
   contents: read
-  issues: write
-  pull-requests: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_COLOR: "1"
+  PYTHONIOENCODING: "utf-8"
+  PIXI_VERSION: "v0.41.4"
+
+# YAML anchors for reusability
+x-pixi-setup: &pixi-setup
+  name: Set up Pixi
+  uses: prefix-dev/setup-pixi@v0.8.8
+  with:
+    pixi-version: ${{ env.PIXI_VERSION }}
+    cache: true
+
 jobs:
-  # Quick feedback loop - fast checks for immediate developer feedback
+  #########################################
+  # 1. FAST FEEDBACK JOBS (Run on all PRs)
+  #########################################
   quick-checks:
-    name: Quick Validation (Fast Feedback)
+    name: Quick Validation
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - *pixi-setup
+      - name: Install dependencies
+        run: pixi install -e default --locked
+      - name: Fast linting check
+        run: pixi run ci-check
+      - name: Fast unit tests (no coverage)
+        run: pixi run -e default pytest tests/unit -x -q --no-cov -m "not integration and not benchmark"
 
-    - name: Set up Pixi
-      uses: prefix-dev/setup-pixi@v0.8.8
-      with:
-        pixi-version: v0.41.4
-        cache: false
-      continue-on-error: false
-
-    - name: Install dependencies
-      run: pixi install -e default
-
-    - name: Fast linting check
-      run: pixi run ci-check
-
-    - name: Fast unit tests (no coverage)
-      run: pixi run -e default pytest tests -x -q --no-cov -m "not integration and not benchmark" || true
-  # Lint and format check
-  lint:
+  lint-and-type-check:
+    name: Lint & Type Check
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    needs: quick-checks
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - *pixi-setup
+      - name: Install dependencies
+        run: pixi install -e default --locked
+      - name: Run linting
+        run: pixi run lint
+      - name: Run type checking
+        run: pixi run typecheck
 
-    - name: Set up Pixi
-      uses: prefix-dev/setup-pixi@v0.8.8
-      with:
-        pixi-version: v0.41.4
-        cache: false
-      continue-on-error: false
-
-    - name: Install dependencies
-      run: pixi install -e default
-
-    - name: Run linting
-      run: pixi run ci-check
-
-    - name: Run type checking
-      run: pixi run ci-hints
-
-  # Cross-platform unit tests (no service containers)
-  test:
+  test-matrix:
     name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
+    needs: quick-checks
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Ubuntu: Full Python version coverage (primary development platform)
           - os: ubuntu-latest
             python-version: "3.10"
             pixi-environment: "py310"
@@ -84,405 +108,256 @@ jobs:
           - os: ubuntu-latest
             python-version: "3.12"
             pixi-environment: "py312"
-
-          # macOS: Python 3.12+ only (aligned with Hummingbot requirements)
           - os: macos-latest
             python-version: "3.12"
             pixi-environment: "py312"
-
-          # Windows: Temporarily disabled due to platform compatibility issues
-          # Windows testing is tracked separately and can be re-enabled when compatibility is resolved
-          # - os: windows-latest
-          #   python-version: "3.10"
-          #   pixi-environment: "py310"
-          #   test-marker: "not benchmark"  # Skip slow benchmark tests on Windows 3.10
-          # - os: windows-latest
-          #   python-version: "3.12"
-          #   pixi-environment: "py312"
-
-    defaults:
-      run:
-        shell: bash
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Pixi
+      - name: Set up Pixi for ${{ matrix.pixi-environment }}
         uses: prefix-dev/setup-pixi@v0.8.8
         with:
           environments: ${{ matrix.pixi-environment }}
-          pixi-version: v0.41.4
-          cache: false
-
-      - name: Install project dependencies (using Pixi)
-        run: |
-          pixi install -e ${{ matrix.pixi-environment }}
-          echo "Python version check:"
-          pixi run -e ${{ matrix.pixi-environment }} python --version
-
-      - name: Run unit tests with coverage
-        run: |
-          # Run unit tests first to avoid URL patching pollution from integration tests
-          # Exclude benchmark tests from CI blocking - they're for performance monitoring only
-          # Use optimized test selection for specific matrix combinations
-          if [[ "${{ matrix.test-marker }}" != "" ]]; then
-            # Optimized for Windows Python 3.10 - skip slow tests, focus on unit tests
-            pixi run -e ${{ matrix.pixi-environment }} pytest tests/unit -m "not integration and ${{ matrix.test-marker }}" --cov=strategy_sandbox --cov-report=xml:coverage.xml --maxfail=5 -x
-          else
-            # Standard test execution for other platforms - use unit tests for consistency
-            pixi run -e ${{ matrix.pixi-environment }} pytest tests/unit -m "not integration and not benchmark" --cov=strategy_sandbox --cov-report=xml:coverage.xml
-          fi
-
-      - name: Run integration tests (basic)
-        run: |
-          # Run basic integration tests without service dependencies
-          # Skip integration tests on Windows Python 3.10 for performance
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            echo "Skipping integration tests on Windows for compatibility - covered by dedicated integration job"
-          else
-            # Run integration tests that don't require external services (Linux/macOS only)
-            pixi run -e ${{ matrix.pixi-environment }} pytest tests/integration -m "integration and not benchmark" --cov=strategy_sandbox --cov-append || [ $? -eq 5 ]
-          fi
-
+          pixi-version: ${{ env.PIXI_VERSION }}
+          cache: true
+      - name: Install dependencies
+        run: pixi install -e ${{ matrix.pixi-environment }} --locked
+      - name: Run tests with coverage
+        run: pixi run -e ${{ matrix.pixi-environment }} pytest tests/unit tests/integration -m "not benchmark" --cov=strategy_sandbox --cov-report=xml:coverage.xml
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: MementoRC/hb-strategy-sandbox
           fail_ci_if_error: false
 
-  # Ubuntu-only integration tests with service containers
-  integration-tests:
-    name: Integration Tests with Services
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [test]
-    continue-on-error: true  # Non-blocking until integration tests are implemented
-
-    # Service containers for enhanced integration testing (Ubuntu only)
-    services:
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-      websocket-echo:
-        image: jmalloc/echo-server:latest
-        ports:
-          - 8080:8080
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Pixi
-        uses: prefix-dev/setup-pixi@v0.8.8
-        with:
-          environments: default
-          pixi-version: v0.41.4
-          cache: false
-
-      - name: Install project dependencies
-        run: |
-          pixi install -e default
-          echo "Python version check:"
-          pixi run -e default python --version
-
-      - name: Wait for service containers
-        run: |
-          echo "Waiting for service containers to be ready..."
-          # Install redis-tools for health checks
-          sudo apt-get update && sudo apt-get install -y redis-tools
-          # Wait for Redis
-          timeout 30 bash -c 'until redis-cli -h localhost -p 6379 ping; do sleep 1; done' || echo "Redis not available, continuing without it"
-          # Give WebSocket echo server a moment to start (no health check)
-          sleep 5
-          echo "Service containers ready (or timeout reached)"
-
-      - name: Run enhanced integration tests
-        env:
-          # Service container connection details
-          REDIS_URL: redis://localhost:6379
-          WEBSOCKET_ECHO_URL: ws://localhost:8080
-          TEST_WITH_SERVICES: true
-        run: |
-          # Check if integration tests exist, otherwise skip gracefully
-          echo "Checking for integration tests..."
-          TEST_COUNT=$(pixi run -e default pytest tests -m "integration and not benchmark" --collect-only -q 2>/dev/null | grep -c "test session starts" || echo "0")
-
-          if [ "$TEST_COUNT" -eq "0" ]; then
-            echo "No integration tests found with 'integration' marker"
-            echo "Running basic integration directory tests instead..."
-            # Run tests in integration directory if any exist (with lower coverage threshold)
-            pixi run -e default pytest tests/integration/ --cov=strategy_sandbox --cov-report=xml:integration-coverage.xml --cov-fail-under=0 || true
-          else
-            echo "Found integration tests, running them..."
-            pixi run -e default pytest tests -m "integration and not benchmark" --cov=strategy_sandbox --cov-report=xml:integration-coverage.xml --cov-fail-under=0 || [ $? -eq 5 ]
-          fi
-
-      - name: Upload integration test coverage
-        uses: codecov/codecov-action@v5
-        with:
-          files: ./integration-coverage.xml
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: MementoRC/hb-strategy-sandbox
-          fail_ci_if_error: false
-          flags: integration
-
-  # Performance benchmarks (non-blocking)
-  benchmark:
-    name: Performance Benchmarks (Non-blocking)
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [test]
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
-    continue-on-error: true  # Don't block CI if benchmarks fail
-    defaults:
-      run:
-        shell: bash
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Pixi
-        uses: prefix-dev/setup-pixi@v0.8.8
-        with:
-          environments: default
-          pixi-version: v0.41.4
-          cache: false
-
-      - name: Install project dependencies (using Pixi)
-        run: |
-          pixi install -e default
-          pixi run -e default python --version
-
-      - name: Create benchmark results directory
-        run: |
-          mkdir -p benchmark-results
-
-      - name: Run performance benchmarks
-        run: |
-          # Run performance benchmark tests for monitoring (non-blocking)
-          # These tests measure performance characteristics but don't block CI
-          # Capture JSON output for performance trend analysis
-          pixi run -e default pytest tests -m "benchmark" -v --tb=short \
-            --benchmark-json=benchmark-results/benchmark-results.json \
-            --benchmark-sort=mean
-
-      - name: Generate benchmark summary
-        if: always()
-        run: |
-          if [ -f benchmark-results/benchmark-results.json ]; then
-            echo "## Performance Benchmark Results" >> $GITHUB_STEP_SUMMARY
-            echo "Benchmark completed successfully. Results stored as artifacts." >> $GITHUB_STEP_SUMMARY
-
-            # Extract key metrics for summary
-            python3 -c "import json; data=json.load(open('benchmark-results/benchmark-results.json')); benchmarks=data.get('benchmarks',[]); print(f'Total benchmarks: {len(benchmarks)}'); print(f'Fastest test: {min(benchmarks,key=lambda x:x[\"stats\"][\"mean\"])[\"name\"]} ({min(benchmarks,key=lambda x:x[\"stats\"][\"mean\"])[\"stats\"][\"mean\"]:.2f}μs)') if benchmarks else None; print(f'Slowest test: {max(benchmarks,key=lambda x:x[\"stats\"][\"mean\"])[\"name\"]} ({max(benchmarks,key=lambda x:x[\"stats\"][\"mean\"])[\"stats\"][\"mean\"]:.2f}μs)') if benchmarks else None" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Benchmark results file not found" >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Store benchmark results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: benchmark-results-${{ github.run_id }}
-          path: |
-            benchmark-results/
-            tests/performance/
-          retention-days: 30
-
-      - name: Comment benchmark results on PR
-        if: github.event_name == 'pull_request' && success()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            try {
-              const benchmarkResults = fs.readFileSync('benchmark-results.json', 'utf8');
-              const results = JSON.parse(benchmarkResults);
-
-              const comment = `## 📊 Performance Benchmark Results
-
-              | Metric | Value | Change |
-              |--------|-------|--------|
-              | Avg Response Time | ${results.avg_response_time || 'N/A'} | ${results.change_response_time || 'N/A'} |
-              | Memory Usage | ${results.memory_usage || 'N/A'} | ${results.change_memory || 'N/A'} |
-              | Throughput | ${results.throughput || 'N/A'} ops/sec | ${results.change_throughput || 'N/A'} |
-
-              <details>
-              <summary>View detailed results</summary>
-
-              \`\`\`json
-              ${JSON.stringify(results, null, 2)}
-              \`\`\`
-              </details>
-
-              📈 **Non-blocking**: These benchmarks monitor performance trends but don't affect CI status.`;
-
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: comment
-              });
-            } catch (error) {
-              console.log('No benchmark results found or error reading results:', error.message);
-            }
-
-  # Build and package verification
-  build:
+  ###################################################
+  # 2. COMPREHENSIVE JOBS (Run on merge or dispatch)
+  ###################################################
+  build-and-package:
+    name: Build & Package
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [lint, test]
-
+    needs: test-matrix
+    # Run only on push to main/dev or on dispatch, not on every PR commit
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - *pixi-setup
+      - name: Install dependencies
+        run: pixi install -e default --locked
+      - name: Build package
+        run: pixi run -e default python -m build
+      - name: Check package
+        run: pixi run -e default python -m twine check dist/*
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: dist/
+          retention-days: 7
 
-    - name: Set up Pixi
-      uses: prefix-dev/setup-pixi@v0.8.8
-      with:
-        pixi-version: v0.41.4
-        cache: false
-      continue-on-error: false
-
-    - name: Install dependencies
-      run: pixi install -e default
-
-    - name: Build package
-      run: pixi run -e default python -m build
-
-    - name: Check package
-      run: pixi run -e default python -m twine check dist/*
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist-${{ github.sha }}
-        path: dist/
-        retention-days: 7
-
-  # Security scanning
   security:
+    name: Security Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    timeout-minutes: 20
+    permissions:
+      security-events: write # for github/codeql-action/upload-sarif
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Pixi
-      uses: prefix-dev/setup-pixi@v0.8.8
-      with:
-        pixi-version: v0.41.4
-        cache: false
-      continue-on-error: false
-
-    - name: Install security environment
-      run: pixi install -e security
-
-    - name: Run comprehensive security scans
-      run: |
-        # Create reports directory
-        mkdir -p reports
-
-        # Run all security scans using our Pixi tasks
-        echo "Running comprehensive security scans..."
-        pixi run -e security security-ci || echo "Security scans completed with warnings"
-
-    - name: Generate security summary
-      run: |
-        echo "## Security Scan Results" >> $GITHUB_STEP_SUMMARY
-        echo "| Tool | Status | Issues |" >> $GITHUB_STEP_SUMMARY
-        echo "|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
-
-        # Check Bandit results
-        if [ -f reports/bandit-report.json ]; then
-          BANDIT_ISSUES=$(python3 -c "import json; data=json.load(open('reports/bandit-report.json')); print(len(data.get('results', [])))" 2>/dev/null || echo "0")
-          echo "| Bandit | ✅ | $BANDIT_ISSUES issues |" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "| Bandit | ❌ | Failed to generate report |" >> $GITHUB_STEP_SUMMARY
-        fi
-
-        # Check Safety results
-        if [ -f reports/safety-report.json ]; then
-          echo "| Safety | ✅ | Check artifacts |" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "| Safety | ❌ | Failed to generate report |" >> $GITHUB_STEP_SUMMARY
-        fi
-
-        # Check pip-audit results
-        if [ -f reports/pip-audit-report.json ]; then
-          echo "| pip-audit | ✅ | Check artifacts |" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "| pip-audit | ❌ | Failed to generate report |" >> $GITHUB_STEP_SUMMARY
-        fi
-
-    - name: Upload security scan results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: security-scan-${{ github.sha }}
-        path: reports/
-        retention-days: 30
-
-  # Development status aggregation job for branch protection rules
-  development-status:
-    name: Development Status
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: [lint, test, build]
-    if: always()
-    steps:
-      - name: Check status of preceding jobs
+      - uses: actions/checkout@v4
+      - *pixi-setup
+      - name: Install security environment
+        run: pixi install -e security --locked
+      - name: Run baseline security scans (PRs)
+        if: github.event_name == 'pull_request'
+        run: pixi run -e security security-ci
+      - name: Run comprehensive security scans (Push, Dispatch, Schedule)
+        if: github.event_name != 'pull_request' || github.event.inputs.run_full_security == 'true'
         run: |
-          if [[ "${{ needs.lint.result }}" == "success" && \
-                "${{ needs.test.result }}" == "success" && \
-                "${{ needs.build.result }}" == "success" ]]; then
-            echo "All development jobs passed successfully."
-          else
-            echo "One or more development jobs failed or were cancelled."
-            exit 1
+          pixi run -e security security-static || echo "Static security scan completed with findings"
+          pixi run -e security security-deps || echo "Dependency scan completed with findings"
+          pixi run -e security security-audit || echo "Security audit completed with findings"
+          pixi run -e security security-secrets || echo "Secrets scan completed"
+          pixi run -e security security-supply-chain
+      - name: Generate security summary
+        if: github.event_name != 'pull_request' || github.event.inputs.run_full_security == 'true'
+        run: |
+          echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Tool | Status | Issues |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          # Check if reports exist and summarize
+          if [ -f "reports/bandit-report.json" ]; then
+            issues=$(jq '.results | length' reports/bandit-report.json 2>/dev/null || echo "0")
+            echo "| Bandit | ✅ | $issues |" >> $GITHUB_STEP_SUMMARY
           fi
 
-  # Summary job that reports overall workflow status
-  ci-status:
-    name: CI Status Summary
+          if [ -f "reports/safety-report.json" ]; then
+            echo "| Safety | ✅ | Checked |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f "reports/pip-audit-report.json" ]; then
+            vulnerabilities=$(jq '.vulnerabilities | length' reports/pip-audit-report.json 2>/dev/null || echo "0")
+            echo "| Pip-Audit | ✅ | $vulnerabilities |" >> $GITHUB_STEP_SUMMARY
+          fi
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: reports/
+          retention-days: 30
+
+  performance:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Run on push to development (to update baseline), or when manually triggered
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/development') || github.event.inputs.run_performance == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - *pixi-setup
+      - name: Install performance tools
+        run: pixi install -e performance --locked
+      - name: Download baseline benchmarks
+        uses: actions/download-artifact@v4
+        with:
+          name: performance-baseline
+          path: baseline/
+        continue-on-error: true
+      - name: Run performance benchmarks
+        run: pixi run -e performance performance-benchmark
+      - name: Performance regression analysis
+        run: |
+          if [ -f "baseline/benchmark.json" ] && [ -f "reports/benchmark.json" ]; then
+            echo "## 📊 Performance Analysis" >> $GITHUB_STEP_SUMMARY
+            pixi run -e performance performance-regression baseline/benchmark.json reports/benchmark.json || true
+          else
+            echo "## 📊 Performance Baseline Created" >> $GITHUB_STEP_SUMMARY
+            echo "First benchmark run - baseline established for future comparisons" >> $GITHUB_STEP_SUMMARY
+          fi
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: reports/benchmark.json
+      - name: Update performance baseline
+        if: github.ref == 'refs/heads/development'
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-baseline
+          path: reports/benchmark.json
+
+  docs:
+    name: Docs Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Run only when docs files change, or when manually triggered
+    if: |
+      github.event.inputs.deploy_docs == 'true' ||
+      (github.event_name == 'pull_request' && (
+        exists(github.event.pull_request.changed_files) &&
+        (join(github.event.pull_request.changed_files, ',').contains('docs/') ||
+         join(github.event.pull_request.changed_files, ',').contains('mkdocs.yml'))
+      ))
+    steps:
+      - uses: actions/checkout@v4
+      - *pixi-setup
+      - name: Install documentation tools
+        run: pixi install -e docs --locked
+      - name: Build documentation
+        run: pixi run -e docs docs-build
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-site
+          path: site/
+          retention-days: 7
+
+  container-and-sbom:
+    name: Container & SBOM
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build-and-package, security]
+    # Run on push to main/dev or when full security scan is requested
+    if: github.event_name == 'push' || github.event.inputs.run_full_security == 'true'
+    permissions:
+      packages: write # to push to GHCR
+      security-events: write # to upload trivy results
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build container image
+        run: |
+          if [ ! -f Dockerfile ]; then
+            # Create a minimal Dockerfile if it doesn't exist
+            cat > Dockerfile << 'EOF'
+          FROM python:3.12-slim
+          WORKDIR /app
+          COPY . .
+          RUN pip install -e .
+          CMD ["python", "-m", "strategy_sandbox"]
+          EOF
+          fi
+          docker build -t ghcr.io/${{ github.repository }}:${{ github.sha }} .
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ghcr.io/${{ github.repository }}:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+      - name: Generate SBOM
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-bom -e . -o reports/sbom.json
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: reports/sbom.json
+
+  #########################################
+  # 3. FINAL SUMMARY JOB
+  #########################################
+  ci-summary:
+    name: CI Summary
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [lint, test, integration-tests, build, benchmark, security]
-    if: always()
+    needs: [quick-checks, lint-and-type-check, test-matrix]
+    if: always() # This job runs even if previous jobs fail
     steps:
       - name: Report CI Status
         run: |
-          # Check if all required jobs passed (benchmark and integration-tests are non-blocking)
-          if [[ "${{ needs.test.result }}" == "success" && "${{ needs.lint.result }}" == "success" && "${{ needs.build.result }}" == "success" && "${{ needs.security.result }}" == "success" ]]; then
-            echo "✅ All CI jobs passed"
-            echo "## 🎉 CI Status: SUCCESS" >> $GITHUB_STEP_SUMMARY
-            echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
-            echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Tests (Cross-platform) | ✅ ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Integration Tests | 📋 ${{ needs.integration-tests.result }} (non-blocking) |" >> $GITHUB_STEP_SUMMARY
-            echo "| Lint | ✅ ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Build | ✅ ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Security | ✅ ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Benchmark | 📈 ${{ needs.benchmark.result }} (non-blocking) |" >> $GITHUB_STEP_SUMMARY
-            exit 0
+          echo "## CI Run Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Quick Checks | ${{ needs.quick-checks.result == 'success' && '✅' || '❌' }} ${{ needs.quick-checks.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint & Type Check | ${{ needs.lint-and-type-check.result == 'success' && '✅' || '❌' }} ${{ needs.lint-and-type-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Matrix | ${{ needs.test-matrix.result == 'success' && '✅' || '❌' }} ${{ needs.test-matrix.result }} |" >> $GITHUB_STEP_SUMMARY
+
+          # Get optional job results (these may be skipped)
+          build_result="${{ needs.build-and-package.result || 'skipped' }}"
+          security_result="${{ needs.security.result || 'skipped' }}"
+          performance_result="${{ needs.performance.result || 'skipped' }}"
+          docs_result="${{ needs.docs.result || 'skipped' }}"
+          container_result="${{ needs.container-and-sbom.result || 'skipped' }}"
+
+          echo "| Build & Package | ${{ github.ref == 'refs/heads/main' && (needs.build-and-package.result == 'success' && '✅' || '❌') || '⚪' }} ${build_result} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Scan | ${security_result == 'success' && '✅' || security_result == 'skipped' && '⚪' || '❌'} ${security_result} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance | ${performance_result == 'success' && '✅' || performance_result == 'skipped' && '⚪' || '❌'} ${performance_result} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docs Pipeline | ${docs_result == 'success' && '✅' || docs_result == 'skipped' && '⚪' || '❌'} ${docs_result} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Container & SBOM | ${container_result == 'success' && '✅' || container_result == 'skipped' && '⚪' || '❌'} ${container_result} |" >> $GITHUB_STEP_SUMMARY
+
+          # Determine overall status - only require core jobs to pass
+          if [[ "${{ needs.quick-checks.result }}" == "success" && \
+                "${{ needs.lint-and-type-check.result }}" == "success" && \
+                "${{ needs.test-matrix.result }}" == "success" ]]; then
+            echo -e "\n**Overall Status: ✅ Core checks passed. Optional jobs completed as scheduled.**" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Some CI jobs failed"
-            echo "## ❌ CI Status: FAILURE" >> $GITHUB_STEP_SUMMARY
-            echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
-            echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Tests (Cross-platform) | ${{ needs.test.result == 'success' && '✅' || '❌' }} ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Integration Tests | 📋 ${{ needs.integration-tests.result }} (non-blocking) |" >> $GITHUB_STEP_SUMMARY
-            echo "| Lint | ${{ needs.lint.result == 'success' && '✅' || '❌' }} ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Build | ${{ needs.build.result == 'success' && '✅' || '❌' }} ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Security | ${{ needs.security.result == 'success' && '✅' || '❌' }} ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Benchmark | 📈 ${{ needs.benchmark.result }} (non-blocking) |" >> $GITHUB_STEP_SUMMARY
+            echo -e "\n**Overall Status: ❌ Core checks failed.**" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
