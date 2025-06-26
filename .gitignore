@@ -173,7 +173,27 @@ pixi.lock
 *.local
 .local/
 
-# Claude Code files
+# Development environment files
 .claude/
 .aider*
 .mcp.json
+CLAUDE.md
+CLAUDE.local.md
+claude-code-knowledge-framework/
+.clinerules
+.cursor/
+.roo*
+.taskmaster/
+.trae*
+.windsurf*
+
+# AI agent development files
+AGENTS.md
+
+# Temporary test and benchmark files
+benchmark-results.json
+test_output.json
+
+# Development symlinks and test connections
+__do_not_edit*
+__do_not_eddit*
