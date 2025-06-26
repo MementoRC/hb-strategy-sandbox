@@ -32,8 +32,16 @@ dependencies = [
     "pandas>=1.0.0",
     "pydantic>=2",
     "asyncio-throttle>=1.0.0",
+    "psutil>=5.0.0",
+    "PyYAML>=6.0.0",
 ]
 dynamic = ["version"]
+
+[project.scripts]
+hb-performance = "strategy_sandbox.performance.cli:main"
+hb-reporting = "strategy_sandbox.reporting.cli:main"
+hb-security = "strategy_sandbox.security.cli:main"
+hb-maintenance = "strategy_sandbox.maintenance.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/MementoRC/hb-strategy-sandbox"
@@ -53,6 +61,7 @@ dev = [
     "pyupgrade",
     "ruff>=0.1.5",
     "mypy>=1.5.1",
+    "types-PyYAML>=6.0.12",
     "cython-lint>=0.15.0",
     "build>=0.10.0",
     "twine>=4.0.0",
@@ -98,6 +107,8 @@ numpy = ">=1.20.0"
 pandas = ">=1.0.0"
 pydantic = ">=2"
 asyncio-throttle = ">=1.0.0"
+psutil = ">=5.0.0"
+pyyaml = ">=6.0.0"
 
 # Security fix: Pin requests to version without vulnerability GHSA-9hjg-9r4m-mvj7
 requests = ">=2.32.4"
@@ -114,6 +125,7 @@ aioresponses = "*"
 # Basic quality tools
 ruff = ">=0.1.5"
 mypy = ">=1.5.1"
+types-pyyaml = ">=6.0.12"
 
 # Tasks equivalent to hatch scripts
 [tool.pixi.tasks]
@@ -216,6 +228,7 @@ numpy = ">=1.20.0"
 pandas = ">=1.0.0"
 pydantic = ">=2"
 asyncio-throttle = ">=1.0.0"
+psutil = ">=5.0.0"
 # Testing framework
 pytest = ">=7.0.0"
 pytest-asyncio = ">=0.21.0"
@@ -236,6 +249,7 @@ numpy = ">=1.20.0"
 pandas = ">=1.0.0"
 pydantic = ">=2"
 asyncio-throttle = ">=1.0.0"
+psutil = ">=5.0.0"
 # Testing framework
 pytest = ">=7.0.0"
 pytest-asyncio = ">=0.21.0"
@@ -256,6 +270,7 @@ numpy = ">=1.20.0"
 pandas = ">=1.0.0"
 pydantic = ">=2"
 asyncio-throttle = ">=1.0.0"
+psutil = ">=5.0.0"
 # Testing framework
 pytest = ">=7.0.0"
 pytest-asyncio = ">=0.21.0"
@@ -344,6 +359,7 @@ markers = [
     "performance: marks tests as performance tests",
     "asyncio: marks tests as asyncio tests",
     "benchmark: marks tests as performance benchmarks (deselect with '-m \"not benchmark\"')",
+    "e2e: marks tests as end-to-end tests (deselect with '-m \"not e2e\"')",
 ]
 log_cli = true
 log_cli_level = "INFO"

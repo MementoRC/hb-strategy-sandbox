@@ -56,9 +56,9 @@ class SimpleBenchmarkStrategy:
 class TestPerformanceBenchmarks:
     """Performance benchmark test cases."""
 
-    @pytest.mark.asyncio
-    async def test_simulation_throughput(self, benchmark):
+    def test_simulation_throughput(self, benchmark):
         """Benchmark simulation throughput."""
+        import asyncio
 
         async def run_simulation():
             config = SandboxConfiguration(
@@ -74,8 +74,11 @@ class TestPerformanceBenchmarks:
             await sandbox.run(duration=timedelta(seconds=10))
             return sandbox.performance_metrics
 
-        # Benchmark the simulation
-        result = await benchmark(run_simulation)
+        # Benchmark the async simulation using sync wrapper
+        def run_simulation_sync():
+            return asyncio.run(run_simulation())
+
+        result = benchmark(run_simulation_sync)
 
         # Verify we got reasonable performance
         assert result["duration_seconds"] > 0
@@ -113,6 +116,10 @@ class TestPerformanceBenchmarks:
 
         end_time = time.time()
         duration = end_time - start_time
+
+        # Windows timing protection: ensure minimum duration to prevent division by zero
+        if duration <= 0:
+            duration = 0.001  # 1ms minimum to prevent mathematical errors
 
         # Calculate metrics
         orders_per_second = orders_placed / duration
@@ -171,6 +178,11 @@ class TestPerformanceBenchmarks:
 
         end_time = time.time()
         duration = end_time - start_time
+
+        # Windows timing protection: ensure minimum duration to prevent division by zero
+        if duration <= 0:
+            duration = 0.001  # 1ms minimum to prevent mathematical errors
+
         operations_per_second = num_operations / duration
 
         print(f"Balance operations per second: {operations_per_second:.2f}")
@@ -217,6 +229,11 @@ class TestPerformanceBenchmarks:
 
         end_time = time.time()
         duration = end_time - start_time
+
+        # Windows timing protection: ensure minimum duration to prevent division by zero
+        if duration <= 0:
+            duration = 0.001  # 1ms minimum to prevent mathematical errors
+
         events_per_second = num_events / duration
 
         print(f"Events per second: {events_per_second:.2f}")

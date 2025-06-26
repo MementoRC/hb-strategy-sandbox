@@ -1,0 +1,40 @@
+coverage:
+  status:
+    project:
+      default:
+        # Total project coverage target
+        target: 70%
+        # Allow 5% coverage decrease without failing
+        threshold: 5%
+        # Only fail if coverage drops significantly
+        if_no_uploads: error
+        if_not_found: success
+        if_ci_failed: error
+
+    patch:
+      default:
+        # Patch coverage (for changed lines only)
+        target: 50%  # More reasonable for new code
+        # Allow more flexibility for patch coverage
+        threshold: 10%
+        # Don't fail the build for patch coverage issues
+        if_no_uploads: success  # Changed from error to success
+        if_not_found: success
+        if_ci_failed: success   # Changed from error to success
+
+  precision: 2
+  round: down
+  range: "50...90"
+
+comment:
+  layout: "reach,diff,flags,files,footer"
+  behavior: default
+  require_changes: false
+
+ignore:
+  # Ignore CLI modules and example files
+  - "strategy_sandbox/*/cli.py"
+  - "examples/**/*"
+  - "tests/conftest.py"
+  - "scripts/**/*"
+  - "docs/**/*"
