@@ -1,0 +1,149 @@
+# 🏗️ Component Classification for Workspace Migration
+# This file classifies current modules for workspace reorganization
+
+[classification]
+version = "1.0.0"
+project_name = "hb-strategy-sandbox"
+classification_date = "2025-06-27"
+
+# 🎯 FEATURE COMPONENTS (Strategy Sandbox)
+# Pure business logic for strategy development and testing
+[classification.feature_components]
+name = "strategy_sandbox"
+description = "Strategy development and testing feature"
+hummingbot_integration = true
+
+  [classification.feature_components.modules]
+  "strategy_sandbox.core" = { type = "feature", target = "features/strategy_sandbox/core", priority = "high" }
+  "strategy_sandbox.balance" = { type = "feature", target = "features/strategy_sandbox/balance", priority = "high" }
+  "strategy_sandbox.markets" = { type = "feature", target = "features/strategy_sandbox/markets", priority = "high" }
+  "strategy_sandbox.events" = { type = "feature", target = "features/strategy_sandbox/events", priority = "high" }
+  "strategy_sandbox.data" = { type = "feature", target = "features/strategy_sandbox/data", priority = "medium" }
+  "strategy_sandbox.utils" = { type = "feature", target = "features/strategy_sandbox/utils", priority = "low" }
+
+  [classification.feature_components.dependencies]
+  external = ["aiohttp", "numpy", "pandas", "pydantic", "asyncio-throttle", "psutil", "PyYAML"]
+  internal_framework = ["performance.collector", "reporting.report_generator", "security.analyzer"]
+
+  [classification.feature_components.exports]
+  # Main API that external consumers should use
+  public_api = [
+    "strategy_sandbox.core.SandboxEnvironment",
+    "strategy_sandbox.balance.BalanceManager", 
+    "strategy_sandbox.markets.ExchangeSimulator",
+    "strategy_sandbox.events.SystemEventManager"
+  ]
+
+# 🛠️ FRAMEWORK COMPONENTS  
+# Reusable quality and development tools
+[classification.framework_components]
+name = "hb_framework"
+description = "Shared development and quality framework"
+reusable = true
+
+  [classification.framework_components.modules]
+  "strategy_sandbox.performance" = { type = "framework", target = "framework/performance", priority = "high" }
+  "strategy_sandbox.security" = { type = "framework", target = "framework/security", priority = "high" }
+  "strategy_sandbox.reporting" = { type = "framework", target = "framework/reporting", priority = "high" }
+  "strategy_sandbox.maintenance" = { type = "framework", target = "framework/maintenance", priority = "medium" }
+
+  [classification.framework_components.exports]
+  # Framework tools that features can use
+  public_api = [
+    "hb_framework.performance.PerformanceCollector",
+    "hb_framework.security.SecurityAnalyzer",
+    "hb_framework.reporting.ReportGenerator", 
+    "hb_framework.maintenance.HealthMonitor"
+  ]
+
+# 🧪 TEST COMPONENTS
+[classification.test_components]
+  [classification.test_components.feature_tests]
+  # Tests specific to strategy sandbox feature
+  "tests/unit/test_basic_functionality.py" = { type = "feature", target = "features/strategy_sandbox/tests/unit/" }
+  "tests/unit/test_sandbox_environment.py" = { type = "feature", target = "features/strategy_sandbox/tests/unit/" }
+  "tests/unit/test_market_dynamics.py" = { type = "feature", target = "features/strategy_sandbox/tests/unit/" }
+  "tests/integration/test_integration_simple.py" = { type = "feature", target = "features/strategy_sandbox/tests/integration/" }
+
+  [classification.test_components.framework_tests]
+  # Tests for framework components
+  "tests/unit/test_performance_collector.py" = { type = "framework", target = "framework/tests/performance/" }
+  "tests/unit/test_security_analyzer.py" = { type = "framework", target = "framework/tests/security/" }
+  "tests/unit/test_report_generator.py" = { type = "framework", target = "framework/tests/reporting/" }
+  "tests/unit/test_health_monitor.py" = { type = "framework", target = "framework/tests/maintenance/" }
+  "tests/unit/test_artifact_manager.py" = { type = "framework", target = "framework/tests/reporting/" }
+  "tests/unit/test_template_engine.py" = { type = "framework", target = "framework/tests/reporting/" }
+
+  [classification.test_components.integration_tests]
+  # Cross-component integration tests (workspace level)
+  "tests/integration/test_maintenance_integration.py" = { type = "workspace", target = "tests/integration/" }
+  "tests/e2e/test_ci_pipeline.py" = { type = "workspace", target = "tests/e2e/" }
+  "tests/performance/test_benchmarks.py" = { type = "workspace", target = "tests/performance/" }
+
+# 🔧 CONFIGURATION COMPONENTS
+[classification.configuration_components]
+  [classification.configuration_components.feature_config]
+  # Configuration specific to strategy sandbox
+  "examples/simple_strategy_example.py" = { type = "feature", target = "features/strategy_sandbox/examples/" }
+
+  [classification.configuration_components.framework_config] 
+  # Framework and build configuration
+  "pyproject.toml" = { type = "framework", target = "workspace/pyproject.toml", note = "Split into workspace + feature configs" }
+  ".github/workflows/" = { type = "framework", target = "workspace/.github/workflows/", note = "Enhance for multi-feature" }
+  ".pre-commit-config.yaml" = { type = "framework", target = "workspace/.pre-commit-config.yaml" }
+
+  [classification.configuration_components.development_config]
+  # Development tools and configuration
+  ".claude/" = { type = "framework", target = "workspace/.claude/", note = "Workspace-level development tools" }
+  "CLAUDE.md" = { type = "framework", target = "workspace/CLAUDE.md" }
+  "CLAUDE.local.md" = { type = "framework", target = "workspace/CLAUDE.local.md" }
+
+# 📋 MIGRATION PLAN
+[migration]
+phases = ["framework_extraction", "feature_isolation", "workspace_integration"]
+
+  [migration.framework_extraction]
+  description = "Extract framework components into separate package"
+  modules = ["performance", "security", "reporting", "maintenance"]
+  estimated_effort = "medium"
+  dependencies = []
+
+  [migration.feature_isolation]  
+  description = "Isolate strategy sandbox feature"
+  modules = ["core", "balance", "markets", "events", "data", "utils"]
+  estimated_effort = "medium"
+  dependencies = ["framework_extraction"]
+
+  [migration.workspace_integration]
+  description = "Create workspace structure and integrate multiple features"
+  modules = ["workspace_config", "multi_feature_ci", "integration_tests"]
+  estimated_effort = "high" 
+  dependencies = ["framework_extraction", "feature_isolation"]
+
+# 🎯 VALIDATION CRITERIA
+[validation]
+  [validation.backward_compatibility]
+  # All current imports must continue working
+  required_imports = [
+    "from strategy_sandbox.core import SandboxEnvironment",
+    "from strategy_sandbox.balance import SandboxBalanceManager",
+    "from strategy_sandbox.performance import PerformanceCollector"
+  ]
+
+  [validation.quality_gates]
+  # Quality standards that must be maintained
+  min_test_count = 337
+  min_test_pass_rate = 1.0
+  max_critical_violations = 0
+  required_coverage = 0.95
+
+  [validation.functionality]
+  # Core functionality that must be preserved
+  required_features = [
+    "sandbox_environment_creation",
+    "strategy_execution", 
+    "balance_management",
+    "market_simulation",
+    "performance_monitoring",
+    "security_scanning"
+  ]

@@ -232,3 +232,6 @@ pip-audit-report.json
 
 # Benchmark and performance results
 *.benchmark.json
+
+# AI development documentation
+ai_docs/

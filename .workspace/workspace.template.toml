@@ -1,0 +1,185 @@
+# 🏗️ Workspace Configuration Template
+# This will become the main workspace.toml in Phase 2+
+
+[workspace]
+name = "hummingbot-workspace"
+version = "1.0.0" 
+description = "Workspace for Hummingbot feature development and integration"
+framework_version = "1.0.0"
+
+# 🎯 FEATURE DEFINITIONS
+[workspace.features]
+# Strategy development and testing
+strategy_sandbox = { 
+    path = "features/strategy_sandbox", 
+    version = "^1.0.0",
+    description = "Strategy development and backtesting environment",
+    hummingbot_integration = true,
+    dependencies = ["framework.performance", "framework.reporting"]
+}
+
+# Market data ingestion (from sister project)
+candles_feed = { 
+    path = "features/candles_feed", 
+    version = "^2.0.0", 
+    optional = true,
+    description = "Real-time and historical market data feed",
+    hummingbot_integration = true,
+    dependencies = ["framework.performance"]
+}
+
+# Future features template
+future_feature = { 
+    path = "features/future_feature", 
+    version = "^1.0.0", 
+    optional = true,
+    description = "Template for new Hummingbot features",
+    hummingbot_integration = true
+}
+
+# 🛠️ FRAMEWORK DEFINITION
+[workspace.framework]
+path = "framework"
+version = "^1.0.0"
+description = "Shared development and quality framework"
+
+  [workspace.framework.components]
+  performance = { description = "Performance monitoring and benchmarking" }
+  security = { description = "Security scanning and vulnerability detection" }
+  reporting = { description = "Report generation and artifact management" }  
+  maintenance = { description = "System health monitoring and maintenance" }
+  ci_orchestration = { description = "CI/CD coordination for multi-feature projects" }
+  quality_gates = { description = "Cross-feature quality validation" }
+
+# 🚀 CI/CD CONFIGURATION
+[workspace.ci]
+# Feature-specific test jobs (run in parallel)
+feature_jobs = [
+    "test-strategy-sandbox",
+    "test-candles-feed"
+]
+
+# Integration test combinations (run after feature tests)
+integration_jobs = [
+    "test-strategy-candles-integration",
+    "test-framework-integration",
+    "test-hummingbot-compatibility"
+]
+
+# Quality gate jobs (run after integration tests)
+quality_gates = [
+    "security-scan-all",
+    "performance-regression-all", 
+    "cross-feature-compatibility",
+    "workspace-quality-dashboard"
+]
+
+# Deployment scenario testing
+deployment_scenarios = [
+    "trading_bot",      # strategy_sandbox + candles_feed
+    "analytics_suite",  # candles_feed + future analytics
+    "dev_environment"   # all features + framework
+]
+
+# 📊 QUALITY STANDARDS
+[workspace.quality]
+# Framework-wide quality requirements
+min_test_coverage = 0.95
+max_critical_violations = 0
+min_performance_score = 8.0
+min_security_score = 9.0
+
+# Per-feature quality requirements
+[workspace.quality.feature_requirements]
+  [workspace.quality.feature_requirements.strategy_sandbox]
+  min_test_count = 150
+  required_test_categories = ["unit", "integration", "performance"]
+  hummingbot_compatibility_required = true
+  
+  [workspace.quality.feature_requirements.candles_feed]
+  min_test_count = 100
+  required_test_categories = ["unit", "integration", "performance", "load"]
+  hummingbot_compatibility_required = true
+
+# Framework quality requirements
+[workspace.quality.framework_requirements]
+min_test_count = 100
+required_components = ["performance", "security", "reporting", "maintenance"]
+cross_feature_compatibility_required = true
+
+# 🔧 DEVELOPMENT CONFIGURATION
+[workspace.development]
+# Development tool configuration
+claude_integration = true
+aider_integration = true
+taskmaster_integration = true
+
+# Quality validation sequence (matches framework standards)
+quality_sequence = [
+    "test-all",
+    "lint-critical", 
+    "precommit-all",
+    "git-status-clean"
+]
+
+# 📋 BUILD CONFIGURATION
+[workspace.build]
+# Workspace-level build settings
+output_dir = "dist/"
+include_features = ["strategy_sandbox", "candles_feed"]
+include_framework = true
+
+# Package configurations for different use cases
+[workspace.build.packages]
+  [workspace.build.packages.trading_bot]
+  name = "hummingbot-trading-bot"
+  features = ["strategy_sandbox", "candles_feed"]
+  framework_components = ["performance", "reporting"]
+  
+  [workspace.build.packages.analytics_suite]  
+  name = "hummingbot-analytics"
+  features = ["candles_feed"]
+  framework_components = ["performance", "reporting", "security"]
+  
+  [workspace.build.packages.dev_tools]
+  name = "hummingbot-dev-framework"
+  features = []
+  framework_components = ["performance", "security", "reporting", "maintenance", "ci_orchestration"]
+
+# 🎯 MIGRATION TRACKING
+[workspace.migration]
+current_phase = "phase_1_planning"
+migration_date = "2025-06-27"
+baseline_established = false
+
+  [workspace.migration.phases]
+  phase_1_planning = { status = "in_progress", description = "Documentation and planning" }
+  phase_2_framework_extraction = { status = "pending", description = "Extract framework components" }
+  phase_3_feature_isolation = { status = "pending", description = "Isolate strategy sandbox feature" }
+  phase_4_workspace_integration = { status = "pending", description = "Multi-feature workspace" }
+
+  [workspace.migration.validation]
+  baseline_test_count = 337
+  baseline_quality_score = 10.0
+  backward_compatibility_required = true
+  
+# 📚 DOCUMENTATION
+[workspace.documentation]
+workspace_docs = "WORKSPACE.md"
+migration_guide = ".workspace/migration_guide.md"
+api_docs_auto_generate = true
+feature_docs_required = true
+
+# 🔗 INTEGRATION PATTERNS
+[workspace.integration]
+# Hummingbot integration patterns
+hummingbot_base_path = "hummingbot/"
+feature_plugin_pattern = "hummingbot.plugins.{feature_name}"
+shared_protocols_path = "framework/protocols/"
+
+# Cross-feature communication patterns
+event_bus_enabled = true
+shared_data_patterns = ["observer", "pub_sub", "dependency_injection"]
+
+# External integrations
+external_apis = ["hummingbot_core", "exchange_apis", "data_providers"]

@@ -2,6 +2,8 @@
 
 A comprehensive testing and simulation framework for Hummingbot trading strategies.
 
+> **🚀 Workspace Migration Notice**: This project is transitioning to multi-feature workspace architecture. See [WORKSPACE.md](WORKSPACE.md) for details.
+
 ## Overview
 
 The Hummingbot Strategy Sandbox provides a controlled environment for testing and developing trading strategies without connecting to real exchanges. It simulates market conditions, order execution, and balance management to enable safe strategy development and backtesting.
@@ -57,6 +59,26 @@ The sandbox is built on a clean protocol-based architecture:
 - **Market Simulation**: Realistic exchange behavior simulation
 - **Balance Management**: Accurate balance tracking and locking
 - **Event System**: Complete event propagation system
+
+### 🏗️ **Workspace Architecture**
+
+This project is organized for multi-feature workspace development:
+
+#### **🎯 Feature Components** (Strategy Sandbox)
+Pure business logic for strategy development:
+- `strategy_sandbox/core/` - Core strategy logic
+- `strategy_sandbox/balance/` - Balance management
+- `strategy_sandbox/markets/` - Market simulation
+- `strategy_sandbox/events/` - Event system
+
+#### **🛠️ Framework Components** (Shared Tools)
+Reusable development and quality tools:
+- `strategy_sandbox/performance/` - Performance monitoring
+- `strategy_sandbox/security/` - Security scanning  
+- `strategy_sandbox/reporting/` - Report generation
+- `strategy_sandbox/maintenance/` - System maintenance
+
+> **Migration Path**: Framework components will be extracted to `framework/` package in Phase 2. See [WORKSPACE.md](WORKSPACE.md) for full migration plan.
 
 ## Examples
 
