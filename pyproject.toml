@@ -134,10 +134,11 @@ test-unit = "pytest tests/unit"
 test-integration = "pytest tests/integration"
 test-performance = "pytest tests/performance"
 lint = "ruff check strategy_sandbox tests"
+lint-critical = "ruff check --select=F,E9 strategy_sandbox tests"
 format = "ruff format strategy_sandbox tests"
 typecheck = "mypy strategy_sandbox"
 lint-cython = "cython-lint strategy_sandbox"
-check = { cmd = ["pixi run format", "pixi run lint", "pixi run typecheck", "pixi run test-unit"] }
+check = { cmd = ["pixi run format", "pixi run lint", "pixi run lint-critical", "pixi run typecheck", "pixi run test-unit"] }
 
 # Documentation tasks
 docs-build = "mkdocs build --clean --strict"
@@ -145,7 +146,7 @@ docs-serve = "mkdocs serve --dev-addr localhost:8009"
 docs-deploy = "mkdocs gh-deploy"
 
 # CI tasks
-ci-check = "ruff check strategy_sandbox tests; ruff format --check strategy_sandbox tests"
+ci-check = "ruff check strategy_sandbox tests; ruff format --check strategy_sandbox tests; ruff check --select=F,E9 strategy_sandbox tests"
 ci-hints = "mypy --install-types --non-interactive --ignore-missing-imports strategy_sandbox/"
 
 # Security tasks - Enhanced centralized management
