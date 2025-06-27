@@ -343,6 +343,7 @@ class PerformanceCollector:
         :param baseline: The baseline benchmark result.
         :return: A dictionary with comparison details.
         """
+
         def calc_change_percent(current_val, baseline_val):
             if baseline_val == 0:
                 return float("inf") if current_val > 0 else 0
