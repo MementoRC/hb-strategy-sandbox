@@ -123,7 +123,7 @@ class ArtifactManager:
                     )
 
         # Sort by creation time (newest first)
-        artifacts.sort(key=lambda x: x["created"], reverse=True)
+        artifacts.sort(key=lambda x: str(x["created"]), reverse=True)
         return artifacts
 
     def get_artifact_summary(self) -> dict[str, Any]:
@@ -282,3 +282,88 @@ class ArtifactManager:
         except Exception as e:
             print(f"Error creating data artifact {data_name}: {e}")
             return None
+
+    def _generate_html_report(self, report_name: str, report_data: dict[str, Any]) -> str:
+        """Generate HTML report from data.
+
+        Args:
+            report_name: Name of the report.
+            report_data: Report data.
+
+        Returns:
+            HTML content.
+        """
+        html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>{report_name}</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        .header {{ background-color: #f4f4f4; padding: 10px; border-radius: 5px; }}
+        .data {{ margin: 20px 0; }}
+        pre {{ background-color: #f8f8f8; padding: 10px; border-radius: 3px; overflow-x: auto; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{report_name}</h1>
+        <p>Generated: {datetime.now().isoformat()}</p>
+    </div>
+    <div class="data">
+        <h2>Report Data</h2>
+        <pre>{json.dumps(report_data, indent=2, default=str)}</pre>
+    </div>
+</body>
+</html>"""
+        return html_content
+
+    def _generate_markdown_report(self, report_name: str, report_data: dict[str, Any]) -> str:
+        """Generate Markdown report from data.
+
+        Args:
+            report_name: Name of the report.
+            report_data: Report data.
+
+        Returns:
+            Markdown content.
+        """
+        md_content = f"""# {report_name}
+
+**Generated:** {datetime.now().isoformat()}
+
+## Report Data
+
+```json
+{json.dumps(report_data, indent=2, default=str)}
+```
+"""
+        return md_content
+
+    def _generate_csv(self, data: dict | list) -> str:
+        """Generate CSV content from data.
+
+        Args:
+            data: Data to convert to CSV.
+
+        Returns:
+            CSV content.
+        """
+        if isinstance(data, dict):
+            # Convert dict to CSV with keys as headers
+            if not data:
+                return ""
+            headers = list(data.keys())
+            values = [str(data[key]) for key in headers]
+            return ",".join(headers) + "\n" + ",".join(values)
+        elif isinstance(data, list):
+            # Convert list of dicts to CSV
+            if not data or not isinstance(data[0], dict):
+                return str(data)
+            headers = list(data[0].keys())
+            csv_lines = [",".join(headers)]
+            for row in data:
+                values = [str(row.get(key, "")) for key in headers]
+                csv_lines.append(",".join(values))
+            return "\n".join(csv_lines)
+        else:
+            return str(data)
