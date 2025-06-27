@@ -7,55 +7,178 @@ from typing import Any
 
 
 class ArtifactManager:
-    """Manages creation and organization of workflow artifacts."""
+    """Manages CI/CD artifacts for reporting and analysis.
 
-    def __init__(self, artifact_path: str | Path = "./artifacts"):
-        """Initialize artifact manager.
+    This class provides a centralized system for creating, storing, and managing
+    various types of artifacts generated during CI/CD pipeline execution.
+    It organizes artifacts into categories (reports, logs, data), handles their
+    creation in different formats (JSON, HTML, Markdown), and offers utilities
+    for listing, summarizing, and cleaning up old artifacts.
+    """
 
-        Args:
-            artifact_path: Base directory for storing artifacts.
+    def __init__(self, artifact_path: str | Path | None = None):
+        """Initialize the artifact manager.
+
+        :param artifact_path: Base path for storing artifacts. Defaults to `./artifacts`.
         """
-        self.artifact_path = Path(artifact_path)
-        self.artifact_path.mkdir(parents=True, exist_ok=True)
+        self.base_path = Path(artifact_path or "./artifacts").resolve()
+        self.base_path.mkdir(exist_ok=True)
 
         # Create subdirectories for different artifact types
-        self.reports_path = self.artifact_path / "reports"
-        self.logs_path = self.artifact_path / "logs"
-        self.data_path = self.artifact_path / "data"
+        self.reports_path = self.base_path / "reports"
+        self.logs_path = self.base_path / "logs"
+        self.data_path = self.base_path / "data"
 
-        for path in [self.reports_path, self.logs_path, self.data_path]:
-            path.mkdir(exist_ok=True)
+        self.reports_path.mkdir(exist_ok=True)
+        self.logs_path.mkdir(exist_ok=True)
+        self.data_path.mkdir(exist_ok=True)
 
     def create_artifact(
-        self, name: str, content: str | dict | list, content_type: str = "text/plain"
-    ) -> Path | None:
-        """Create an artifact file.
+        self, filename: str, content: str | bytes, content_type: str = "text/plain"
+    ) -> Path:
+        """Create and save an artifact.
 
-        Args:
-            name: Artifact filename.
-            content: Content to store.
-            content_type: MIME type of content.
-
-        Returns:
-            Path to created artifact or None if failed.
+        :param filename: The name of the artifact file.
+        :param content: The content of the artifact (string or bytes).
+        :param content_type: The MIME type of the content.
+        :return: The path to the created artifact.
         """
+        # Determine storage path based on content type
+        if "report" in filename or "text/markdown" in content_type:
+            storage_path = self.reports_path
+        elif "log" in filename or "text/plain" in content_type:
+            storage_path = self.logs_path
+        elif "json" in content_type or "data" in filename:
+            storage_path = self.data_path
+        else:
+            storage_path = self.base_path  # Default to base path
+
+        artifact_file = storage_path / filename
+
+        # Write content to file
+        mode = "wb" if isinstance(content, bytes) else "w"
+        encoding = None if isinstance(content, bytes) else "utf-8"
+
+        with open(artifact_file, mode, encoding=encoding) as f:
+            f.write(content)
+
+        return artifact_file
+
+    def get_artifact(self, filename: str) -> Path | None:
+        """Retrieve an artifact by filename.
+
+        :param filename: The name of the artifact to retrieve.
+        :return: The path to the artifact, or None if not found.
+        """
+        for path in [self.reports_path, self.logs_path, self.data_path, self.base_path]:
+            artifact_file = path / filename
+            if artifact_file.exists():
+                return artifact_file
+        return None
+
+    def list_artifacts(self, artifact_type: str | None = None) -> list[dict[str, Any]]:
+        """List all artifacts, optionally filtering by type.
+
+        :param artifact_type: Optional filter ("reports", "logs", "data").
+        :return: A list of dictionaries, each representing an artifact.
+        """
+        artifacts = []
+        paths_to_scan: dict[str, Path] = {}
+
+        if artifact_type:
+            if artifact_type == "reports":
+                paths_to_scan["reports"] = self.reports_path
+            elif artifact_type == "logs":
+                paths_to_scan["logs"] = self.logs_path
+            elif artifact_type == "data":
+                paths_to_scan["data"] = self.data_path
+        else:
+            paths_to_scan = {
+                "reports": self.reports_path,
+                "logs": self.logs_path,
+                "data": self.data_path,
+            }
+
+        for type_name, path in paths_to_scan.items():
+            for item in path.iterdir():
+                if item.is_file():
+                    stat = item.stat()
+                    artifacts.append(
+                        {
+                            "name": item.name,
+                            "path": str(item),
+                            "type": type_name,
+                            "size": stat.st_size,
+                            "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+                        }
+                    )
+
+        # Sort by creation time (newest first)
+        artifacts.sort(key=lambda x: x["created"], reverse=True)
+        return artifacts
+
+    def get_artifact_summary(self) -> dict[str, Any]:
+        """Get a summary of all stored artifacts.
+
+        :return: A dictionary containing artifact summary statistics.
+        """
+        all_artifacts = self.list_artifacts()
+        summary: dict[str, Any] = {
+            "total_count": len(all_artifacts),
+            "total_size": sum(a["size"] for a in all_artifacts),
+            "by_type": {},
+            "recent_artifacts": all_artifacts[:5],  # Show 5 most recent
+        }
+
+        # Group by type
+        for artifact in all_artifacts:
+            artifact_type = artifact["type"]
+            if artifact_type not in summary["by_type"]:
+                summary["by_type"][artifact_type] = {"count": 0, "size": 0}
+
+            summary["by_type"][artifact_type]["count"] += 1
+            summary["by_type"][artifact_type]["size"] += artifact["size"]
+
+        return summary
+
+    def cleanup_old_artifacts(self, max_age_days: int) -> int:
+        """Remove artifacts older than a specified number of days.
+
+        :param max_age_days: The maximum age in days for an artifact to be kept.
+        :return: The number of artifacts that were cleaned up.
+        """
+        cleanup_count = 0
+        cutoff_time = datetime.now() - timedelta(days=max_age_days)
+
+        all_artifacts = self.list_artifacts()
+
+        for artifact in all_artifacts:
+            artifact_path = Path(artifact["path"])
+            created_time = datetime.fromisoformat(artifact["created"])
+
+            if created_time < cutoff_time:
+                try:
+                    artifact_path.unlink()
+                    cleanup_count += 1
+                except OSError as e:
+                    print(f"Error removing artifact {artifact_path}: {e}")
+
+        return cleanup_count
+
+    def archive_artifacts(self, archive_name: str, format: str = "zip") -> Path | None:
+        """Create a compressed archive of all artifacts.
+
+        :param archive_name: The name of the archive file (without extension).
+        :param format: The archive format (e.g., "zip", "tar").
+        :return: The path to the created archive, or None on failure.
+        """
+        archive_path = self.base_path / archive_name
+
         try:
-            # Determine file path based on content type
-            file_path = self._get_artifact_path(name, content_type)
-
-            # Write content based on type
-            if content_type == "application/json" or isinstance(content, dict | list):
-                with open(file_path, "w", encoding="utf-8") as f:
-                    json.dump(content, f, indent=2, default=str)
-            else:
-                # Text content
-                with open(file_path, "w", encoding="utf-8") as f:
-                    f.write(str(content))
-
-            return file_path
-
+            shutil.make_archive(str(archive_path), format, self.base_path)
+            return Path(f"{archive_path}.{format}")
         except Exception as e:
-            print(f"Error creating artifact {name}: {e}")
+            print(f"Error creating artifact archive: {e}")
             return None
 
     def create_report_artifact(

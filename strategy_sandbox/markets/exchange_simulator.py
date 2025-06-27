@@ -30,7 +30,13 @@ from strategy_sandbox.core.protocols import (
 
 
 class ExchangeSimulator:
-    """Enhanced exchange simulator with advanced market dynamics and slippage simulation."""
+    """Core component for simulating market behavior in the sandbox.
+
+    This class provides an enhanced exchange simulation environment, incorporating
+    advanced market dynamics and realistic slippage models. It manages order books,
+    processes orders, and tracks trade fills, allowing for comprehensive testing
+    of trading strategies without real-world market exposure.
+    """
 
     def __init__(
         self,
@@ -39,6 +45,42 @@ class ExchangeSimulator:
         slippage_config: SlippageConfig | None = None,
         market_dynamics_config: MarketDynamicsConfig | None = None,
     ):
+        """Initialize the enhanced exchange simulator.
+
+        :param balance_manager: An instance of :class:`BalanceProtocol` to manage asset balances.
+        :param event_system: An instance of :class:`EventProtocol` for emitting market events.
+        :param slippage_config: Optional configuration for slippage simulation. If None, a default
+            :class:`SlippageConfig` is used. This influences how trade execution prices are adjusted
+            based on order size and market conditions.
+        :param market_dynamics_config: Optional configuration for simulating market behavior. If None,
+            a default :class:`MarketDynamicsConfig` is used. This controls price volatility,
+            trend strength, and order book refresh rates.
+
+        :ivar _balance_manager: Internal reference to the balance manager.
+        :ivar _event_system: Internal reference to the event system.
+        :ivar _order_books: A dictionary storing :class:`OrderBook` instances for each trading pair.
+        :ivar _active_orders: A dictionary storing currently active :class:`Order` objects.
+        :ivar _trading_pairs: A list of trading pairs supported by the simulator.
+        :ivar _current_timestamp: The current simulation timestamp.
+
+        :ivar _slippage_config: The effective slippage configuration used.
+        :ivar _market_dynamics_config: The effective market dynamics configuration used.
+
+        :ivar _price_history: A dictionary storing historical price data for each trading pair, used
+            for volatility calculations.
+        :ivar _volatility_cache: A cache for calculated volatility to optimize performance.
+        :ivar _last_order_book_update: Tracks the last tick an order book was updated for each pair.
+        :ivar _pending_orders: A dictionary mapping order IDs to their processing completion timestamps,
+            simulating network latency.
+        :ivar _market_regimes: A dictionary storing the current :class:`MarketRegime` for each trading pair.
+
+        :ivar _order_count: Total number of orders placed.
+        :ivar _fill_count: Total number of order fills (including partial fills).
+        :ivar _partial_fill_count: Total number of partial fills.
+        :ivar _total_volume: Cumulative trading volume.
+        :ivar _total_slippage: Cumulative slippage incurred across all trades.
+        :ivar _trade_fills: A list storing all :class:`TradeFill` records.
+        """
         self._balance_manager = balance_manager
         self._event_system = event_system
         self._order_books: dict[str, OrderBook] = {}
@@ -66,7 +108,10 @@ class ExchangeSimulator:
         self._trade_fills: list[TradeFill] = []
 
     async def add_trading_pair(self, trading_pair: str) -> None:
-        """Add a trading pair to the simulator."""
+        """Add a trading pair to the simulator.
+
+        :param trading_pair: The trading pair to add (e.g., "BTC-USDT").
+        """
         if trading_pair not in self._trading_pairs:
             self._trading_pairs.append(trading_pair)
             # Initialize with basic order book
@@ -79,11 +124,18 @@ class ExchangeSimulator:
             )
 
     async def update_order_book(self, trading_pair: str, order_book: OrderBook) -> None:
-        """Update order book for a trading pair."""
+        """Update order book for a trading pair.
+
+        :param trading_pair: The trading pair (e.g., "BTC-USDT").
+        :param order_book: The new order book for the trading pair.
+        """
         self._order_books[trading_pair] = order_book
 
     async def process_tick(self, timestamp: float) -> None:
-        """Process a simulation tick with enhanced market dynamics."""
+        """Process a simulation tick with enhanced market dynamics.
+
+        :param timestamp: The current simulation timestamp.
+        """
         self._current_timestamp = timestamp
 
         # Update market dynamics for all trading pairs
@@ -114,7 +166,11 @@ class ExchangeSimulator:
                 await self._fill_order(order)
 
     async def _should_fill_order(self, order: Order) -> bool:
-        """Determine if an order should be filled with enhanced logic."""
+        """Determine if an order should be filled with enhanced logic.
+
+        :param order: The order to check.
+        :return: True if the order should be filled, False otherwise.
+        """
         # Check if order is still in latency simulation
         if order.order_id in self._pending_orders:
             return False
@@ -136,7 +192,10 @@ class ExchangeSimulator:
         return False
 
     async def _fill_order(self, order: Order) -> None:
-        """Fill an order with enhanced slippage and partial fill simulation."""
+        """Fill an order with enhanced slippage and partial fill simulation.
+
+        :param order: The order to fill.
+        """
         order_book = self._order_books[order.trading_pair]
 
         # Get base fill price
@@ -225,7 +284,12 @@ class ExchangeSimulator:
             del self._active_orders[order.order_id]
 
     def _calculate_slippage(self, order: Order, order_book: OrderBook) -> Decimal:
-        """Calculate slippage for an order based on market conditions."""
+        """Calculate slippage for an order based on market conditions.
+
+        :param order: The order for which to calculate slippage.
+        :param order_book: The current order book.
+        :return: The calculated slippage in basis points.
+        """
         if self._slippage_config.model == SlippageModel.LINEAR:
             return self._calculate_linear_slippage(order, order_book)
         elif self._slippage_config.model == SlippageModel.LOGARITHMIC:
@@ -236,7 +300,12 @@ class ExchangeSimulator:
             return self._slippage_config.base_slippage_bps
 
     def _calculate_linear_slippage(self, order: Order, order_book: OrderBook) -> Decimal:
-        """Calculate linear slippage based on order size vs market depth."""
+        """Calculate linear slippage based on order size vs market depth.
+
+        :param order: The order for which to calculate slippage.
+        :param order_book: The current order book.
+        :return: The calculated linear slippage in basis points.
+        """
         if order.side == OrderSide.BUY:
             available_depth = sum(level.amount for level in order_book.asks[:5])  # Top 5 levels
         else:
@@ -258,7 +327,12 @@ class ExchangeSimulator:
         return min(total_slippage, self._slippage_config.max_slippage_bps)
 
     def _calculate_logarithmic_slippage(self, order: Order, order_book: OrderBook) -> Decimal:
-        """Calculate logarithmic slippage for more realistic large order impact."""
+        """Calculate logarithmic slippage for more realistic large order impact.
+
+        :param order: The order for which to calculate slippage.
+        :param order_book: The current order book.
+        :return: The calculated logarithmic slippage in basis points.
+        """
         if order.side == OrderSide.BUY:
             available_depth = sum(level.amount for level in order_book.asks[:10])
         else:
@@ -284,7 +358,12 @@ class ExchangeSimulator:
         return min(total_slippage, self._slippage_config.max_slippage_bps)
 
     def _calculate_square_root_slippage(self, order: Order, order_book: OrderBook) -> Decimal:
-        """Calculate square root slippage model."""
+        """Calculate square root slippage model.
+
+        :param order: The order for which to calculate slippage.
+        :param order_book: The current order book.
+        :return: The calculated square root slippage in basis points.
+        """
         if order.side == OrderSide.BUY:
             available_depth = sum(level.amount for level in order_book.asks[:10])
         else:
@@ -309,7 +388,11 @@ class ExchangeSimulator:
         return min(total_slippage, self._slippage_config.max_slippage_bps)
 
     def _get_volatility(self, trading_pair: str) -> Decimal:
-        """Calculate volatility for a trading pair."""
+        """Calculate volatility for a trading pair.
+
+        :param trading_pair: The trading pair (e.g., "BTC-USDT").
+        :return: The calculated volatility as a Decimal.
+        """
         if trading_pair not in self._price_history:
             return Decimal("0.001")  # Default volatility
 
@@ -340,7 +423,13 @@ class ExchangeSimulator:
     def _apply_slippage_to_price(
         self, price: Decimal, slippage_bps: Decimal, side: OrderSide
     ) -> Decimal:
-        """Apply slippage to execution price."""
+        """Apply slippage to execution price.
+
+        :param price: The original price.
+        :param slippage_bps: The slippage in basis points.
+        :param side: The side of the order (BUY or SELL).
+        :return: The price after applying slippage.
+        """
         slippage_factor = slippage_bps / Decimal("10000")  # Convert basis points to decimal
 
         if side == OrderSide.BUY:
@@ -351,7 +440,12 @@ class ExchangeSimulator:
             return price * (Decimal("1") - slippage_factor)
 
     def _check_partial_fill(self, order: Order, order_book: OrderBook) -> tuple[Decimal, bool]:
-        """Check if order should be partially filled based on market depth."""
+        """Check if order should be partially filled based on market depth.
+
+        :param order: The order to check.
+        :param order_book: The current order book.
+        :return: A tuple of (fill_amount, is_partial).
+        """
         if not self._slippage_config.enable_partial_fills:
             return order.amount, False
 
@@ -376,7 +470,10 @@ class ExchangeSimulator:
         return fill_amount, fill_amount < order.amount
 
     async def _update_market_dynamics(self, trading_pair: str) -> None:
-        """Update market dynamics including price movement and order book."""
+        """Update market dynamics including price movement and order book.
+
+        :param trading_pair: The trading pair to update.
+        """
         if trading_pair not in self._order_books:
             return
 
@@ -406,7 +503,10 @@ class ExchangeSimulator:
             self._last_order_book_update[trading_pair] = ticks_since_update + 1
 
     def _update_market_regime(self, trading_pair: str) -> None:
-        """Update market regime based on probability and trend analysis."""
+        """Update market regime based on probability and trend analysis.
+
+        :param trading_pair: The trading pair to update.
+        """
         if random.random() < float(self._market_dynamics_config.regime_change_probability):
             # Regime change
             current_regime = self._market_regimes.get(trading_pair, MarketRegime.SIDEWAYS)
@@ -414,7 +514,10 @@ class ExchangeSimulator:
             self._market_regimes[trading_pair] = random.choice(new_regimes)
 
     async def _simulate_order_book_movement(self, trading_pair: str) -> None:
-        """Simulate realistic order book price movement."""
+        """Simulate realistic order book price movement.
+
+        :param trading_pair: The trading pair to simulate movement for.
+        """
         if trading_pair not in self._order_books:
             return
 
@@ -478,7 +581,12 @@ class ExchangeSimulator:
 
     # MarketProtocol implementation
     def get_price(self, trading_pair: str, price_type: PriceType) -> Decimal:
-        """Get current price for a trading pair."""
+        """Get current price for a trading pair.
+
+        :param trading_pair: The trading pair (e.g., "BTC-USDT").
+        :param price_type: The type of price to retrieve (BID, ASK, or MID).
+        :return: The current price as a Decimal.
+        """
         if trading_pair not in self._order_books:
             return Decimal("0")
 
@@ -493,21 +601,35 @@ class ExchangeSimulator:
             return order_book.mid_price or Decimal("0")
 
     def get_order_book(self, trading_pair: str) -> OrderBook:
-        """Get current order book for a trading pair."""
+        """Get current order book for a trading pair.
+
+        :param trading_pair: The trading pair (e.g., "BTC-USDT").
+        :return: The order book for the specified trading pair.
+        """
         return self._order_books.get(trading_pair)
 
     def get_trading_pairs(self) -> list[str]:
-        """Get list of available trading pairs."""
+        """Get list of available trading pairs.
+
+        :return: A list of trading pair strings.
+        """
         return self._trading_pairs.copy()
 
     @property
     def current_timestamp(self) -> float:
-        """Get current market timestamp."""
+        """Get current market timestamp.
+
+        :return: The current timestamp as a float.
+        """
         return self._current_timestamp
 
     # OrderProtocol implementation
     def place_order(self, order_candidate: OrderCandidate) -> str:
-        """Place an order and return order ID."""
+        """Place an order and return order ID.
+
+        :param order_candidate: The order candidate to place.
+        :return: The ID of the placed order, or None if balance is insufficient.
+        """
         order_id = str(uuid.uuid4())
 
         # Validate and lock balances
@@ -565,7 +687,11 @@ class ExchangeSimulator:
         return order_id
 
     def cancel_order(self, order_id: str) -> bool:
-        """Cancel an order."""
+        """Cancel an order.
+
+        :param order_id: The ID of the order to cancel.
+        :return: True if the order was cancelled, False otherwise.
+        """
         if order_id not in self._active_orders:
             return False
 
@@ -593,11 +719,19 @@ class ExchangeSimulator:
         return True
 
     def get_order(self, order_id: str) -> Order | None:
-        """Get order by ID."""
+        """Get order by ID.
+
+        :param order_id: The ID of the order to retrieve.
+        :return: The Order object if found, None otherwise.
+        """
         return self._active_orders.get(order_id)
 
     def get_open_orders(self, trading_pair: str | None = None) -> list[Order]:
-        """Get open orders, optionally filtered by trading pair."""
+        """Get open orders, optionally filtered by trading pair.
+
+        :param trading_pair: Optional trading pair to filter by.
+        :return: A list of open Order objects.
+        """
         orders = [
             order for order in self._active_orders.values() if order.status == OrderStatus.OPEN
         ]
@@ -608,7 +742,10 @@ class ExchangeSimulator:
         return orders
 
     def get_order_statistics(self) -> dict[str, Any]:
-        """Get enhanced order statistics including slippage and market dynamics."""
+        """Get enhanced order statistics including slippage and market dynamics.
+
+        :return: A dictionary containing order statistics.
+        """
         avg_slippage = (
             float(self._total_slippage / self._fill_count) if self._fill_count > 0 else 0.0
         )
@@ -626,7 +763,10 @@ class ExchangeSimulator:
         }
 
     def get_slippage_statistics(self) -> dict[str, Any]:
-        """Get detailed slippage statistics."""
+        """Get detailed slippage statistics.
+
+        :return: A dictionary containing detailed slippage statistics.
+        """
         if not self._trade_fills:
             return {"message": "No trade fills recorded"}
 
@@ -644,7 +784,10 @@ class ExchangeSimulator:
         }
 
     def get_market_dynamics_status(self) -> dict[str, Any]:
-        """Get current market dynamics status."""
+        """Get current market dynamics status.
+
+        :return: A dictionary containing market dynamics status.
+        """
         return {
             "trading_pairs": len(self._trading_pairs),
             "market_regimes": {tp: regime.value for tp, regime in self._market_regimes.items()},
@@ -687,16 +830,28 @@ class ExchangeSimulator:
 
     # Position management methods (for derivatives support)
     def get_position(self, trading_pair: str) -> dict[str, Any] | None:
-        """Get position for a trading pair."""
+        """Get position for a trading pair.
+
+        :param trading_pair: The trading pair (e.g., "BTC-USDT").
+        :return: A dictionary representing the position, or None for spot trading.
+        """
         # Basic implementation - return None for spot trading
         return None
 
     def get_all_positions(self) -> dict[str, dict[str, Any]]:
-        """Get all positions."""
+        """Get all positions.
+
+        :return: A dictionary of all positions.
+        """
         # Basic implementation - return empty dict for spot trading
         return {}
 
     def set_leverage(self, trading_pair: str, leverage: int) -> bool:
-        """Set leverage for a trading pair."""
+        """Set leverage for a trading pair.
+
+        :param trading_pair: The trading pair (e.g., "BTC-USDT").
+        :param leverage: The leverage to set.
+        :return: True if leverage was set, False otherwise.
+        """
         # Basic implementation - not supported in spot trading
         return False

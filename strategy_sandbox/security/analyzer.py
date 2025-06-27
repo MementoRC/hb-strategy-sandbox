@@ -15,8 +15,7 @@ class DependencyAnalyzer:
     def __init__(self, project_path: str | Path):
         """Initialize the dependency analyzer.
 
-        Args:
-            project_path: Path to the project root directory.
+        :param project_path: Path to the project root directory.
         """
         self.project_path = Path(project_path)
         self.supported_package_managers = ["pip", "pixi", "conda"]
@@ -24,8 +23,7 @@ class DependencyAnalyzer:
     def detect_package_managers(self) -> list[str]:
         """Detect which package managers are used in the project.
 
-        Returns:
-            List of detected package manager names.
+        :return: List of detected package manager names.
         """
         detected = []
 
@@ -52,8 +50,7 @@ class DependencyAnalyzer:
     def scan_pip_dependencies(self) -> list[DependencyInfo]:
         """Scan pip dependencies for the project.
 
-        Returns:
-            List of dependency information from pip.
+        :return: List of dependency information from pip.
         """
         dependencies = []
 
@@ -88,8 +85,7 @@ class DependencyAnalyzer:
     def _scan_pip_fallback(self) -> list[DependencyInfo]:
         """Fallback method to scan pip dependencies without vulnerability info.
 
-        Returns:
-            List of dependency information without vulnerability data.
+        :return: List of dependency information without vulnerability data.
         """
         dependencies = []
 
@@ -121,8 +117,7 @@ class DependencyAnalyzer:
     def scan_pixi_dependencies(self) -> list[DependencyInfo]:
         """Scan pixi dependencies for the project.
 
-        Returns:
-            List of dependency information from pixi.
+        :return: List of dependency information from pixi.
         """
         dependencies = []
 
@@ -154,11 +149,8 @@ class DependencyAnalyzer:
     def scan_dependencies(self, package_managers: list[str] | None = None) -> list[DependencyInfo]:
         """Scan dependencies for specified package managers.
 
-        Args:
-            package_managers: List of package managers to scan. If None, auto-detect.
-
-        Returns:
-            List of all dependency information.
+        :param package_managers: List of package managers to scan. If None, auto-detect.
+        :return: List of all dependency information.
         """
         if package_managers is None:
             package_managers = self.detect_package_managers()
@@ -180,11 +172,8 @@ class DependencyAnalyzer:
     def _parse_pip_audit_output(self, audit_data: dict[str, Any]) -> list[DependencyInfo]:
         """Parse pip-audit JSON output into DependencyInfo objects.
 
-        Args:
-            audit_data: JSON data from pip-audit.
-
-        Returns:
-            List of dependency information.
+        :param audit_data: JSON data from pip-audit.
+        :return: List of dependency information.
         """
         dependencies = []
 
@@ -219,11 +208,8 @@ class DependencyAnalyzer:
     def _parse_pixi_output(self, pixi_data: dict[str, Any]) -> list[DependencyInfo]:
         """Parse pixi list JSON output into DependencyInfo objects.
 
-        Args:
-            pixi_data: JSON data from pixi list.
-
-        Returns:
-            List of dependency information.
+        :param pixi_data: JSON data from pixi list.
+        :return: List of dependency information.
         """
         dependencies = []
 
@@ -245,11 +231,8 @@ class DependencyAnalyzer:
     def _normalize_severity(self, severity: str) -> str:
         """Normalize severity levels to standard values.
 
-        Args:
-            severity: Raw severity string.
-
-        Returns:
-            Normalized severity (low, medium, high, critical).
+        :param severity: Raw severity string.
+        :return: Normalized severity (low, medium, high, critical).
         """
         severity_lower = severity.lower().strip()
 
@@ -267,8 +250,7 @@ class DependencyAnalyzer:
     def generate_dependency_tree(self) -> dict[str, Any]:
         """Generate a dependency tree structure.
 
-        Returns:
-            Dictionary representing the dependency tree.
+        :return: Dictionary representing the dependency tree.
         """
         package_managers = self.detect_package_managers()
         dependencies = self.scan_dependencies(package_managers)

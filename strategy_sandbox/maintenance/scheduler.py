@@ -28,13 +28,12 @@ class MaintenanceTask:
     ):
         """Initialize a maintenance task.
 
-        Args:
-            name: Task name/identifier.
-            func: Function to execute for this task.
-            schedule: Schedule string (daily, weekly, hourly, etc.).
-            enabled: Whether the task is enabled.
-            description: Task description.
-            **kwargs: Additional task parameters.
+        :param name: Task name/identifier.
+        :param func: Function to execute for this task.
+        :param schedule: Schedule string (daily, weekly, hourly, etc.).
+        :param enabled: Whether the task is enabled.
+        :param description: Task description.
+        :param kwargs: Additional task parameters.
         """
         self.name = name
         self.func = func
@@ -87,13 +86,19 @@ class MaintenanceTask:
             self.next_run = now + timedelta(hours=24)
 
     def should_run(self) -> bool:
-        """Check if the task should run now."""
+        """Check if the task should run now.
+
+        :return: True if the task should run, False otherwise.
+        """
         if not self.enabled or not self.next_run:
             return False
         return datetime.now() >= self.next_run
 
     def execute(self) -> dict[str, Any]:
-        """Execute the maintenance task."""
+        """Execute the maintenance task.
+
+        :return: A dictionary containing the task execution result.
+        """
         start_time = time.time()
         result = {
             "task": self.name,
@@ -150,7 +155,10 @@ class MaintenanceTask:
         return result
 
     def get_status(self) -> dict[str, Any]:
-        """Get current task status."""
+        """Get current task status.
+
+        :return: A dictionary containing the task status information.
+        """
         return {
             "name": self.name,
             "description": self.description,
@@ -165,7 +173,14 @@ class MaintenanceTask:
 
 
 class MaintenanceScheduler:
-    """Schedules and executes automated maintenance tasks."""
+    """Schedules and executes automated maintenance tasks.
+
+    This class acts as the central orchestrator for various maintenance operations
+    within the CI pipeline. It loads configuration from a YAML file, registers
+    built-in and custom maintenance tasks, and provides methods to run these tasks
+    either on a schedule or immediately. It also tracks the execution history
+    and status of each task.
+    """
 
     def __init__(
         self, config_path: str | Path | None = None, project_path: str | Path | None = None
@@ -196,7 +211,10 @@ class MaintenanceScheduler:
         self._register_builtin_tasks()
 
     def _load_config(self) -> dict[str, Any]:
-        """Load maintenance configuration."""
+        """Load maintenance configuration.
+
+        :return: The loaded configuration dictionary.
+        """
         if not self.config_path.exists():
             logger.warning(f"Config file not found: {self.config_path}")
             return {}
@@ -261,13 +279,12 @@ class MaintenanceScheduler:
     ):
         """Register a new maintenance task.
 
-        Args:
-            name: Task name/identifier.
-            func: Function to execute.
-            schedule: Schedule string (daily, weekly, hourly, etc.).
-            enabled: Whether the task is enabled.
-            description: Task description.
-            **kwargs: Additional task parameters.
+        :param name: Task name/identifier.
+        :param func: Function to execute.
+        :param schedule: Schedule string (daily, weekly, hourly, etc.).
+        :param enabled: Whether the task is enabled.
+        :param description: Task description.
+        :param kwargs: Additional task parameters.
         """
         # Check if task is enabled in config
         task_config = self.config.get("maintenance_tasks", {})
@@ -287,7 +304,10 @@ class MaintenanceScheduler:
         logger.info(f"Registered maintenance task: {name} ({schedule})")
 
     def run_pending_tasks(self) -> list[dict[str, Any]]:
-        """Run all pending maintenance tasks."""
+        """Run all pending maintenance tasks.
+
+        :return: A list of dictionaries, each containing the task execution result.
+        """
         results = []
 
         for task in self.tasks.values():
@@ -301,11 +321,8 @@ class MaintenanceScheduler:
     def run_task(self, task_name: str) -> dict[str, Any]:
         """Run a specific maintenance task immediately.
 
-        Args:
-            task_name: Name of the task to run.
-
-        Returns:
-            Task execution result.
+        :param task_name: Name of the task to run.
+        :return: Task execution result.
         """
         if task_name not in self.tasks:
             return {"task": task_name, "success": False, "message": f"Task '{task_name}' not found"}
@@ -318,11 +335,8 @@ class MaintenanceScheduler:
     def get_task_status(self, task_name: str | None = None) -> dict[str, Any]:
         """Get status of tasks.
 
-        Args:
-            task_name: Specific task name, or None for all tasks.
-
-        Returns:
-            Task status information.
+        :param task_name: Specific task name, or None for all tasks.
+        :return: Task status information.
         """
         if task_name:
             if task_name in self.tasks:
@@ -348,16 +362,16 @@ class MaintenanceScheduler:
     def get_execution_history(self, limit: int = 50) -> list[dict[str, Any]]:
         """Get recent task execution history.
 
-        Args:
-            limit: Maximum number of entries to return.
-
-        Returns:
-            List of execution results.
+        :param limit: Maximum number of entries to return.
+        :return: List of execution results.
         """
         return self.execution_history[-limit:]
 
     def _cleanup_old_data(self) -> dict[str, Any]:
-        """Clean up old data files based on retention policies."""
+        """Clean up old data files based on retention policies.
+
+        :return: A dictionary summarizing the cleanup results.
+        """
         logger.info("Starting data cleanup")
 
         retention_config = self.config.get("data_retention", {})
@@ -413,7 +427,10 @@ class MaintenanceScheduler:
         return cleanup_result
 
     def _update_security_databases(self) -> dict[str, Any]:
-        """Update security vulnerability databases."""
+        """Update security vulnerability databases.
+
+        :return: A dictionary with update status.
+        """
         logger.info("Updating security databases")
 
         # This is a placeholder - in a real implementation, you would:
@@ -428,7 +445,10 @@ class MaintenanceScheduler:
         }
 
     def _update_performance_baselines(self) -> dict[str, Any]:
-        """Update performance baselines and analyze trends."""
+        """Update performance baselines and analyze trends.
+
+        :return: A dictionary with the status of the baseline update.
+        """
         logger.info("Updating performance baselines")
 
         try:
@@ -459,11 +479,8 @@ class MaintenanceScheduler:
     def perform_maintenance(self, dry_run: bool = False) -> dict[str, Any]:
         """Perform comprehensive maintenance operations.
 
-        Args:
-            dry_run: If True, only report what would be done without making changes.
-
-        Returns:
-            Maintenance operation results.
+        :param dry_run: If True, only report what would be done without making changes.
+        :return: Maintenance operation results.
         """
         logger.info(f"Starting maintenance {'(dry run)' if dry_run else '(live)'}")
 

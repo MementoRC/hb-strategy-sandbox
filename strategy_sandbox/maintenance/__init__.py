@@ -6,10 +6,10 @@ maintenance tasks, data cleanup, and optimization of the performance and securit
 components of the hummingbot strategy sandbox.
 """
 
-from .health_monitor import CIHealthMonitor
-from .scheduler import MaintenanceScheduler
+"""Maintenance operations for the strategy sandbox."""
 
-__all__ = [
-    "CIHealthMonitor",
-    "MaintenanceScheduler",
-]
+from .cli import main as cli_main
+from .health_monitor import CIHealthMonitor
+from .scheduler import MaintenanceScheduler, MaintenanceTask
+
+__all__ = ["CIHealthMonitor", "MaintenanceScheduler", "MaintenanceTask", "cli_main"]

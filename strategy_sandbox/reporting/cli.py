@@ -1,4 +1,10 @@
-"""Command-line interface for GitHub reporting integration."""
+"""Command-line interface for GitHub reporting integration.
+
+This module provides a command-line tool to generate and manage various
+reports for GitHub Actions workflows. It integrates with performance,
+security, and artifact management components to provide comprehensive
+summaries and detailed artifacts directly within the CI/CD pipeline.
+"""
 
 import argparse
 import json
@@ -8,7 +14,13 @@ from .github_reporter import GitHubReporter
 
 
 def main():
-    """Main CLI entry point."""
+    """Main CLI entry point for the GitHub reporting tool.
+
+    This function parses command-line arguments and dispatches to the appropriate
+    handler function (build-status, performance, security, env-info, artifacts)
+    based on the subcommand. It sets up the argument parser with various options
+    for report generation and artifact management.
+    """
     parser = argparse.ArgumentParser(description="GitHub Actions reporting and step summary tool")
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -109,7 +121,10 @@ def main():
 
 
 def handle_build_status(args):
-    """Handle build status report generation."""
+    """Handle build status report generation.
+
+    :param args: The command-line arguments.
+    """
     reporter = GitHubReporter(args.artifact_path)
 
     # Prepare security files dict
@@ -141,7 +156,10 @@ def handle_build_status(args):
 
 
 def handle_performance(args):
-    """Handle performance report generation."""
+    """Handle performance report generation.
+
+    :param args: The command-line arguments.
+    """
     reporter = GitHubReporter(args.artifact_path)
 
     # Load performance data
@@ -176,7 +194,10 @@ def handle_performance(args):
 
 
 def handle_security(args):
-    """Handle security report generation."""
+    """Handle security report generation.
+
+    :param args: The command-line arguments.
+    """
     reporter = GitHubReporter(args.artifact_path)
 
     if not args.bandit_results and not args.pip_audit_results:
@@ -198,7 +219,10 @@ def handle_security(args):
 
 
 def handle_env_info(args):
-    """Handle environment information display."""
+    """Handle environment information display.
+
+    :param args: The command-line arguments.
+    """
     reporter = GitHubReporter()
     env_info = reporter.get_environment_info()
 
@@ -220,7 +244,10 @@ def handle_env_info(args):
 
 
 def handle_artifacts(args):
-    """Handle artifact management commands."""
+    """Handle artifact management commands.
+
+    :param args: The command-line arguments.
+    """
     from .artifact_manager import ArtifactManager
 
     artifact_manager = ArtifactManager(args.artifact_path)

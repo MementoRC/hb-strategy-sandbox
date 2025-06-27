@@ -17,8 +17,7 @@ class SecurityCollector:
     def __init__(self, storage_path: str | Path = None):
         """Initialize the security collector.
 
-        Args:
-            storage_path: Directory path for storing security data.
+        :param storage_path: Directory path for storing security data.
                          Defaults to 'security_data' in current directory.
         """
         self.storage_path = Path(storage_path or "security_data")
@@ -33,7 +32,10 @@ class SecurityCollector:
         self.history_path.mkdir(exist_ok=True)
 
     def collect_environment_info(self) -> dict[str, str]:
-        """Collect current environment information."""
+        """Collect current environment information.
+
+        :return: A dictionary containing environment information.
+        """
         env_info = {
             "platform": platform.platform(),
             "python_version": platform.python_version(),
@@ -65,13 +67,10 @@ class SecurityCollector:
     ) -> SecurityMetrics:
         """Perform complete security scan of a project.
 
-        Args:
-            project_path: Path to the project to scan.
-            build_id: Unique identifier for this build/scan.
-            package_managers: List of package managers to scan. Auto-detected if None.
-
-        Returns:
-            Complete security metrics for the project.
+        :param project_path: Path to the project to scan.
+        :param build_id: Unique identifier for this build/scan.
+        :param package_managers: List of package managers to scan. Auto-detected if None.
+        :return: Complete security metrics for the project.
         """
         project_path = Path(project_path)
 
@@ -113,12 +112,9 @@ class SecurityCollector:
     def save_metrics(self, metrics: SecurityMetrics, filename: str | None = None) -> Path:
         """Save security metrics to storage.
 
-        Args:
-            metrics: Security metrics to save.
-            filename: Custom filename. Auto-generated if None.
-
-        Returns:
-            Path to the saved file.
+        :param metrics: Security metrics to save.
+        :param filename: Custom filename. Auto-generated if None.
+        :return: Path to the saved file.
         """
         if filename is None:
             timestamp = metrics.timestamp.strftime("%Y%m%d_%H%M%S")
@@ -134,11 +130,8 @@ class SecurityCollector:
     def load_metrics(self, file_path: str | Path) -> SecurityMetrics:
         """Load security metrics from file.
 
-        Args:
-            file_path: Path to the metrics file.
-
-        Returns:
-            Loaded security metrics.
+        :param file_path: Path to the metrics file.
+        :return: Loaded security metrics.
         """
         with open(file_path, encoding="utf-8") as f:
             data = json.load(f)
@@ -148,12 +141,9 @@ class SecurityCollector:
     def save_baseline(self, metrics: SecurityMetrics, baseline_name: str = "default") -> Path:
         """Save security metrics as a baseline for comparison.
 
-        Args:
-            metrics: Security metrics to save as baseline.
-            baseline_name: Name for the baseline.
-
-        Returns:
-            Path to the saved baseline file.
+        :param metrics: Security metrics to save as baseline.
+        :param baseline_name: Name for the baseline.
+        :return: Path to the saved baseline file.
         """
         filename = f"baseline_{baseline_name}.json"
         file_path = self.baseline_path / filename
@@ -166,11 +156,8 @@ class SecurityCollector:
     def load_baseline(self, baseline_name: str = "default") -> SecurityMetrics | None:
         """Load baseline security metrics for comparison.
 
-        Args:
-            baseline_name: Name of the baseline to load.
-
-        Returns:
-            Baseline security metrics or None if not found.
+        :param baseline_name: Name of the baseline to load.
+        :return: Baseline security metrics or None if not found.
         """
         filename = f"baseline_{baseline_name}.json"
         file_path = self.baseline_path / filename
@@ -185,12 +172,9 @@ class SecurityCollector:
     ) -> dict[str, Any] | None:
         """Compare current metrics with baseline.
 
-        Args:
-            current_metrics: Current security metrics.
-            baseline_name: Name of the baseline to compare against.
-
-        Returns:
-            Comparison results or None if baseline not found.
+        :param current_metrics: Current security metrics.
+        :param baseline_name: Name of the baseline to compare against.
+        :return: Comparison results or None if baseline not found.
         """
         baseline = self.load_baseline(baseline_name)
         if baseline is None:
@@ -260,14 +244,11 @@ class SecurityCollector:
     ) -> dict[str, Any]:
         """Generate comprehensive security report for a project.
 
-        Args:
-            project_path: Path to the project to scan.
-            output_path: Path to save the report. Auto-generated if None.
-            include_baseline_comparison: Whether to include baseline comparison.
-            baseline_name: Name of baseline to compare against.
-
-        Returns:
-            Complete security report data.
+        :param project_path: Path to the project to scan.
+        :param output_path: Path to save the report. Auto-generated if None.
+        :param include_baseline_comparison: Whether to include baseline comparison.
+        :param baseline_name: Name of baseline to compare against.
+        :return: Complete security report data.
         """
         # Perform security scan
         metrics = self.scan_project_security(project_path)
@@ -304,8 +285,7 @@ class SecurityCollector:
     def list_saved_metrics(self) -> list[dict[str, Any]]:
         """List all saved security metrics files.
 
-        Returns:
-            List of metric file information.
+        :return: List of metric file information.
         """
         metrics_files = []
 
