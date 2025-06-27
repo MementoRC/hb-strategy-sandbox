@@ -121,8 +121,14 @@ jobs:
           cache: true
       - name: Install dependencies
         run: pixi install -e ${{ matrix.pixi-environment }} --locked
-      - name: Run tests with coverage
-        run: pixi run -e ${{ matrix.pixi-environment }} pytest tests/unit tests/integration -m "not benchmark" --cov=strategy_sandbox --cov-report=xml:coverage.xml
+      - name: Run tests with coverage and test analytics
+        run: |
+          # Run tests with coverage and generate JUnit XML for test analytics
+          pixi run -e ${{ matrix.pixi-environment }} pytest tests/unit tests/integration -m "not benchmark" \
+            --cov=strategy_sandbox \
+            --cov-report=xml:coverage.xml \
+            --junitxml=test-results.xml \
+            --tb=short
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         uses: codecov/codecov-action@v5
@@ -130,6 +136,13 @@ jobs:
           files: ./coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: MementoRC/hb-strategy-sandbox
+          fail_ci_if_error: false
+      - name: Upload test results to Codecov Test Analytics
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: codecov/test-results-action@v1
+        with:
+          files: ./test-results.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
   ###################################################
