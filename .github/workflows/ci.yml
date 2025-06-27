@@ -87,6 +87,8 @@ jobs:
         run: pixi install -e default --locked
       - name: Run linting
         run: pixi run lint
+      - name: Run critical lint checks (Zero Tolerance)
+        run: pixi run lint-critical
       - name: Run type checking
         run: pixi run typecheck
 

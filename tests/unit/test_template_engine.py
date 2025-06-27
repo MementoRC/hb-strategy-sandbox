@@ -1,7 +1,5 @@
 """Comprehensive tests for TemplateEngine to achieve 100% coverage."""
 
-import pytest
-
 from strategy_sandbox.reporting.template_engine import TemplateEngine
 
 
