@@ -38,6 +38,15 @@ class SandboxConfiguration:
         tick_interval: float = 1.0,  # seconds
         enable_derivatives: bool = False,
     ):
+        """Initialize SandboxConfiguration.
+
+        :param initial_balances: Initial balances for assets.
+        :param trading_pairs: List of trading pairs to simulate.
+        :param start_timestamp: Starting timestamp for the simulation.
+        :param end_timestamp: Ending timestamp for the simulation.
+        :param tick_interval: Interval between simulation ticks in seconds.
+        :param enable_derivatives: Whether to enable derivatives trading.
+        """
         self.initial_balances = initial_balances or {"USDT": Decimal("10000")}
         self.trading_pairs = trading_pairs or ["BTC-USDT", "ETH-USDT"]
         self.start_timestamp = start_timestamp or datetime.now().timestamp()
@@ -59,6 +68,11 @@ class SandboxEnvironment:
         config: SandboxConfiguration | None = None,
         data_provider: DataProviderProtocol | None = None,
     ):
+        """Initialize the SandboxEnvironment.
+
+        :param config: Configuration for the sandbox environment.
+        :param data_provider: Data provider for historical market data.
+        """
         self.config = config or SandboxConfiguration()
         self.logger = logging.getLogger(__name__)
 
@@ -81,7 +95,10 @@ class SandboxEnvironment:
         self._performance_metrics: dict[str, Any] = {}
 
     async def initialize(self) -> None:
-        """Initialize the sandbox environment."""
+        """Initialize the sandbox environment.
+
+        :return: None
+        """
         if self._initialized:
             return
 
@@ -105,13 +122,19 @@ class SandboxEnvironment:
         self.logger.info("Sandbox environment initialized")
 
     def add_strategy(self, strategy: StrategyProtocol) -> None:
-        """Add a strategy to the sandbox."""
+        """Add a strategy to the sandbox.
+
+        :param strategy: The strategy to add.
+        """
         strategy.initialize(self)
         self._strategies.append(strategy)
         self.logger.info(f"Added strategy: {strategy.__class__.__name__}")
 
     def remove_strategy(self, strategy: StrategyProtocol) -> None:
-        """Remove a strategy from the sandbox."""
+        """Remove a strategy from the sandbox.
+
+        :param strategy: The strategy to remove.
+        """
         if strategy in self._strategies:
             strategy.cleanup()
             self._strategies.remove(strategy)
@@ -122,15 +145,11 @@ class SandboxEnvironment:
         duration: timedelta | float | None = None,
         until_timestamp: float | None = None,
     ) -> dict[str, Any]:
-        """
-        Run the sandbox simulation.
+        """Run the sandbox simulation.
 
-        Args:
-            duration: How long to run the simulation
-            until_timestamp: Run until this timestamp
-
-        Returns:
-            Performance metrics and results
+        :param duration: How long to run the simulation.
+        :param until_timestamp: Run until this timestamp.
+        :return: Performance metrics and results.
         """
         if not self._initialized:
             await self.initialize()
@@ -174,7 +193,10 @@ class SandboxEnvironment:
         return self._performance_metrics
 
     async def step(self, timestamp: float) -> None:
-        """Advance simulation by one step."""
+        """Advance simulation by one step.
+
+        :param timestamp: The timestamp to advance to.
+        """
         self._current_timestamp = timestamp
         await self._simulation_step()
 
@@ -209,12 +231,18 @@ class SandboxEnvironment:
                     await self._exchange_simulator.update_order_book(trading_pair, order_book)
 
     def stop(self) -> None:
-        """Stop the simulation."""
+        """Stop the simulation.
+
+        :return: None
+        """
         self._is_running = False
         self.logger.info("Simulation stopped")
 
     def reset(self) -> None:
-        """Reset sandbox to initial state."""
+        """Reset sandbox to initial state.
+
+        :return: None
+        """
         self._current_timestamp = self.config.start_timestamp
         self._is_running = False
         self._performance_metrics = {}
@@ -231,7 +259,10 @@ class SandboxEnvironment:
         self.logger.info("Sandbox reset to initial state")
 
     def _calculate_performance_metrics(self) -> None:
-        """Calculate performance metrics."""
+        """Calculate performance metrics.
+
+        :return: None
+        """
         # Get final balances
         final_balances = self._balance_manager.get_all_balances()
         initial_balances = self.config.initial_balances
@@ -258,42 +289,66 @@ class SandboxEnvironment:
     # Protocol implementations for strategies to use
     @property
     def market(self) -> MarketProtocol:
-        """Get market protocol instance."""
+        """Get market protocol instance.
+
+        :return: The MarketProtocol instance.
+        """
         return self._exchange_simulator
 
     @property
     def balance(self) -> BalanceProtocol:
-        """Get balance protocol instance."""
+        """Get balance protocol instance.
+
+        :return: The BalanceProtocol instance.
+        """
         return self._balance_manager
 
     @property
     def order(self) -> OrderProtocol:
-        """Get order protocol instance."""
+        """Get order protocol instance.
+
+        :return: The OrderProtocol instance.
+        """
         return self._exchange_simulator
 
     @property
     def event(self) -> EventProtocol:
-        """Get event protocol instance."""
+        """Get event protocol instance.
+
+        :return: The EventProtocol instance.
+        """
         return self._event_system
 
     @property
     def position(self) -> PositionProtocol | None:
-        """Get position protocol instance."""
+        """Get position protocol instance.
+
+        :return: The PositionProtocol instance, or None if derivatives are not enabled.
+        """
         if self.config.enable_derivatives:
             return self._exchange_simulator
         return None
 
     @property
     def current_timestamp(self) -> float:
-        """Get current simulation timestamp."""
+        """Get current simulation timestamp.
+
+        :return: The current simulation timestamp as a float.
+        """
         return self._current_timestamp
 
     @property
     def performance_metrics(self) -> dict[str, Any]:
-        """Get current performance metrics."""
+        """Get current performance metrics.
+
+        :return: A dictionary containing the performance metrics.
+        """
         return self._performance_metrics.copy()
 
     @property
     def is_running(self) -> bool:
-        """Check if simulation is running."""
+        """Check if simulation is running.
+
+        :return: True if the simulation is running, False otherwise.
+        """
         return self._is_running

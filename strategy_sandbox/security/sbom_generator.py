@@ -18,8 +18,7 @@ class SBOMGenerator:
     def __init__(self, dependency_analyzer: DependencyAnalyzer | None = None):
         """Initialize the SBOM generator.
 
-        Args:
-            dependency_analyzer: DependencyAnalyzer instance. Created if None.
+        :param dependency_analyzer: DependencyAnalyzer instance. Created if None.
         """
         self.dependency_analyzer = dependency_analyzer or DependencyAnalyzer(".")
         self.supported_formats = ["cyclonedx", "spdx"]
@@ -33,17 +32,12 @@ class SBOMGenerator:
     ) -> dict[str, Any]:
         """Generate SBOM in specified format.
 
-        Args:
-            output_format: SBOM format (cyclonedx or spdx).
-            output_type: Output type (json, xml, yaml).
-            include_dev_dependencies: Whether to include dev dependencies.
-            include_vulnerabilities: Whether to include vulnerability information.
-
-        Returns:
-            SBOM data structure.
-
-        Raises:
-            ValueError: If unsupported format or output type specified.
+        :param output_format: SBOM format (cyclonedx or spdx).
+        :param output_type: Output type (json, xml, yaml).
+        :param include_dev_dependencies: Whether to include dev dependencies.
+        :param include_vulnerabilities: Whether to include vulnerability information.
+        :raises ValueError: If unsupported format or output type specified.
+        :return: SBOM data structure.
         """
         if output_format not in self.supported_formats:
             raise ValueError(f"Unsupported SBOM format: {output_format}")
@@ -77,13 +71,10 @@ class SBOMGenerator:
     ) -> dict[str, Any]:
         """Generate CycloneDX 1.4 format SBOM.
 
-        Args:
-            dependencies: List of dependency information.
-            include_dev_dependencies: Whether to include dev dependencies.
-            include_vulnerabilities: Whether to include vulnerability information.
-
-        Returns:
-            CycloneDX SBOM structure.
+        :param dependencies: List of dependency information.
+        :param include_dev_dependencies: Whether to include dev dependencies.
+        :param include_vulnerabilities: Whether to include vulnerability information.
+        :return: CycloneDX SBOM structure.
         """
         # CycloneDX 1.4 structure
         sbom: dict[str, Any] = {
@@ -211,13 +202,10 @@ class SBOMGenerator:
     ) -> dict[str, Any]:
         """Generate SPDX 2.3 format SBOM.
 
-        Args:
-            dependencies: List of dependency information.
-            include_dev_dependencies: Whether to include dev dependencies.
-            include_vulnerabilities: Whether to include vulnerability information.
-
-        Returns:
-            SPDX SBOM structure.
+        :param dependencies: List of dependency information.
+        :param include_dev_dependencies: Whether to include dev dependencies.
+        :param include_vulnerabilities: Whether to include vulnerability information.
+        :return: SPDX SBOM structure.
         """
         # SPDX 2.3 structure
         document_id = f"SPDXRef-DOCUMENT-{uuid.uuid4().hex[:8]}"
@@ -342,11 +330,8 @@ class SBOMGenerator:
     def _generate_purl(self, dependency: DependencyInfo) -> str:
         """Generate Package URL (PURL) for a dependency.
 
-        Args:
-            dependency: Dependency information.
-
-        Returns:
-            Package URL string.
+        :param dependency: Dependency information.
+        :return: Package URL string.
         """
         # Generate PURL based on package manager
         if dependency.package_manager == "pip":
@@ -362,11 +347,8 @@ class SBOMGenerator:
     def _is_dev_dependency(self, dependency: DependencyInfo) -> bool:
         """Check if a dependency is a development dependency.
 
-        Args:
-            dependency: Dependency information.
-
-        Returns:
-            True if it's a development dependency.
+        :param dependency: Dependency information.
+        :return: True if it's a development dependency.
         """
         # Common development dependency patterns
         dev_patterns = [
@@ -402,17 +384,12 @@ class SBOMGenerator:
     ) -> Path:
         """Save SBOM to file.
 
-        Args:
-            sbom_data: SBOM data structure.
-            output_path: Path to save the SBOM file.
-            output_format: SBOM format for validation.
-            output_type: Output file type.
-
-        Returns:
-            Path to the saved file.
-
-        Raises:
-            ValueError: If unsupported output type for format.
+        :param sbom_data: SBOM data structure.
+        :param output_path: Path to save the SBOM file.
+        :param output_format: SBOM format for validation.
+        :param output_type: Output file type.
+        :raises ValueError: If unsupported output type for format.
+        :return: Path to the saved file.
         """
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -442,12 +419,9 @@ class SBOMGenerator:
     def _dict_to_xml(self, data: dict[str, Any], root_tag: str) -> str:
         """Convert dictionary to simple XML representation.
 
-        Args:
-            data: Dictionary to convert.
-            root_tag: Root XML tag name.
-
-        Returns:
-            XML string representation.
+        :param data: Dictionary to convert.
+        :param root_tag: Root XML tag name.
+        :return: XML string representation.
         """
 
         # Simplified XML conversion - in production, use proper XML library
@@ -474,12 +448,9 @@ class SBOMGenerator:
     ) -> dict[str, Any]:
         """Generate detailed vulnerability report based on dependency scan.
 
-        Args:
-            output_path: Path to save the report. Not saved if None.
-            include_fix_recommendations: Whether to include fix recommendations.
-
-        Returns:
-            Vulnerability report data.
+        :param output_path: Path to save the report. Not saved if None.
+        :param include_fix_recommendations: Whether to include fix recommendations.
+        :return: Vulnerability report data.
         """
         dependencies = self.dependency_analyzer.scan_dependencies()
 
@@ -553,12 +524,9 @@ class SBOMGenerator:
     ) -> dict[str, Any]:
         """Generate compliance status report.
 
-        Args:
-            compliance_frameworks: List of frameworks to check (e.g., ['NIST', 'SOX']).
-            output_path: Path to save the report.
-
-        Returns:
-            Compliance report data.
+        :param compliance_frameworks: List of frameworks to check (e.g., ['NIST', 'SOX']).
+        :param output_path: Path to save the report.
+        :return: Compliance report data.
         """
         if compliance_frameworks is None:
             compliance_frameworks = ["NIST", "SOX", "GDPR", "HIPAA"]
@@ -625,12 +593,9 @@ class SBOMGenerator:
     ) -> dict[str, Any]:
         """Assess compliance for a specific framework.
 
-        Args:
-            dependencies: List of dependencies to assess.
-            framework: Compliance framework name.
-
-        Returns:
-            Compliance assessment for the framework.
+        :param dependencies: List of dependencies to assess.
+        :param framework: Compliance framework name.
+        :return: Compliance assessment for the framework.
         """
         # Simplified compliance assessment
         vulnerable_deps = [d for d in dependencies if d.has_vulnerabilities]

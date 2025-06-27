@@ -18,7 +18,10 @@ class BenchmarkResult:
     metadata: dict[str, str | int | float] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
-        """Convert to dictionary representation."""
+        """Convert to dictionary representation.
+
+        :return: A dictionary representation of the benchmark result.
+        """
         return {
             "name": self.name,
             "execution_time": self.execution_time,
@@ -31,7 +34,11 @@ class BenchmarkResult:
 
     @classmethod
     def from_dict(cls, data: dict) -> "BenchmarkResult":
-        """Create from dictionary representation."""
+        """Create from dictionary representation.
+
+        :param data: The dictionary to create the object from.
+        :return: A BenchmarkResult object.
+        """
         return cls(
             name=data["name"],
             execution_time=data["execution_time"],
@@ -45,7 +52,14 @@ class BenchmarkResult:
 
 @dataclass
 class PerformanceMetrics:
-    """Collection of performance metrics for a build/run."""
+    """Collection of performance metrics for a build/run.
+
+    This dataclass aggregates benchmark results, environment information,
+    and system details for a specific build or simulation run. It provides
+    methods to add individual benchmark results, retrieve them, and calculate
+    summary statistics across all collected metrics. This serves as a central
+    data structure for performance analysis and reporting.
+    """
 
     build_id: str
     timestamp: datetime
@@ -54,22 +68,36 @@ class PerformanceMetrics:
     system_info: dict[str, str | int | float] = field(default_factory=dict)
 
     def add_result(self, result: BenchmarkResult) -> None:
-        """Add a benchmark result to the collection."""
+        """Add a benchmark result to the collection.
+
+        :param result: The benchmark result to add.
+        """
         self.results.append(result)
 
     def get_result(self, name: str) -> BenchmarkResult | None:
-        """Get a specific benchmark result by name."""
+        """Get a specific benchmark result by name.
+
+        :param name: The name of the benchmark result to get.
+        :return: The benchmark result if found, otherwise None.
+        """
         for result in self.results:
             if result.name == name:
                 return result
         return None
 
     def get_results_by_pattern(self, pattern: str) -> list[BenchmarkResult]:
-        """Get benchmark results matching a name pattern."""
+        """Get benchmark results matching a name pattern.
+
+        :param pattern: The pattern to match against result names.
+        :return: A list of matching BenchmarkResult objects.
+        """
         return [result for result in self.results if pattern in result.name]
 
     def calculate_summary_stats(self) -> dict[str, float]:
-        """Calculate summary statistics across all results."""
+        """Calculate summary statistics across all results.
+
+        :return: A dictionary with summary statistics.
+        """
         if not self.results:
             return {}
 
@@ -110,7 +138,10 @@ class PerformanceMetrics:
         return stats
 
     def to_dict(self) -> dict:
-        """Convert to dictionary representation."""
+        """Convert to dictionary representation.
+
+        :return: A dictionary representation of the performance metrics.
+        """
         return {
             "build_id": self.build_id,
             "timestamp": self.timestamp.isoformat(),
@@ -122,7 +153,11 @@ class PerformanceMetrics:
 
     @classmethod
     def from_dict(cls, data: dict) -> "PerformanceMetrics":
-        """Create from dictionary representation."""
+        """Create from dictionary representation.
+
+        :param data: The dictionary to create the object from.
+        :return: A PerformanceMetrics object.
+        """
         return cls(
             build_id=data["build_id"],
             timestamp=datetime.fromisoformat(data["timestamp"]),

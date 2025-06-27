@@ -46,16 +46,23 @@ class BuildInsight:
 
 
 class ReportGenerator:
-    """High-level orchestrator for generating comprehensive CI reports."""
+    """High-level orchestrator for generating comprehensive CI reports.
+
+    This class is responsible for aggregating data from various sources
+    (test results, performance metrics, security scans, code coverage)
+    and generating a unified, comprehensive report. It leverages other
+    components like `GitHubReporter` and `TemplateEngine` to format
+    and publish these reports, providing a holistic view of the CI pipeline's
+    health and quality.
+    """
 
     def __init__(
         self, github_reporter: GitHubReporter | None = None, artifact_path: str | None = None
     ):
         """Initialize report generator.
 
-        Args:
-            github_reporter: Existing GitHubReporter instance to use.
-            artifact_path: Custom artifact path if not using existing reporter.
+        :param github_reporter: Existing GitHubReporter instance to use.
+        :param artifact_path: Custom artifact path if not using existing reporter.
         """
         self.github_reporter = github_reporter or GitHubReporter(artifact_path)
         self.template_engine = self.github_reporter.template_engine
@@ -69,8 +76,7 @@ class ReportGenerator:
     def set_coverage_data(self, coverage_data: dict[str, Any] | CoverageData) -> None:
         """Set test coverage data for report generation.
 
-        Args:
-            coverage_data: Coverage data as dict or CoverageData instance.
+        :param coverage_data: Coverage data as dict or CoverageData instance.
         """
         if isinstance(coverage_data, dict):
             self._coverage_data = self._parse_coverage_data(coverage_data)
@@ -80,8 +86,7 @@ class ReportGenerator:
     def add_performance_trend(self, trend: dict[str, Any] | PerformanceTrend) -> None:
         """Add performance trend data.
 
-        Args:
-            trend: Trend data as dict or PerformanceTrend instance.
+        :param trend: Trend data as dict or PerformanceTrend instance.
         """
         trend_obj = self._parse_performance_trend(trend) if isinstance(trend, dict) else trend
 
@@ -90,8 +95,7 @@ class ReportGenerator:
     def add_build_insight(self, insight: dict[str, Any] | BuildInsight) -> None:
         """Add build insight with actionable recommendations.
 
-        Args:
-            insight: Insight data as dict or BuildInsight instance.
+        :param insight: Insight data as dict or BuildInsight instance.
         """
         insight_obj = BuildInsight(**insight) if isinstance(insight, dict) else insight
 
@@ -100,11 +104,8 @@ class ReportGenerator:
     def generate_coverage_report(self, include_trends: bool = True) -> str:
         """Generate comprehensive test coverage report with visualizations.
 
-        Args:
-            include_trends: Whether to include trend analysis.
-
-        Returns:
-            Formatted markdown content for coverage report.
+        :param include_trends: Whether to include trend analysis.
+        :return: Formatted markdown content for coverage report.
         """
         if not self._coverage_data:
             return "*No coverage data available for report generation.*\n"
@@ -164,11 +165,8 @@ class ReportGenerator:
     def generate_performance_dashboard(self, baseline_days: int = 30) -> str:
         """Generate performance trends dashboard with regression analysis.
 
-        Args:
-            baseline_days: Number of days to consider for baseline comparison.
-
-        Returns:
-            Formatted markdown content for performance dashboard.
+        :param baseline_days: Number of days to consider for baseline comparison.
+        :return: Formatted markdown content for performance dashboard.
         """
         if not self._performance_trends:
             return "*No performance trend data available for dashboard generation.*\n"
@@ -235,13 +233,10 @@ class ReportGenerator:
     ) -> str:
         """Generate comprehensive build status dashboard with actionable insights.
 
-        Args:
-            test_results: Test execution results.
-            performance_data: Performance benchmark data.
-            security_data: Security scan results.
-
-        Returns:
-            Formatted markdown content for build dashboard.
+        :param test_results: Test execution results.
+        :param performance_data: Performance benchmark data.
+        :param security_data: Security scan results.
+        :return: Formatted markdown content for build dashboard.
         """
         markdown = "# 🎯 Build Status Dashboard\n\n"
 
@@ -328,14 +323,11 @@ class ReportGenerator:
     ) -> dict[str, Any]:
         """Generate comprehensive report combining all data sources.
 
-        Args:
-            test_results: Test execution results.
-            performance_data: Performance benchmark data.
-            security_data: Security scan results.
-            include_artifacts: Whether to create detailed artifacts.
-
-        Returns:
-            Dictionary containing report generation results.
+        :param test_results: Test execution results.
+        :param performance_data: Performance benchmark data.
+        :param security_data: Security scan results.
+        :param include_artifacts: Whether to create detailed artifacts.
+        :return: Dictionary containing report generation results.
         """
         results: dict[str, Any] = {
             "summary_added": False,

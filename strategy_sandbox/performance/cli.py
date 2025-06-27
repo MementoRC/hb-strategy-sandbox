@@ -1,4 +1,10 @@
-"""Command-line interface for performance data collection."""
+"""Command-line interface for performance data collection and analysis.
+
+This module provides a command-line tool to interact with the performance
+collection, comparison, and history features of the strategy sandbox.
+It allows users to collect new performance metrics, compare them against
+baselines, manage historical data, and generate reports.
+"""
 
 import argparse
 import json
@@ -9,7 +15,13 @@ from .comparator import ComparisonMode, PerformanceComparator
 
 
 def main():
-    """Main CLI entry point."""
+    """Main CLI entry point for the performance analysis tool.
+
+    This function parses command-line arguments and dispatches to the appropriate
+    handler function (collect, compare, baseline, history) based on the subcommand.
+    It sets up the argument parser with various options for performance data
+    management and analysis.
+    """
     parser = argparse.ArgumentParser(description="Performance data collection and analysis tool")
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")

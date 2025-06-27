@@ -13,9 +13,8 @@ class SecurityDashboardGenerator:
     def __init__(self, sbom_generator: SBOMGenerator, github_reporter: GitHubReporter):
         """Initialize the security dashboard generator.
 
-        Args:
-            sbom_generator: SBOMGenerator instance for SBOM and vulnerability data.
-            github_reporter: GitHubReporter instance for step summary integration.
+        :param sbom_generator: SBOMGenerator instance for SBOM and vulnerability data.
+        :param github_reporter: GitHubReporter instance for step summary integration.
         """
         self.sbom_generator = sbom_generator
         self.github_reporter = github_reporter
@@ -23,8 +22,7 @@ class SecurityDashboardGenerator:
     def generate_security_dashboard(self) -> dict[str, Any]:
         """Generate comprehensive security dashboard.
 
-        Returns:
-            Dictionary containing dashboard data and generation results.
+        :return: Dictionary containing dashboard data and generation results.
         """
         # Generate SBOM and vulnerability data
         sbom_data = self.sbom_generator.generate_sbom()
@@ -65,11 +63,8 @@ class SecurityDashboardGenerator:
     def _calculate_security_score(self, vulnerability_data: dict[str, Any]) -> dict[str, Any]:
         """Calculate overall security score based on vulnerabilities.
 
-        Args:
-            vulnerability_data: Vulnerability report data.
-
-        Returns:
-            Security score information including score, trend, and breakdown.
+        :param vulnerability_data: Vulnerability report data.
+        :return: Security score information including score, trend, and breakdown.
         """
         severity_breakdown = vulnerability_data["summary"]["severity_breakdown"]
         total_vulnerabilities = vulnerability_data["summary"]["total_vulnerabilities"]
@@ -125,11 +120,8 @@ class SecurityDashboardGenerator:
     def _analyze_dependency_health(self, sbom_data: dict[str, Any]) -> dict[str, Any]:
         """Analyze dependency health based on SBOM data.
 
-        Args:
-            sbom_data: SBOM data structure.
-
-        Returns:
-            Dependency health analysis.
+        :param sbom_data: SBOM data structure.
+        :return: Dependency health analysis.
         """
         components = sbom_data.get("components", [])
         total_components = len(components)
@@ -169,11 +161,8 @@ class SecurityDashboardGenerator:
     def _get_health_category(self, score: int) -> str:
         """Get health category based on score.
 
-        Args:
-            score: Health score (0-100).
-
-        Returns:
-            Health category string.
+        :param score: Health score (0-100).
+        :return: Health category string.
         """
         if score >= 90:
             return "excellent"
@@ -187,11 +176,8 @@ class SecurityDashboardGenerator:
     def _generate_recommendations(self, vulnerability_data: dict[str, Any]) -> list[str]:
         """Generate actionable security recommendations.
 
-        Args:
-            vulnerability_data: Vulnerability report data.
-
-        Returns:
-            List of actionable recommendations.
+        :param vulnerability_data: Vulnerability report data.
+        :return: List of actionable recommendations.
         """
         recommendations = []
         severity_breakdown = vulnerability_data["summary"]["severity_breakdown"]
@@ -239,11 +225,8 @@ class SecurityDashboardGenerator:
     ) -> list[dict[str, Any]]:
         """Create vulnerability summary for dashboard table.
 
-        Args:
-            vulnerability_data: Vulnerability report data.
-
-        Returns:
-            List of vulnerability summary entries for table display.
+        :param vulnerability_data: Vulnerability report data.
+        :return: List of vulnerability summary entries for table display.
         """
         severity_breakdown = vulnerability_data["summary"]["severity_breakdown"]
 
@@ -272,11 +255,8 @@ class SecurityDashboardGenerator:
     def _get_severity_emoji(self, severity: str) -> str:
         """Get emoji for severity level.
 
-        Args:
-            severity: Severity level string.
-
-        Returns:
-            Appropriate emoji for severity.
+        :param severity: Severity level string.
+        :return: Appropriate emoji for severity.
         """
         severity_emojis = {
             "critical": "🔴",
@@ -289,11 +269,8 @@ class SecurityDashboardGenerator:
     def _format_dashboard(self, dashboard_data: dict[str, Any]) -> str:
         """Format dashboard data as markdown for GitHub step summary.
 
-        Args:
-            dashboard_data: Dashboard data to format.
-
-        Returns:
-            Formatted markdown dashboard content.
+        :param dashboard_data: Dashboard data to format.
+        :return: Formatted markdown dashboard content.
         """
         security_score = dashboard_data["security_score"]
         dependency_health = dashboard_data["dependency_health"]
@@ -349,11 +326,8 @@ class SecurityDashboardGenerator:
     ) -> dict[str, Any]:
         """Generate security trend analysis over time.
 
-        Args:
-            historical_data: List of historical security dashboard data.
-
-        Returns:
-            Security trend analysis.
+        :param historical_data: List of historical security dashboard data.
+        :return: Security trend analysis.
         """
         if not historical_data:
             historical_data = []

@@ -7,6 +7,25 @@ repo_url: https://github.com/MementoRC/hb-strategy-sandbox
 
 nav:
   - Home: index.md
+  - Strategy Sandbox:
+    - Introduction: strategy-sandbox/introduction.md
+    - Getting Started: strategy-sandbox/getting-started.md
+    - Core Concepts: strategy-sandbox/core-concepts.md
+    - Examples: strategy-sandbox/examples.md
+    - API Reference: reference.md
+  - CI Pipeline:
+    - Overview: ci-pipeline/overview.md
+    - Troubleshooting: ci-pipeline/troubleshooting.md
+    - Developer Guide:
+      - Architecture: ci-pipeline/developer-guide/architecture.md
+      - Extending the Pipeline: ci-pipeline/developer-guide/extending-the-pipeline.md
+    - User Guide:
+      - Interpreting Reports: ci-pipeline/user-guide/interpreting-reports.md
+      - Performance Benchmarking: ci-pipeline/user-guide/performance-benchmarking.md
+      - Security Scanning: ci-pipeline/user-guide/security-scanning.md
+    - CI Optimization Guides:
+      - Techniques and Best Practices: ci-optimization-guide.md
+      - Validation Report: ci-optimization-validation.md
 
 theme:
   name: material
@@ -25,4 +44,6 @@ plugins:
       handlers:
         python:
           options:
-            docstring_style: google
+            docstring_style: auto
+            extra:
+              paths: [strategy_sandbox/]

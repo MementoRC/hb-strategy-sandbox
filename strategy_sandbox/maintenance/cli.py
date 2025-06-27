@@ -11,7 +11,10 @@ from .scheduler import MaintenanceScheduler
 
 
 def create_parser() -> argparse.ArgumentParser:
-    """Create the command-line argument parser."""
+    """Create the command-line argument parser.
+
+    :return: The configured argument parser.
+    """
     parser = argparse.ArgumentParser(
         description="Hummingbot Strategy Sandbox - Maintenance Tools",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -89,7 +92,12 @@ Examples:
 
 
 def format_output(data: Any, format_type: str) -> str:
-    """Format output data based on the specified format."""
+    """Format output data based on the specified format.
+
+    :param data: The data to format.
+    :param format_type: The desired output format ('json' or 'text').
+    :return: The formatted output string.
+    """
     if format_type == "json":
         return json.dumps(data, indent=2, default=str)
     else:
@@ -97,7 +105,11 @@ def format_output(data: Any, format_type: str) -> str:
 
 
 def format_text_output(data: Any) -> str:
-    """Format data as human-readable text."""
+    """Format data as human-readable text.
+
+    :param data: The data to format.
+    :return: A human-readable text representation of the data.
+    """
     if isinstance(data, dict):
         lines = []
         for key, value in data.items():
@@ -119,7 +131,12 @@ def format_text_output(data: Any) -> str:
 
 
 def handle_health_command(args, monitor: CIHealthMonitor) -> int:
-    """Handle health monitoring commands."""
+    """Handle health monitoring commands.
+
+    :param args: The command-line arguments.
+    :param monitor: The CIHealthMonitor instance.
+    :return: The exit code (0 for success, 1 for error, 2 for critical).
+    """
     try:
         if args.collect:
             result = monitor.collect_health_metrics()
@@ -148,7 +165,12 @@ def handle_health_command(args, monitor: CIHealthMonitor) -> int:
 
 
 def handle_tasks_command(args, scheduler: MaintenanceScheduler) -> int:
-    """Handle task management commands."""
+    """Handle task management commands.
+
+    :param args: The command-line arguments.
+    :param scheduler: The MaintenanceScheduler instance.
+    :return: The exit code (0 for success, 1 for error).
+    """
     try:
         if args.list:
             result = scheduler.get_task_status()
@@ -200,7 +222,12 @@ def handle_tasks_command(args, scheduler: MaintenanceScheduler) -> int:
 
 
 def handle_maintenance_command(args, scheduler: MaintenanceScheduler) -> int:
-    """Handle maintenance operations."""
+    """Handle maintenance operations.
+
+    :param args: The command-line arguments.
+    :param scheduler: The MaintenanceScheduler instance.
+    :return: The exit code (0 for success, 1 for error).
+    """
     try:
         if args.perform:
             dry_run = args.dry_run if hasattr(args, "dry_run") else False
@@ -237,7 +264,12 @@ def handle_maintenance_command(args, scheduler: MaintenanceScheduler) -> int:
 
 
 def handle_config_command(args, scheduler: MaintenanceScheduler) -> int:
-    """Handle configuration commands."""
+    """Handle configuration commands.
+
+    :param args: The command-line arguments.
+    :param scheduler: The MaintenanceScheduler instance.
+    :return: The exit code (0 for success, 1 for error).
+    """
     try:
         if args.show:
             print(format_output(scheduler.config, args.output_format))
@@ -263,7 +295,10 @@ def handle_config_command(args, scheduler: MaintenanceScheduler) -> int:
 
 
 def main() -> int:
-    """Main entry point for the maintenance CLI."""
+    """Main entry point for the maintenance CLI.
+
+    :return: The exit code of the application.
+    """
     parser = create_parser()
     args = parser.parse_args()
 
