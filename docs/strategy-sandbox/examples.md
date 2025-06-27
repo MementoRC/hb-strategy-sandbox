@@ -271,4 +271,4 @@ class CustomHistoricalDataProvider(DataProviderProtocol):
 #     asyncio.run(main())
 ```
 
-These examples provide a starting point for building more sophisticated strategies and integrating custom components within the HB Strategy Sandbox. Remember to refer to the [API Reference](reference.md) for detailed information on available methods and classes.
+These examples provide a starting point for building more sophisticated strategies and integrating custom components within the HB Strategy Sandbox. Remember to refer to the [API Reference](../reference.md) for detailed information on available methods and classes.

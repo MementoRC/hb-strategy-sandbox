@@ -45,4 +45,5 @@ plugins:
         python:
           options:
             docstring_style: auto
-            paths: [strategy_sandbox/]
+            extra:
+              paths: [strategy_sandbox/]
