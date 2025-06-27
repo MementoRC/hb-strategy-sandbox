@@ -1,17 +1,13 @@
 """Advanced trend analysis and alerting system for performance data."""
 
-import json
-import os
-import statistics
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Any, TypedDict
 
-import yaml
+import numpy as np
 
 from .comparator import AlertSeverity, PerformanceAlert
-from .models import PerformanceMetrics
 
 
 class BenchmarkData(TypedDict):
@@ -68,12 +64,26 @@ class TrendAnalyzer:
     across multiple builds.
     """
 
-    def __init__(self, historical_data: list[dict[str, Any]]):
+    def __init__(
+        self, historical_data: list[dict[str, Any]] = None, alert_config_path: str | Path = None
+    ):
         """Initialize the trend analyzer.
 
-        :param historical_data: A list of historical benchmark results.
+        :param historical_data: A list of historical benchmark results. Defaults to empty list.
+        :param alert_config_path: Path to alert configuration file (for backward compatibility).
         """
-        self.historical_data = historical_data
+        self.historical_data = historical_data or []
+        self.alert_config_path = alert_config_path
+
+    def analyze(self) -> str:
+        """Basic analysis method for backward compatibility.
+
+        :return: Simple analysis summary.
+        """
+        if not self.historical_data:
+            return "no historical data"
+        else:
+            return f"{len(self.historical_data)} data point{'s' if len(self.historical_data) != 1 else ''}"
 
     def analyze_metric_trend(self, metric_name: str) -> dict[str, Any] | None:
         """Analyze the trend of a specific performance metric.
@@ -85,7 +95,7 @@ class TrendAnalyzer:
         metric_values = []
         for data_point in self.historical_data:
             # Assuming data is structured with a top-level key for each benchmark
-            for benchmark_name, benchmark_data in data_point.items():
+            for _benchmark_name, benchmark_data in data_point.items():
                 if isinstance(benchmark_data, dict) and metric_name in benchmark_data:
                     metric_values.append(benchmark_data[metric_name])
 
@@ -116,10 +126,7 @@ class TrendAnalyzer:
             percentage_change = 0
 
         # Calculate volatility (standard deviation as a percentage of the mean)
-        if np.mean(y) != 0:
-            volatility = (np.std(y) / np.mean(y)) * 100
-        else:
-            volatility = 0
+        volatility = (np.std(y) / np.mean(y)) * 100 if np.mean(y) != 0 else 0
 
         return {
             "metric_name": metric_name,
@@ -142,7 +149,7 @@ class TrendAnalyzer:
             return {}
 
         # Identify all unique metrics from the historical data
-        key_metrics = set()
+        key_metrics: set[str] = set()
         for data_point in self.historical_data:
             for benchmark_data in data_point.values():
                 if isinstance(benchmark_data, dict):
@@ -155,4 +162,3 @@ class TrendAnalyzer:
                 trend_summary[metric] = trend
 
         return trend_summary
-

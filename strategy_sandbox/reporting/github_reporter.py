@@ -65,11 +65,12 @@ class GitHubReporter:
 
         return env_info
 
-    def add_to_summary(self, markdown_content: str) -> bool:
+    def add_to_summary(self, markdown_content: str, section_title: str = None) -> bool:
         """Add content to GitHub step summary.
 
         Args:
             markdown_content: Markdown content to append.
+            section_title: Optional section title (for backward compatibility).
 
         Returns:
             True if successful, False otherwise.
@@ -234,9 +235,7 @@ class GitHubReporter:
         # Create detailed artifact if requested
         artifact_created = None
         if include_artifact:
-            artifact_created = self.create_detailed_report_artifact(
-                "performance_report", context
-            )
+            artifact_created = self.create_detailed_report_artifact("performance_report", context)
 
         return {
             "report_content": report_content,
