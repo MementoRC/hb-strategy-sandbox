@@ -74,7 +74,7 @@ Pure business logic for strategy development:
 #### **🛠️ Framework Components** (Shared Tools)
 Reusable development and quality tools:
 - `strategy_sandbox/performance/` - Performance monitoring
-- `strategy_sandbox/security/` - Security scanning  
+- `strategy_sandbox/security/` - Security scanning
 - `strategy_sandbox/reporting/` - Report generation
 - `strategy_sandbox/maintenance/` - System maintenance
 

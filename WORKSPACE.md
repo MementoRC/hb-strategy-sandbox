@@ -9,7 +9,7 @@ This project is in **Phase 1** of workspace migration - planning and preparation
 hb-strategy-sandbox/                    # Current project
 ├── strategy_sandbox/                   # 🎯 FEATURE: Strategy sandbox core
 │   ├── core/                          # Core strategy logic
-│   ├── balance/                       # Balance management  
+│   ├── balance/                       # Balance management
 │   ├── markets/                       # Market simulation
 │   ├── events/                        # Event system
 │   ├── performance/                   # 🛠️ FRAMEWORK: Performance tools
@@ -115,6 +115,6 @@ This quality level must be maintained throughout workspace migration.
 
 ---
 
-**Status**: Phase 1 In Progress  
-**Next**: Framework extraction planning  
+**Status**: Phase 1 In Progress
+**Next**: Framework extraction planning
 **Goal**: Workspace-ready structure for multi-feature development

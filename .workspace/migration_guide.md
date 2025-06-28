@@ -11,7 +11,7 @@ This guide provides step-by-step instructions for migrating from single-feature 
 #### **Completed Tasks**
 - [x] Create workspace planning documentation
 - [x] Component classification and mapping
-- [x] Validation scripts preparation  
+- [x] Validation scripts preparation
 - [x] Workspace configuration template
 - [x] Migration guide creation
 
@@ -27,7 +27,7 @@ python .workspace/scripts/validate_current_state.py
 #### **Quality Baseline**
 Current project demonstrates excellent quality standards:
 - ✅ **337 tests passing** (100% pass rate)
-- ✅ **Zero critical violations** (F,E9 linting)  
+- ✅ **Zero critical violations** (F,E9 linting)
 - ✅ **Comprehensive CI/CD** pipeline
 - ✅ **Complete documentation** and examples
 
@@ -49,7 +49,7 @@ mkdir -p framework/tests/{performance,security,reporting,maintenance}
 # Create framework __init__.py files
 touch framework/__init__.py
 touch framework/performance/__init__.py
-touch framework/security/__init__.py  
+touch framework/security/__init__.py
 touch framework/reporting/__init__.py
 touch framework/maintenance/__init__.py
 ```
@@ -60,7 +60,7 @@ touch framework/maintenance/__init__.py
 mv strategy_sandbox/performance/ framework/performance/
 mv tests/unit/test_performance_*.py framework/tests/performance/
 
-# Move security module  
+# Move security module
 mv strategy_sandbox/security/ framework/security/
 mv tests/unit/test_security_*.py framework/tests/security/
 
@@ -84,7 +84,7 @@ Shared development and quality tools for Hummingbot features.
 """
 
 from .performance import PerformanceCollector, TrendAnalyzer, PerformanceComparator
-from .security import SecurityAnalyzer, DashboardGenerator, SBOMGenerator  
+from .security import SecurityAnalyzer, DashboardGenerator, SBOMGenerator
 from .reporting import ReportGenerator, ArtifactManager, TemplateEngine, GitHubReporter
 from .maintenance import HealthMonitor, MaintenanceScheduler
 
@@ -95,10 +95,10 @@ __framework_version__ = "1.0.0"
 __all__ = [
     # Performance tools
     "PerformanceCollector", "TrendAnalyzer", "PerformanceComparator",
-    # Security tools  
+    # Security tools
     "SecurityAnalyzer", "DashboardGenerator", "SBOMGenerator",
     # Reporting tools
-    "ReportGenerator", "ArtifactManager", "TemplateEngine", "GitHubReporter", 
+    "ReportGenerator", "ArtifactManager", "TemplateEngine", "GitHubReporter",
     # Maintenance tools
     "HealthMonitor", "MaintenanceScheduler"
 ]
@@ -128,7 +128,7 @@ try:
 except ImportError:
     # Fallback to old locations (during migration)
     from .performance import PerformanceCollector, TrendAnalyzer
-    from .security import SecurityAnalyzer, DashboardGenerator  
+    from .security import SecurityAnalyzer, DashboardGenerator
     from .reporting import ReportGenerator, ArtifactManager
     from .maintenance import HealthMonitor, MaintenanceScheduler
 
@@ -148,7 +148,7 @@ warnings.warn(
 [project.optional-dependencies]
 framework = [
     "pytest>=7.0.0",
-    "pytest-benchmark>=4.0.0", 
+    "pytest-benchmark>=4.0.0",
     "bandit>=1.7.0",
     "safety>=2.0.0",
     "pip-audit>=2.0.0",
@@ -162,7 +162,7 @@ hb-strategy = "strategy_sandbox.cli:main"
 
 # Framework CLI (new)
 hb-performance = "framework.performance.cli:main"
-hb-security = "framework.security.cli:main"  
+hb-security = "framework.security.cli:main"
 hb-reporting = "framework.reporting.cli:main"
 hb-maintenance = "framework.maintenance.cli:main"
 
@@ -186,7 +186,7 @@ python .workspace/scripts/validate_current_state.py
 
 # Run specific validation
 pixi run test-all                    # All tests still pass
-pixi run lint-all                   # No new lint violations  
+pixi run lint-all                   # No new lint violations
 python -c "from strategy_sandbox.performance import PerformanceCollector"  # Backward compatibility
 python -c "from framework.performance import PerformanceCollector"        # New imports work
 
@@ -194,7 +194,7 @@ python -c "from framework.performance import PerformanceCollector"        # New 
 python -c "
 import warnings
 warnings.simplefilter('always')
-from strategy_sandbox.performance import PerformanceCollector  
+from strategy_sandbox.performance import PerformanceCollector
 # Should show deprecation warning
 "
 ```
@@ -215,7 +215,7 @@ from strategy_sandbox.performance import PerformanceCollector
 
 ### **🚀 Phase 4: Workspace Integration** (Future)
 
-#### **Objectives**  
+#### **Objectives**
 - Implement full workspace structure
 - Integrate multiple features (strategy_sandbox + candles_feed)
 - Deploy multi-feature CI/CD pipeline
@@ -237,7 +237,7 @@ from strategy_sandbox.performance import PerformanceCollector
 - [ ] Migration guide documented
 - [ ] Current quality baseline established
 
-### **Phase 2 Complete** 
+### **Phase 2 Complete**
 - [ ] Framework package created and working
 - [ ] All framework modules moved successfully
 - [ ] Backward compatibility maintained

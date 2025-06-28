@@ -29,12 +29,12 @@ hummingbot_integration = true
   # Main API that external consumers should use
   public_api = [
     "strategy_sandbox.core.SandboxEnvironment",
-    "strategy_sandbox.balance.BalanceManager", 
+    "strategy_sandbox.balance.BalanceManager",
     "strategy_sandbox.markets.ExchangeSimulator",
     "strategy_sandbox.events.SystemEventManager"
   ]
 
-# 🛠️ FRAMEWORK COMPONENTS  
+# 🛠️ FRAMEWORK COMPONENTS
 # Reusable quality and development tools
 [classification.framework_components]
 name = "hb_framework"
@@ -52,7 +52,7 @@ reusable = true
   public_api = [
     "hb_framework.performance.PerformanceCollector",
     "hb_framework.security.SecurityAnalyzer",
-    "hb_framework.reporting.ReportGenerator", 
+    "hb_framework.reporting.ReportGenerator",
     "hb_framework.maintenance.HealthMonitor"
   ]
 
@@ -86,7 +86,7 @@ reusable = true
   # Configuration specific to strategy sandbox
   "examples/simple_strategy_example.py" = { type = "feature", target = "features/strategy_sandbox/examples/" }
 
-  [classification.configuration_components.framework_config] 
+  [classification.configuration_components.framework_config]
   # Framework and build configuration
   "pyproject.toml" = { type = "framework", target = "workspace/pyproject.toml", note = "Split into workspace + feature configs" }
   ".github/workflows/" = { type = "framework", target = "workspace/.github/workflows/", note = "Enhance for multi-feature" }
@@ -108,7 +108,7 @@ phases = ["framework_extraction", "feature_isolation", "workspace_integration"]
   estimated_effort = "medium"
   dependencies = []
 
-  [migration.feature_isolation]  
+  [migration.feature_isolation]
   description = "Isolate strategy sandbox feature"
   modules = ["core", "balance", "markets", "events", "data", "utils"]
   estimated_effort = "medium"
@@ -117,7 +117,7 @@ phases = ["framework_extraction", "feature_isolation", "workspace_integration"]
   [migration.workspace_integration]
   description = "Create workspace structure and integrate multiple features"
   modules = ["workspace_config", "multi_feature_ci", "integration_tests"]
-  estimated_effort = "high" 
+  estimated_effort = "high"
   dependencies = ["framework_extraction", "feature_isolation"]
 
 # 🎯 VALIDATION CRITERIA
@@ -141,7 +141,7 @@ phases = ["framework_extraction", "feature_isolation", "workspace_integration"]
   # Core functionality that must be preserved
   required_features = [
     "sandbox_environment_creation",
-    "strategy_execution", 
+    "strategy_execution",
     "balance_management",
     "market_simulation",
     "performance_monitoring",
