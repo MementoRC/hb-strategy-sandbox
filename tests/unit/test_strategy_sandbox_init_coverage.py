@@ -45,7 +45,7 @@ def test_getattr_framework_module_execution():
         
         # Test framework module access - this hits the __getattr__ method
         try:
-            performance_module = strategy_sandbox.__getattr__('performance')
+            _ = strategy_sandbox.__getattr__('performance')
             # If import succeeds, check deprecation warning
             assert len(w) >= 1
             assert any("deprecated" in str(warn.message) for warn in w)
@@ -69,7 +69,7 @@ def test_getattr_framework_component_execution():
         
         for component_name in component_names[:3]:  # Test subset to avoid timeout
             try:
-                component = strategy_sandbox.__getattr__(component_name)
+                _ = strategy_sandbox.__getattr__(component_name)
                 # If successful, verify warning
                 warning_exists = any(
                     "deprecated" in str(warn.message) for warn in w
@@ -105,7 +105,7 @@ def test_getattr_fallback_mechanism():
             warnings.simplefilter("always")
             
             try:
-                result = strategy_sandbox.__getattr__('performance')
+                _ = strategy_sandbox.__getattr__('performance')
                 # Verify warning was issued even with fallback
                 assert any("deprecated" in str(warn.message) for warn in w)
             except (ImportError, AttributeError):
@@ -150,7 +150,7 @@ def test_framework_mappings_coverage():
             warnings.simplefilter("always")
             
             try:
-                result = getattr_func(module_name)
+                _ = getattr_func(module_name)
                 # Verify the mapping was used (deprecation warning should contain module name)
                 warning_found = any(
                     module_name in str(warn.message) or "framework" in str(warn.message)

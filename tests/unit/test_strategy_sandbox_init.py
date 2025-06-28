@@ -8,7 +8,6 @@ compatibility features added to resolve lint violations.
 import pytest
 import warnings
 from unittest.mock import patch, MagicMock
-import sys
 
 # Import the module under test
 import strategy_sandbox
@@ -34,7 +33,7 @@ class TestStrategySandboxInit:
             
             # This should trigger the __getattr__ mechanism
             try:
-                module = strategy_sandbox.performance
+                _ = strategy_sandbox.performance
                 # Verify warning was issued if import succeeds
                 if len(w) > 0:
                     assert issubclass(w[0].category, DeprecationWarning)
@@ -59,7 +58,7 @@ class TestStrategySandboxInit:
             
             for component_name in component_names:
                 try:
-                    component = getattr(strategy_sandbox, component_name)
+                    _ = getattr(strategy_sandbox, component_name)
                     # If we get here, verify deprecation warning was issued
                     warning_found = any(
                         issubclass(warn.category, DeprecationWarning) and
@@ -103,7 +102,6 @@ class TestStrategySandboxInit:
     def test_dynamic_import_module_mapping(self):
         """Test that framework module mapping is correctly configured."""
         # Access the __getattr__ function to verify internal mappings
-        getattr_func = strategy_sandbox.__getattr__
         
         # Test framework module access patterns
         framework_modules = ["performance", "security", "reporting", "maintenance"]
@@ -175,7 +173,7 @@ class TestStrategySandboxInit:
             
             # Force call to __getattr__ with known framework module name
             try:
-                result = strategy_sandbox.__getattr__('performance')
+                _ = strategy_sandbox.__getattr__('performance')
                 # If we get here, verify warning
                 assert len(w) >= 1
                 assert any("deprecated" in str(warn.message) for warn in w)
@@ -190,7 +188,7 @@ class TestStrategySandboxInit:
             
             # Test actual __getattr__ execution for component
             try:
-                result = strategy_sandbox.__getattr__('PerformanceCollector')
+                _ = strategy_sandbox.__getattr__('PerformanceCollector')
                 # Verify deprecation warning was issued
                 assert len(w) >= 1
                 assert any("deprecated" in str(warn.message) for warn in w)
