@@ -159,9 +159,8 @@ cython_debug/
 #  https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore
 .idea/
 
-# Pixi
+# Pixi environments (but keep lock file for CI reproducibility)
 .pixi/
-pixi.lock
 
 # VS Code
 .vscode/
@@ -172,3 +171,64 @@ pixi.lock
 # Local development files
 *.local
 .local/
+
+# Development environment files
+.claude/
+.aider*
+.mcp.json
+CLAUDE.md
+CLAUDE.local.md
+claude-code-knowledge-framework/
+.clinerules
+.cursor/
+.roo*
+.taskmaster/
+.trae*
+.windsurf*
+
+# AI agent development files
+AGENTS.md
+
+# Temporary test and benchmark files
+benchmark-results.json
+test_output.json
+
+# Development symlinks and test connections
+__do_not_edit*
+__do_not_eddit*
+
+# Added by Task Master AI
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+
+# Dependency directories
+node_modules/
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Development and testing artifacts
+performance_data/
+artifacts/
+integration-coverage.xml
+reports/
+
+# Environment files
+.env.example
+
+# Security and analysis reports
+bandit-report.json
+safety-report.json
+pip-audit-report.json
+
+# Benchmark and performance results
+*.benchmark.json

@@ -92,9 +92,15 @@ pixi run test-integration   # Integration tests
 pixi run test-performance   # Performance tests
 ```
 
+## CI/CD Status
+
+[![CI](https://github.com/MementoRC/hb-strategy-sandbox/workflows/CI/badge.svg)](https://github.com/MementoRC/hb-strategy-sandbox/actions/workflows/ci.yml)
+[![Documentation](https://github.com/MementoRC/hb-strategy-sandbox/workflows/Documentation/badge.svg)](https://github.com/MementoRC/hb-strategy-sandbox/actions/workflows/docs.yml)
+[![codecov](https://codecov.io/gh/MementoRC/hb-strategy-sandbox/branch/main/graph/badge.svg)](https://codecov.io/gh/MementoRC/hb-strategy-sandbox)
+
 ## Roadmap
 
-- [ ] **Phase 1 (Current)**: Basic sandbox functionality
+- [x] **Phase 1**: Basic sandbox functionality with CI/CD
 - [ ] **Phase 2**: Advanced market dynamics and slippage simulation
 - [ ] **Phase 3**: Hummingbot Strategy V2 integration
 - [ ] **Phase 4**: Historical data replay and backtesting
