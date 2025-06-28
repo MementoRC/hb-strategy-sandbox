@@ -27,77 +27,7 @@ __all__ = [
     "EventProtocol",
 ]
 
-# Backward compatibility imports for framework components
-try:
-    # Import from new framework location
-    from framework.maintenance import CIHealthMonitor, MaintenanceScheduler
-    from framework.performance import (
-        AlertSeverity,
-        BenchmarkResult,
-        ComparisonMode,
-        PerformanceAlert,
-        PerformanceCollector,
-        PerformanceComparator,
-        PerformanceMetrics,
-        TrendAlert,
-        TrendAnalyzer,
-        TrendData,
-        schema,
-    )
-    from framework.reporting import ArtifactManager, GitHubReporter, ReportGenerator, TemplateEngine
-    from framework.security import (
-        DependencyAnalyzer,
-        DependencyInfo,
-        SBOMGenerator,
-        SecurityCollector,
-        SecurityMetrics,
-        VulnerabilityInfo,
-    )
-
-    # Add compatibility warning
-    warnings.warn(
-        "Importing framework components from strategy_sandbox is deprecated. "
-        "Use 'from framework import ...' instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-
-    # Add framework components to exports
-    __all__.extend(
-        [
-            # Performance tools
-            "PerformanceCollector",
-            "PerformanceComparator",
-            "PerformanceMetrics",
-            "BenchmarkResult",
-            "AlertSeverity",
-            "ComparisonMode",
-            "PerformanceAlert",
-            "TrendAnalyzer",
-            "TrendAlert",
-            "TrendData",
-            "schema",
-            # Security tools
-            "DependencyAnalyzer",
-            "SecurityCollector",
-            "SBOMGenerator",
-            "DependencyInfo",
-            "SecurityMetrics",
-            "VulnerabilityInfo",
-            # Reporting tools
-            "ReportGenerator",
-            "ArtifactManager",
-            "TemplateEngine",
-            "GitHubReporter",
-            # Maintenance tools
-            "CIHealthMonitor",
-            "MaintenanceScheduler",
-        ]
-    )
-
-except ImportError:
-    # Fallback to old locations (during migration)
-    pass
+# Framework backward compatibility - handled via __getattr__ to avoid unused imports
 
 
 def __getattr__(name):
@@ -110,6 +40,38 @@ def __getattr__(name):
         "maintenance": "framework.maintenance",
     }
 
+    # Framework component backward compatibility mapping
+    framework_components = {
+        # Performance tools
+        "PerformanceCollector": "framework.performance",
+        "PerformanceComparator": "framework.performance",
+        "PerformanceMetrics": "framework.performance",
+        "BenchmarkResult": "framework.performance",
+        "AlertSeverity": "framework.performance",
+        "ComparisonMode": "framework.performance",
+        "PerformanceAlert": "framework.performance",
+        "TrendAnalyzer": "framework.performance",
+        "TrendAlert": "framework.performance",
+        "TrendData": "framework.performance",
+        "schema": "framework.performance",
+        # Security tools
+        "DependencyAnalyzer": "framework.security",
+        "SecurityCollector": "framework.security",
+        "SBOMGenerator": "framework.security",
+        "DependencyInfo": "framework.security",
+        "SecurityMetrics": "framework.security",
+        "VulnerabilityInfo": "framework.security",
+        # Reporting tools
+        "ReportGenerator": "framework.reporting",
+        "ArtifactManager": "framework.reporting",
+        "TemplateEngine": "framework.reporting",
+        "GitHubReporter": "framework.reporting",
+        # Maintenance tools
+        "CIHealthMonitor": "framework.maintenance",
+        "MaintenanceScheduler": "framework.maintenance",
+    }
+
+    # Handle framework module imports
     if name in framework_modules:
         warnings.warn(
             f"Importing {name} from strategy_sandbox is deprecated. "
@@ -122,5 +84,25 @@ def __getattr__(name):
         except ImportError:
             # Fallback to old location if framework not available
             return import_module(f"strategy_sandbox.{name}")
+
+    # Handle individual framework component imports
+    if name in framework_components:
+        warnings.warn(
+            f"Importing {name} from strategy_sandbox is deprecated. "
+            f"Use 'from framework import ...' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        try:
+            module = import_module(framework_components[name])
+            return getattr(module, name)
+        except (ImportError, AttributeError):
+            # Fallback to old location if framework not available
+            try:
+                module_name = framework_components[name].replace("framework.", "strategy_sandbox.")
+                module = import_module(module_name)
+                return getattr(module, name)
+            except (ImportError, AttributeError):
+                pass
 
     raise AttributeError(f"module 'strategy_sandbox' has no attribute '{name}'")
