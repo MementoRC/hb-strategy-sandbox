@@ -235,3 +235,11 @@ pip-audit-report.json
 
 # AI development documentation
 ai_docs/
+
+# Environment variables
+.vscode
+# OS specific
+
+# Task files
+# tasks.json
+# tasks/ 
