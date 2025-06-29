@@ -22,7 +22,10 @@ class VulnerabilityInfo:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary representation."""
+        """Convert to dictionary representation.
+
+        :return: A dictionary representation of the vulnerability.
+        """
         return {
             "id": self.id,
             "package_name": self.package_name,
@@ -38,7 +41,11 @@ class VulnerabilityInfo:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "VulnerabilityInfo":
-        """Create from dictionary representation."""
+        """Create from dictionary representation.
+
+        :param data: The dictionary to create the object from.
+        :return: A VulnerabilityInfo object.
+        """
         return cls(
             id=data["id"],
             package_name=data["package_name"],
@@ -68,12 +75,18 @@ class DependencyInfo:
 
     @property
     def has_vulnerabilities(self) -> bool:
-        """Check if this dependency has any vulnerabilities."""
+        """Check if this dependency has any vulnerabilities.
+
+        :return: True if the dependency has vulnerabilities, False otherwise.
+        """
         return len(self.vulnerabilities) > 0
 
     @property
     def vulnerability_count_by_severity(self) -> dict[str, int]:
-        """Count vulnerabilities by severity level."""
+        """Count vulnerabilities by severity level.
+
+        :return: A dictionary with the count of vulnerabilities for each severity level.
+        """
         counts = {"low": 0, "medium": 0, "high": 0, "critical": 0}
         for vuln in self.vulnerabilities:
             severity = vuln.severity.lower()
@@ -82,7 +95,10 @@ class DependencyInfo:
         return counts
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary representation."""
+        """Convert to dictionary representation.
+
+        :return: A dictionary representation of the dependency.
+        """
         return {
             "name": self.name,
             "version": self.version,
@@ -97,7 +113,11 @@ class DependencyInfo:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "DependencyInfo":
-        """Create from dictionary representation."""
+        """Create from dictionary representation.
+
+        :param data: The dictionary to create the object from.
+        :return: A DependencyInfo object.
+        """
         return cls(
             name=data["name"],
             version=data["version"],
@@ -124,22 +144,35 @@ class SecurityMetrics:
     scan_duration: float | None = None  # seconds
 
     def add_dependency(self, dependency: DependencyInfo) -> None:
-        """Add a dependency to the collection."""
+        """Add a dependency to the collection.
+
+        :param dependency: The dependency to add.
+        """
         self.dependencies.append(dependency)
 
     def get_dependency(self, name: str) -> DependencyInfo | None:
-        """Get a specific dependency by name."""
+        """Get a specific dependency by name.
+
+        :param name: The name of the dependency to get.
+        :return: The dependency if found, otherwise None.
+        """
         for dep in self.dependencies:
             if dep.name == name:
                 return dep
         return None
 
     def get_vulnerable_dependencies(self) -> list[DependencyInfo]:
-        """Get all dependencies with vulnerabilities."""
+        """Get all dependencies with vulnerabilities.
+
+        :return: A list of vulnerable dependencies.
+        """
         return [dep for dep in self.dependencies if dep.has_vulnerabilities]
 
     def calculate_summary_stats(self) -> dict[str, Any]:
-        """Calculate summary statistics across all dependencies."""
+        """Calculate summary statistics across all dependencies.
+
+        :return: A dictionary with summary statistics.
+        """
         total_deps = len(self.dependencies)
         vulnerable_deps = len(self.get_vulnerable_dependencies())
 
@@ -173,7 +206,10 @@ class SecurityMetrics:
         }
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary representation."""
+        """Convert to dictionary representation.
+
+        :return: A dictionary representation of the security metrics.
+        """
         return {
             "build_id": self.build_id,
             "timestamp": self.timestamp.isoformat(),
@@ -186,7 +222,11 @@ class SecurityMetrics:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "SecurityMetrics":
-        """Create from dictionary representation."""
+        """Create from dictionary representation.
+
+        :param data: The dictionary to create the object from.
+        :return: A SecurityMetrics object.
+        """
         return cls(
             build_id=data["build_id"],
             timestamp=datetime.fromisoformat(data["timestamp"]),

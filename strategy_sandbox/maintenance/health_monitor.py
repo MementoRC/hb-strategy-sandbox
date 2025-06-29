@@ -17,16 +17,22 @@ logger = logging.getLogger(__name__)
 
 
 class CIHealthMonitor:
-    """Monitors CI pipeline health and performs system diagnostics."""
+    """Monitors CI pipeline health and performs system diagnostics.
+
+    This class is responsible for collecting various health metrics across the CI system,
+    including system resource usage, component-specific health (performance, security, reporting),
+    and storage health. It provides methods to run comprehensive diagnostics and generate
+    summaries with actionable recommendations, helping to identify and address potential
+    issues in the CI/CD pipeline proactively.
+    """
 
     def __init__(
         self, config_path: str | Path | None = None, project_path: str | Path | None = None
     ):
         """Initialize the CI health monitor.
 
-        Args:
-            config_path: Path to maintenance configuration file.
-            project_path: Path to the project root directory.
+        :param config_path: Path to maintenance configuration file.
+        :param project_path: Path to the project root directory.
         """
         self.project_path = Path(project_path or ".")
 
@@ -48,7 +54,10 @@ class CIHealthMonitor:
         self.last_health_check: datetime | None = None
 
     def _load_config(self) -> dict[str, Any]:
-        """Load monitoring configuration from YAML file."""
+        """Load monitoring configuration from YAML file.
+
+        :return: The loaded configuration dictionary.
+        """
         if not self.config_path.exists():
             # Return default configuration if file doesn't exist
             return {
@@ -77,7 +86,10 @@ class CIHealthMonitor:
             return self._load_config()  # Return defaults
 
     def collect_health_metrics(self) -> dict[str, Any]:
-        """Collect comprehensive health metrics about the CI system."""
+        """Collect comprehensive health metrics about the CI system.
+
+        :return: A dictionary containing the collected health metrics.
+        """
         logger.info("Collecting CI health metrics")
 
         self.metrics = {
@@ -93,7 +105,10 @@ class CIHealthMonitor:
         return self.metrics
 
     def _collect_system_metrics(self) -> dict[str, Any]:
-        """Collect system-level metrics."""
+        """Collect system-level metrics.
+
+        :return: A dictionary containing system metrics.
+        """
         try:
             memory = psutil.virtual_memory()
             cpu_percent = psutil.cpu_percent(interval=1)
@@ -111,7 +126,10 @@ class CIHealthMonitor:
             return {"error": str(e)}
 
     def _collect_storage_metrics(self) -> dict[str, Any]:
-        """Collect storage usage metrics for key directories."""
+        """Collect storage usage metrics for key directories.
+
+        :return: A dictionary containing storage metrics.
+        """
         storage_metrics: dict[str, Any] = {}
 
         directories_to_check = [
@@ -139,7 +157,10 @@ class CIHealthMonitor:
         return storage_metrics
 
     def _check_component_health(self) -> dict[str, Any]:
-        """Check health of individual CI components."""
+        """Check health of individual CI components.
+
+        :return: A dictionary containing the health status of each component.
+        """
         component_health: dict[str, Any] = {}
 
         # Performance component health
@@ -180,7 +201,10 @@ class CIHealthMonitor:
         return component_health
 
     def _check_performance_status(self) -> dict[str, Any]:
-        """Check performance monitoring status and trends."""
+        """Check performance monitoring status and trends.
+
+        :return: A dictionary containing the performance status.
+        """
         try:
             recent_metrics = self.performance_collector.get_recent_history(limit=10)
 
@@ -217,7 +241,10 @@ class CIHealthMonitor:
             return {"status": "error", "error": str(e)}
 
     def _check_security_status(self) -> dict[str, Any]:
-        """Check security scanning status and vulnerability counts."""
+        """Check security scanning status and vulnerability counts.
+
+        :return: A dictionary containing the security status.
+        """
         try:
             dependencies = self.dependency_analyzer.scan_dependencies()
 
@@ -249,7 +276,11 @@ class CIHealthMonitor:
             return {"status": "error", "error": str(e)}
 
     def _calculate_performance_trend(self, metrics_list: list) -> str:
-        """Calculate performance trend over recent runs."""
+        """Calculate performance trend over recent runs.
+
+        :param metrics_list: A list of performance metrics objects.
+        :return: The trend of performance ("degrading", "improving", "stable", or "insufficient_data").
+        """
         if len(metrics_list) < 3:
             return "insufficient_data"
 
@@ -275,7 +306,10 @@ class CIHealthMonitor:
             return "stable"
 
     def run_diagnostics(self) -> dict[str, Any]:
-        """Run comprehensive diagnostics on all CI components."""
+        """Run comprehensive diagnostics on all CI components.
+
+        :return: A dictionary containing the diagnostic results for each component and overall status.
+        """
         logger.info("Running CI diagnostics")
 
         diagnostics: dict[str, Any] = {
@@ -305,7 +339,10 @@ class CIHealthMonitor:
         return diagnostics
 
     def _diagnose_performance_component(self) -> dict[str, Any]:
-        """Diagnose performance monitoring component."""
+        """Diagnose performance monitoring component.
+
+        :return: A dictionary containing the diagnostic results for the performance component.
+        """
         try:
             performance_dir = self.project_path / "performance_data"
             if not performance_dir.exists():
@@ -340,7 +377,10 @@ class CIHealthMonitor:
             return {"status": "error", "error": str(e)}
 
     def _diagnose_security_component(self) -> dict[str, Any]:
-        """Diagnose security scanning component."""
+        """Diagnose security scanning component.
+
+        :return: A dictionary containing the diagnostic results for the security component.
+        """
         try:
             # Check if security scanning tools are available
             package_managers = self.dependency_analyzer.detect_package_managers()
@@ -373,7 +413,10 @@ class CIHealthMonitor:
             return {"status": "error", "error": str(e)}
 
     def _diagnose_reporting_component(self) -> dict[str, Any]:
-        """Diagnose reporting system component."""
+        """Diagnose reporting system component.
+
+        :return: A dictionary containing the diagnostic results for the reporting component.
+        """
         try:
             artifacts_dir = self.project_path / "artifacts"
             reports_dir = artifacts_dir / "reports"
@@ -412,7 +455,16 @@ class CIHealthMonitor:
             return {"status": "error", "error": str(e)}
 
     def _diagnose_storage_health(self) -> dict[str, Any]:
-        """Diagnose storage health and usage."""
+        """Diagnose storage health and usage.
+
+        This method checks the disk usage for various critical directories within the project
+        (e.g., project root, performance data, artifacts, reports). It assesses whether
+        storage usage exceeds predefined thresholds or if free space is critically low.
+
+        :return: A dictionary containing the diagnostic results for storage health,
+            including detailed metrics for each checked location, identified issues,
+            and general recommendations for storage management.
+        """
         try:
             storage_metrics = self._collect_storage_metrics()
 

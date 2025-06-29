@@ -1,8 +1,8 @@
-"""GitHub reporting and artifact generation package."""
+"""Comprehensive reporting and artifact management for CI/CD pipelines."""
 
 from .artifact_manager import ArtifactManager
 from .github_reporter import GitHubReporter
 from .report_generator import ReportGenerator
 from .template_engine import TemplateEngine
 
-__all__ = ["GitHubReporter", "TemplateEngine", "ArtifactManager", "ReportGenerator"]
+__all__ = ["ArtifactManager", "GitHubReporter", "ReportGenerator", "TemplateEngine"]

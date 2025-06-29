@@ -13,7 +13,14 @@ from .models import BenchmarkResult, PerformanceMetrics
 
 
 class PerformanceCollector:
-    """Collects, processes, and stores performance metrics and benchmark results."""
+    """Collects, processes, and stores performance metrics and benchmark results.
+
+    This class provides a robust framework for managing performance data within the
+    CI pipeline. It can collect system-level metrics, process benchmark results
+    from various sources (e.g., pytest-benchmark, custom formats), and store
+    this data for historical tracking and baseline comparisons. It supports
+    saving and loading baselines, as well as retrieving recent performance history.
+    """
 
     def __init__(self, storage_path: str | Path = None):
         """Initialize the performance collector.
@@ -34,7 +41,10 @@ class PerformanceCollector:
         self.history_path.mkdir(exist_ok=True)
 
     def collect_system_info(self) -> dict[str, str | int | float]:
-        """Collect current system information."""
+        """Collect current system information.
+
+        :return: A dictionary containing system information.
+        """
         try:
             cpu_count = psutil.cpu_count()
             memory = psutil.virtual_memory()
@@ -63,7 +73,10 @@ class PerformanceCollector:
             }
 
     def collect_environment_info(self) -> dict[str, str]:
-        """Collect environment information."""
+        """Collect environment information.
+
+        :return: A dictionary containing environment variables.
+        """
         env_vars = [
             "CI",
             "GITHUB_ACTIONS",
@@ -85,12 +98,9 @@ class PerformanceCollector:
     def collect_metrics(self, benchmark_results: str | Path | dict) -> PerformanceMetrics:
         """Process benchmark results and create performance metrics.
 
-        Args:
-            benchmark_results: Path to pytest-benchmark JSON file, file contents as dict,
+        :param benchmark_results: Path to pytest-benchmark JSON file, file contents as dict,
                              or raw benchmark data.
-
-        Returns:
-            PerformanceMetrics object with processed data.
+        :return: PerformanceMetrics object with processed data.
         """
         # Load benchmark data
         if isinstance(benchmark_results, str | Path):
@@ -131,7 +141,11 @@ class PerformanceCollector:
         return metrics
 
     def _process_pytest_benchmark(self, benchmark: dict) -> BenchmarkResult:
-        """Process a single pytest-benchmark result."""
+        """Process a single pytest-benchmark result.
+
+        :param benchmark: The pytest-benchmark result dictionary.
+        :return: A BenchmarkResult object.
+        """
         stats = benchmark.get("stats", {})
 
         return BenchmarkResult(
@@ -151,7 +165,11 @@ class PerformanceCollector:
         )
 
     def _process_custom_benchmark(self, data: dict) -> BenchmarkResult:
-        """Process our custom benchmark format."""
+        """Process our custom benchmark format.
+
+        :param data: The custom benchmark data dictionary.
+        :return: A BenchmarkResult object.
+        """
         return BenchmarkResult(
             name="order_processing_benchmark",
             execution_time=data.get("duration_seconds", 0),
@@ -169,7 +187,11 @@ class PerformanceCollector:
         )
 
     def _process_generic_benchmark(self, data: dict) -> BenchmarkResult:
-        """Process generic benchmark data."""
+        """Process generic benchmark data.
+
+        :param data: The generic benchmark data dictionary.
+        :return: A BenchmarkResult object.
+        """
         return BenchmarkResult(
             name=data.get("name", "generic_benchmark"),
             execution_time=data.get("execution_time", 0),
@@ -180,7 +202,11 @@ class PerformanceCollector:
         )
 
     def _parse_memory_string(self, memory_str: str) -> float | None:
-        """Parse memory string like '50MB' to float in MB."""
+        """Parse memory string like '50MB' to float in MB.
+
+        :param memory_str: The memory string to parse.
+        :return: Memory in MB as a float, or None if parsing fails.
+        """
         if not memory_str or not isinstance(memory_str, str):
             return None
 
@@ -199,7 +225,10 @@ class PerformanceCollector:
             return None
 
     def _generate_build_id(self) -> str:
-        """Generate a unique build identifier."""
+        """Generate a unique build identifier.
+
+        :return: A unique build ID string.
+        """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # Use GitHub info if available
@@ -214,12 +243,9 @@ class PerformanceCollector:
     def store_baseline(self, metrics: PerformanceMetrics, baseline_name: str = "default") -> Path:
         """Store performance metrics as a baseline.
 
-        Args:
-            metrics: Performance metrics to store as baseline.
-            baseline_name: Name for the baseline (default: "default").
-
-        Returns:
-            Path to the stored baseline file.
+        :param metrics: Performance metrics to store as baseline.
+        :param baseline_name: Name for the baseline (default: "default").
+        :return: Path to the stored baseline file.
         """
         baseline_file = self.baseline_path / f"{baseline_name}_baseline.json"
 
@@ -231,11 +257,8 @@ class PerformanceCollector:
     def load_baseline(self, baseline_name: str = "default") -> PerformanceMetrics | None:
         """Load a baseline for comparison.
 
-        Args:
-            baseline_name: Name of the baseline to load.
-
-        Returns:
-            PerformanceMetrics object or None if baseline doesn't exist.
+        :param baseline_name: Name of the baseline to load.
+        :return: PerformanceMetrics object or None if baseline doesn't exist.
         """
         baseline_file = self.baseline_path / f"{baseline_name}_baseline.json"
 
@@ -250,11 +273,8 @@ class PerformanceCollector:
     def store_history(self, metrics: PerformanceMetrics) -> Path:
         """Store performance metrics in history.
 
-        Args:
-            metrics: Performance metrics to store.
-
-        Returns:
-            Path to the stored history file.
+        :param metrics: Performance metrics to store.
+        :return: Path to the stored history file.
         """
         history_file = self.history_path / f"{metrics.build_id}.json"
 
@@ -266,11 +286,8 @@ class PerformanceCollector:
     def get_recent_history(self, limit: int = 10) -> list[PerformanceMetrics]:
         """Get recent performance history.
 
-        Args:
-            limit: Maximum number of recent entries to return.
-
-        Returns:
-            List of PerformanceMetrics objects sorted by timestamp (newest first).
+        :param limit: Maximum number of recent entries to return.
+        :return: List of PerformanceMetrics objects sorted by timestamp (newest first).
         """
         history_files = list(self.history_path.glob("*.json"))
         history_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
@@ -292,12 +309,9 @@ class PerformanceCollector:
     ) -> dict[str, Any]:
         """Compare current metrics with a baseline.
 
-        Args:
-            current_metrics: Current performance metrics.
-            baseline_name: Name of the baseline to compare against.
-
-        Returns:
-            Dictionary containing comparison results.
+        :param current_metrics: Current performance metrics.
+        :param baseline_name: Name of the baseline to compare against.
+        :return: Dictionary containing comparison results.
         """
         baseline = self.load_baseline(baseline_name)
         if not baseline:
@@ -323,7 +337,12 @@ class PerformanceCollector:
     def _compare_benchmark_results(
         self, current: BenchmarkResult, baseline: BenchmarkResult
     ) -> dict[str, Any]:
-        """Compare two benchmark results."""
+        """Compare two benchmark results.
+
+        :param current: The current benchmark result.
+        :param baseline: The baseline benchmark result.
+        :return: A dictionary with comparison details.
+        """
 
         def calc_change_percent(current_val, baseline_val):
             if baseline_val == 0:

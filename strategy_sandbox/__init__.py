@@ -1,5 +1,4 @@
-"""
-Hummingbot Strategy Sandbox - A testing and simulation framework for trading strategies.
+"""Hummingbot Strategy Sandbox - A testing and simulation framework for trading strategies.
 
 This package provides a comprehensive sandbox environment for testing and developing
 trading strategies without connecting to real exchanges.

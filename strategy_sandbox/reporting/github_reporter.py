@@ -11,7 +11,14 @@ from .template_engine import TemplateEngine
 
 
 class GitHubReporter:
-    """Main class for GitHub Actions reporting integration."""
+    """Main class for GitHub Actions reporting integration.
+
+    This class provides a comprehensive interface for integrating CI/CD reports
+    directly into GitHub Actions workflows. It handles generating step summaries,
+    creating detailed artifacts (JSON, Markdown, HTML), and providing access
+    to GitHub-specific environment variables. It aims to make CI/CD results
+    easily accessible and interpretable within the GitHub ecosystem.
+    """
 
     def __init__(self, artifact_path: str | None = None):
         """Initialize GitHub reporter with environment detection.
@@ -58,11 +65,12 @@ class GitHubReporter:
 
         return env_info
 
-    def add_to_summary(self, markdown_content: str) -> bool:
+    def add_to_summary(self, markdown_content: str, section_title: str = None) -> bool:
         """Add content to GitHub step summary.
 
         Args:
             markdown_content: Markdown content to append.
+            section_title: Optional section title (for backward compatibility).
 
         Returns:
             True if successful, False otherwise.
@@ -203,35 +211,37 @@ class GitHubReporter:
     ) -> dict[str, Any]:
         """Generate comprehensive performance report.
 
-        Args:
-            performance_metrics: Performance data.
-            baseline_comparison: Baseline comparison data.
-            include_summary: Whether to add to step summary.
-            include_artifact: Whether to create artifact.
-
-        Returns:
-            Report generation results.
+        :param performance_metrics: Performance data.
+        :param baseline_comparison: Baseline comparison data.
+        :param include_summary: Whether to add to step summary.
+        :param include_artifact: Whether to create artifact.
+        :return: Report generation results.
         """
-        results: dict[str, bool | Path | None] = {"summary_added": False, "artifact_created": None}
+        context = {
+            "metrics": performance_metrics,
+            "comparison": baseline_comparison,
+            "github_env": self.github_env,
+            "timestamp": datetime.now().isoformat(),
+        }
 
-        # Generate step summary
+        # Render report content
+        report_content = self.template_engine.render_performance_summary(context)
+
+        # Add to step summary if requested
+        summary_added = False
         if include_summary:
-            summary_content = self.create_performance_summary(
-                performance_metrics, baseline_comparison
-            )
-            results["summary_added"] = self.add_to_summary(summary_content)
+            summary_added = self.add_to_summary(report_content, "Performance Benchmarks")
 
-        # Create detailed artifact
+        # Create detailed artifact if requested
+        artifact_created = None
         if include_artifact:
-            artifact_data = {
-                "performance_metrics": performance_metrics,
-                "baseline_comparison": baseline_comparison,
-            }
-            results["artifact_created"] = self.create_detailed_report_artifact(
-                "performance", artifact_data
-            )
+            artifact_created = self.create_detailed_report_artifact("performance_report", context)
 
-        return results
+        return {
+            "report_content": report_content,
+            "summary_added": summary_added,
+            "artifact_created": artifact_created,
+        }
 
     def generate_security_report(
         self,

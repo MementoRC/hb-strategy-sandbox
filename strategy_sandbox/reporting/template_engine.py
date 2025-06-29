@@ -14,11 +14,8 @@ class TemplateEngine:
     def render_build_status(self, context: dict[str, Any]) -> str:
         """Render build status summary.
 
-        Args:
-            context: Build context with status, test results, etc.
-
-        Returns:
-            Formatted markdown content.
+        :param context: Build context with status, test results, etc.
+        :return: Formatted markdown content.
         """
         build_status = context.get("build_status", "unknown")
         test_results = context.get("test_results", {})
@@ -66,11 +63,8 @@ class TemplateEngine:
     def render_performance_summary(self, context: dict[str, Any]) -> str:
         """Render performance benchmark summary.
 
-        Args:
-            context: Performance context with metrics and comparison.
-
-        Returns:
-            Formatted markdown content.
+        :param context: Performance context with metrics and comparison.
+        :return: Formatted markdown content.
         """
         metrics = context.get("metrics", {})
         comparison = context.get("comparison")
@@ -143,21 +137,21 @@ class TemplateEngine:
                 if "execution_time" in comp:
                     et = comp["execution_time"]
                     change_icon = self._get_performance_icon(et["change_direction"])
-                    markdown += f"- **Execution Time**: {change_icon} {et['change_percent']:+.1f}% "
+                    markdown += f"- **Execution Time**: {change_icon} {et['change_percent']:.1f}% "
                     markdown += f"({et['current']:.4f}s vs {et['baseline']:.4f}s)\n"
 
                 # Memory comparison
                 if "memory_usage" in comp:
                     mem = comp["memory_usage"]
                     change_icon = self._get_performance_icon(mem["change_direction"])
-                    markdown += f"- **Memory Usage**: {change_icon} {mem['change_percent']:+.1f}% "
+                    markdown += f"- **Memory Usage**: {change_icon} {mem['change_percent']:.1f}% "
                     markdown += f"({mem['current']:.1f}MB vs {mem['baseline']:.1f}MB)\n"
 
                 # Throughput comparison
                 if "throughput" in comp:
                     thr = comp["throughput"]
                     change_icon = self._get_performance_icon(thr["change_direction"])
-                    markdown += f"- **Throughput**: {change_icon} {thr['change_percent']:+.1f}% "
+                    markdown += f"- **Throughput**: {change_icon} {thr['change_percent']:.1f}% "
                     markdown += f"({thr['current']:.0f} vs {thr['baseline']:.0f} ops/sec)\n"
 
                 markdown += "\n"
@@ -169,11 +163,8 @@ class TemplateEngine:
     def render_security_summary(self, context: dict[str, Any]) -> str:
         """Render security scan summary.
 
-        Args:
-            context: Security context with scan results.
-
-        Returns:
-            Formatted markdown content.
+        :param context: Security context with scan results.
+        :return: Formatted markdown content.
         """
         bandit_results = context.get("bandit_results", {})
         pip_audit_results = context.get("pip_audit_results", {})

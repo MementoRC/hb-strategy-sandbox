@@ -1,5 +1,3 @@
-"""Performance comparison engine with regression detection and alerting."""
-
 import json
 import statistics
 from dataclasses import dataclass, field
@@ -71,13 +69,19 @@ class ComparisonResult:
 
 
 class PerformanceComparator:
-    """Advanced performance comparison engine with regression detection."""
+    """Advanced performance comparison engine with regression detection.
+
+    This class provides sophisticated tools for comparing current performance metrics
+    against a defined baseline or historical trends. It can detect performance
+    regressions or improvements based on configurable thresholds (relative, absolute,
+    and statistical significance). It generates detailed comparison results and alerts
+    to highlight critical changes in performance.
+    """
 
     def __init__(self, threshold_config_path: str | Path | None = None):
         """Initialize the performance comparator.
 
-        Args:
-            threshold_config_path: Path to threshold configuration file.
+        :param threshold_config_path: Path to threshold configuration file.
                                  Defaults to 'performance_thresholds.yaml' in package directory.
         """
         if threshold_config_path is None:
@@ -135,13 +139,10 @@ class PerformanceComparator:
     ) -> ComparisonResult:
         """Compare current metrics with baseline and detect regressions.
 
-        Args:
-            current_metrics: Current performance metrics.
-            baseline_metrics: Baseline performance metrics.
-            comparison_mode: Mode of comparison analysis.
-
-        Returns:
-            ComparisonResult with detailed analysis and alerts.
+        :param current_metrics: Current performance metrics.
+        :param baseline_metrics: Baseline performance metrics.
+        :param comparison_mode: Mode of comparison analysis.
+        :return: ComparisonResult with detailed analysis and alerts.
         """
         result = ComparisonResult(
             baseline_build_id=baseline_metrics.build_id,
@@ -195,12 +196,9 @@ class PerformanceComparator:
     ) -> ComparisonResult:
         """Compare current metrics with historical trend.
 
-        Args:
-            current_metrics: Current performance metrics.
-            historical_metrics: List of historical metrics for trend analysis.
-
-        Returns:
-            ComparisonResult with trend-based analysis.
+        :param current_metrics: Current performance metrics.
+        :param historical_metrics: List of historical metrics for trend analysis.
+        :return: ComparisonResult with trend-based analysis.
         """
         if not historical_metrics:
             raise ValueError("Historical metrics required for trend analysis")
@@ -568,12 +566,9 @@ class PerformanceComparator:
     ) -> str:
         """Generate a formatted report from comparison results.
 
-        Args:
-            comparison_result: Result of performance comparison.
-            output_format: Format for the report ('markdown', 'json', 'github').
-
-        Returns:
-            Formatted report string.
+        :param comparison_result: Result of performance comparison.
+        :param output_format: Format for the report ('markdown', 'json', 'github').
+        :return: Formatted report string.
         """
         if output_format == "json":
             return self._generate_json_report(comparison_result)

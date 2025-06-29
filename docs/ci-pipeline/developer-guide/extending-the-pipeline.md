@@ -1191,4 +1191,4 @@ class TestPluginIntegration:
         assert results[0].success
 ```
 
-For more information on specific extension patterns, see the [API Reference](../api-reference.md).
+For more information on specific extension patterns, see the [API Reference](../../reference.md).

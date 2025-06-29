@@ -10,7 +10,10 @@ from .sbom_generator import SBOMGenerator
 
 
 def scan_command(args: argparse.Namespace) -> None:
-    """Execute security scan command."""
+    """Execute security scan command.
+
+    :param args: The command-line arguments.
+    """
     collector = SecurityCollector(args.storage_path)
 
     print(f"Starting security scan of {args.project_path}")
@@ -85,7 +88,10 @@ def scan_command(args: argparse.Namespace) -> None:
 
 
 def report_command(args: argparse.Namespace) -> None:
-    """Execute security report generation command."""
+    """Execute security report generation command.
+
+    :param args: The command-line arguments.
+    """
     collector = SecurityCollector(args.storage_path)
 
     print(f"Generating security report for {args.project_path}")
@@ -130,7 +136,10 @@ def report_command(args: argparse.Namespace) -> None:
 
 
 def list_command(args: argparse.Namespace) -> None:
-    """Execute list metrics command."""
+    """Execute list metrics command.
+
+    :param args: The command-line arguments.
+    """
     collector = SecurityCollector(args.storage_path)
 
     metrics_files = collector.list_saved_metrics()
@@ -156,7 +165,10 @@ def list_command(args: argparse.Namespace) -> None:
 
 
 def sbom_command(args: argparse.Namespace) -> None:
-    """Execute SBOM generation command."""
+    """Execute SBOM generation command.
+
+    :param args: The command-line arguments.
+    """
     generator = SBOMGenerator()
 
     print(f"Generating SBOM for {args.project_path}")
@@ -205,7 +217,10 @@ def sbom_command(args: argparse.Namespace) -> None:
 
 
 def vulnerability_report_command(args: argparse.Namespace) -> None:
-    """Execute vulnerability report generation command."""
+    """Execute vulnerability report generation command.
+
+    :param args: The command-line arguments.
+    """
     generator = SBOMGenerator()
 
     print(f"Generating vulnerability report for {args.project_path}")
@@ -242,7 +257,10 @@ def vulnerability_report_command(args: argparse.Namespace) -> None:
 
 
 def compliance_command(args: argparse.Namespace) -> None:
-    """Execute compliance report generation command."""
+    """Execute compliance report generation command.
+
+    :param args: The command-line arguments.
+    """
     generator = SBOMGenerator()
 
     frameworks = args.frameworks or ["NIST", "SOX", "GDPR", "HIPAA"]
