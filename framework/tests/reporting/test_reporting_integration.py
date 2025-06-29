@@ -335,12 +335,13 @@ class TestReportingModuleUnits:
 
     def test_artifact_manager_initialization(self, tmp_path):
         """Test artifact manager proper initialization."""
-        manager = ArtifactManager(base_dir=tmp_path)
+        manager = ArtifactManager(artifact_path=tmp_path)
 
         assert manager.artifact_path == Path(tmp_path)
-        assert hasattr(manager, "create_json_artifact")
-        assert hasattr(manager, "create_text_artifact")
+        assert hasattr(manager, "create_artifact")
         assert hasattr(manager, "create_report_artifact")
+        assert hasattr(manager, "create_log_artifact")
+        assert hasattr(manager, "create_data_artifact")
 
     def test_template_engine_initialization(self):
         """Test template engine proper initialization."""

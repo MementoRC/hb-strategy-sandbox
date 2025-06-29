@@ -293,10 +293,18 @@ class TestSecurityModuleUnits:
 
     def test_dashboard_generator_initialization(self):
         """Test dashboard generator proper initialization."""
-        dashboard = SecurityDashboardGenerator()
+        # Create mock dependencies that SecurityDashboardGenerator needs
+        from unittest.mock import Mock
+        mock_sbom_generator = Mock()
+        mock_github_reporter = Mock()
+        
+        dashboard = SecurityDashboardGenerator(
+            sbom_generator=mock_sbom_generator,
+            github_reporter=mock_github_reporter
+        )
 
         assert hasattr(dashboard, "generate_security_dashboard")
-        assert hasattr(dashboard, "generate_compliance_report")
+        assert hasattr(dashboard, "generate_security_trend_data")
 
     def test_security_collector_initialization(self, tmp_path):
         """Test security collector proper initialization."""
