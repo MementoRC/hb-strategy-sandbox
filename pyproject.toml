@@ -66,6 +66,7 @@ dev = [
     "build>=0.10.0",
     "twine>=4.0.0",
     "safety>=2.0.0",
+    "hypothesis>=6.0.0",
 ]
 docs = [
     "mkdocs",
