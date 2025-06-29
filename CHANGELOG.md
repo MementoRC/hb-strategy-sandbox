@@ -17,7 +17,7 @@ This release completes the framework extraction migration, moving shared tools a
 - **✅ NEW**: `framework/` package with dedicated modules:
   - `framework/performance/` - Performance monitoring and benchmarking tools
   - `framework/security/` - Security scanning and vulnerability analysis
-  - `framework/reporting/` - Report generation and artifact management  
+  - `framework/reporting/` - Report generation and artifact management
   - `framework/maintenance/` - System maintenance and health monitoring
 - **✅ NEW**: Comprehensive framework test suite (integration, property-based, unit tests)
 - **✅ NEW**: Framework-specific documentation and examples
@@ -41,7 +41,7 @@ This release completes the framework extraction migration, moving shared tools a
 - **🔄 MODIFIED**: Improved code organization following workspace architecture patterns
 - **🔄 MODIFIED**: Updated README.md to reflect completed Phase 2 migration
 
-#### **Import Paths** 
+#### **Import Paths**
 - **🔄 ADDED**: New framework import paths available:
   ```python
   # New framework imports (recommended)
@@ -115,7 +115,7 @@ This release completes the framework extraction migration, moving shared tools a
 - Initial release of Hummingbot Strategy Sandbox
 - Core strategy testing and simulation framework
 - Balance management system
-- Market simulation with realistic dynamics  
+- Market simulation with realistic dynamics
 - Event system for strategy coordination
 - Performance monitoring and reporting tools
 - Security scanning and vulnerability analysis
@@ -135,7 +135,7 @@ This release completes the framework extraction migration, moving shared tools a
 # Before (still works)
 from strategy_sandbox.performance.collector import PerformanceCollector
 
-# After (recommended)  
+# After (recommended)
 from framework.performance.collector import PerformanceCollector
 ```
 

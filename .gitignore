@@ -222,6 +222,12 @@ artifacts/
 integration-coverage.xml
 reports/
 
+# Framework-specific temporary files
+framework/.cache/
+framework/artifacts/
+framework/reports/
+framework/performance_data/
+
 # Environment files
 .env.example
 
