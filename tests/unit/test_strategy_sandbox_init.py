@@ -144,13 +144,13 @@ class TestStrategySandboxInit:
 
         for attr_name, should_exist in test_patterns:
             if should_exist:
-                assert hasattr(
-                    strategy_sandbox, attr_name
-                ), f"Missing required attribute: {attr_name}"
+                assert hasattr(strategy_sandbox, attr_name), (
+                    f"Missing required attribute: {attr_name}"
+                )
             else:
-                assert not hasattr(
-                    strategy_sandbox, attr_name
-                ), f"Unexpected attribute: {attr_name}"
+                assert not hasattr(strategy_sandbox, attr_name), (
+                    f"Unexpected attribute: {attr_name}"
+                )
 
     def test_import_module_function_behavior(self):
         """Test the import_module usage in __getattr__."""
