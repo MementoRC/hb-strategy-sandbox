@@ -2,7 +2,7 @@
 
 A comprehensive testing and simulation framework for Hummingbot trading strategies.
 
-> **🚀 Workspace Migration Notice**: This project is transitioning to multi-feature workspace architecture. See [WORKSPACE.md](WORKSPACE.md) for details.
+> **🚀 Framework Extraction Complete**: Phase 2 migration completed! Framework components now available in `framework/` package. See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) and [CHANGELOG.md](CHANGELOG.md) for details.
 
 ## Overview
 
@@ -72,13 +72,13 @@ Pure business logic for strategy development:
 - `strategy_sandbox/events/` - Event system
 
 #### **🛠️ Framework Components** (Shared Tools)
-Reusable development and quality tools:
-- `strategy_sandbox/performance/` - Performance monitoring
-- `strategy_sandbox/security/` - Security scanning
-- `strategy_sandbox/reporting/` - Report generation
-- `strategy_sandbox/maintenance/` - System maintenance
+Reusable development and quality tools now available in dedicated `framework/` package:
+- `framework/performance/` - Performance monitoring and benchmarking
+- `framework/security/` - Security scanning and vulnerability analysis
+- `framework/reporting/` - Report generation and artifact management
+- `framework/maintenance/` - System maintenance and health monitoring
 
-> **Migration Path**: Framework components will be extracted to `framework/` package in Phase 2. See [WORKSPACE.md](WORKSPACE.md) for full migration plan.
+> **✅ Phase 2 Complete**: Framework components successfully extracted to `framework/` package with full backward compatibility maintained. See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for usage details.
 
 ## Examples
 
@@ -123,10 +123,13 @@ pixi run test-performance   # Performance tests
 ## Roadmap
 
 - [x] **Phase 1**: Basic sandbox functionality with CI/CD
-- [ ] **Phase 2**: Advanced market dynamics and slippage simulation
-- [ ] **Phase 3**: Hummingbot Strategy V2 integration
-- [ ] **Phase 4**: Historical data replay and backtesting
-- [ ] **Phase 5**: Real-time data integration
+- [x] **Phase 2**: Framework extraction and modular architecture ✅ **COMPLETE**
+- [ ] **Phase 3**: Advanced market dynamics and slippage simulation
+- [ ] **Phase 4**: Hummingbot Strategy V2 integration
+- [ ] **Phase 5**: Historical data replay and backtesting
+- [ ] **Phase 6**: Real-time data integration
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed release notes.
 
 ## Contributing
 
