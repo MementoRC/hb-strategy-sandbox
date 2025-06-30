@@ -6,10 +6,12 @@ to verify properties and invariants hold across a wide range of inputs.
 """
 
 import pytest
+from datetime import datetime
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
-from framework.performance.collector import PerformanceCollector, PerformanceMetrics
+from framework.performance.collector import PerformanceCollector
+from framework.performance.models import PerformanceMetrics, BenchmarkResult
 from framework.reporting.github_reporter import GitHubReporter
 
 
@@ -86,14 +88,14 @@ class TestFrameworkProperties:
         assume(len(test_names) == len(values))
 
         # Setup
-        metrics = PerformanceMetrics()
+        metrics = PerformanceMetrics(build_id="test-build", timestamp=datetime.now())
 
         # Add results with generated data
         for name, value in zip(test_names, values, strict=True):
-            metrics.add_result(name, {"execution_time": value})
+            metrics.add_result(BenchmarkResult(name=name, execution_time=value))
 
         # Calculate summary statistics
-        summary = metrics.get_summary_stats()
+        summary = metrics.calculate_summary_stats()
 
         # Verify mathematical properties
         if len(values) > 0:
