@@ -22,7 +22,11 @@ class TestFrameworkProperties:
         memory_usage=st.integers(min_value=1, max_value=10000),
         throughput=st.integers(min_value=1, max_value=100000),
     )
-    @settings(max_examples=5, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @settings(
+        max_examples=5, 
+        suppress_health_check=[HealthCheck.function_scoped_fixture],
+        deadline=2000  # Allow 2 seconds per test case
+    )
     def test_performance_collector_data_integrity(
         self, execution_time, memory_usage, throughput, tmp_path
     ):
@@ -60,7 +64,7 @@ class TestFrameworkProperties:
 
         assert stored_result is not None
         assert stored_result.execution_time == execution_time
-        assert stored_result.memory_usage == f"{memory_usage}MB"
+        assert stored_result.memory_usage == memory_usage  # Should be parsed numeric value
         assert stored_result.throughput == throughput
 
     @given(

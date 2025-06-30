@@ -125,8 +125,19 @@ class PerformanceCollector:
 
         # Process generic format
         else:
-            result = self._process_generic_benchmark(data)
-            metrics.add_result(result)
+            # Check if this is key-based format like {"test_name": {"execution_time": ...}}
+            for key, value in data.items():
+                if isinstance(value, dict) and any(
+                    field in value for field in ["execution_time", "memory_usage", "throughput"]
+                ):
+                    # This looks like key-based benchmark data
+                    result = self._process_keyed_benchmark(key, value)
+                    metrics.add_result(result)
+                else:
+                    # Fallback to generic processing
+                    result = self._process_generic_benchmark(data)
+                    metrics.add_result(result)
+                    break  # Only process once for generic format
 
         return metrics
 
@@ -166,6 +177,30 @@ class PerformanceCollector:
                 "change_throughput": data.get("change_throughput", ""),
                 "source": "custom_benchmark",
             },
+        )
+
+    def _process_keyed_benchmark(self, name: str, data: dict) -> BenchmarkResult:
+        """Process key-based benchmark data where key is the test name.
+
+        Args:
+            name: The test name (from the dictionary key).
+            data: The benchmark data dictionary.
+
+        Returns:
+            A BenchmarkResult object.
+        """
+        # Parse memory usage if it's a string
+        memory_usage = data.get("memory_usage")
+        if isinstance(memory_usage, str):
+            memory_usage = self._parse_memory_string(memory_usage)
+
+        return BenchmarkResult(
+            name=name,
+            execution_time=data.get("execution_time", 0),
+            memory_usage=memory_usage,
+            throughput=data.get("throughput"),
+            cpu_usage=data.get("cpu_usage"),
+            metadata={**data, "source": "keyed"},
         )
 
     def _process_generic_benchmark(self, data: dict) -> BenchmarkResult:
