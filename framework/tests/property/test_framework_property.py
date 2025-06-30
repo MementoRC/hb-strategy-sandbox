@@ -49,11 +49,11 @@ class TestFrameworkProperties:
 
         # Verify data integrity properties
         assert retrieved_metrics is not None
-        assert len(retrieved_metrics.benchmarks) == 1
+        assert len(retrieved_metrics.results) == 1
 
         # Find the stored benchmark result
         stored_result = None
-        for result in retrieved_metrics.benchmarks:
+        for result in retrieved_metrics.results:
             if result.name == test_name:
                 stored_result = result
                 break
@@ -351,11 +351,11 @@ class TestFrameworkDataValidation:
 
         # Property: serialization round-trip should preserve data
         assert retrieved_metrics is not None
-        assert len(retrieved_metrics.benchmarks) == 1
+        assert len(retrieved_metrics.results) == 1
 
         # Find the stored benchmark result
         stored_result = None
-        for result in retrieved_metrics.benchmarks:
+        for result in retrieved_metrics.results:
             if result.name == test_name:
                 stored_result = result
                 break
