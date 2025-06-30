@@ -5,13 +5,14 @@ Uses hypothesis to test framework components with generated data
 to verify properties and invariants hold across a wide range of inputs.
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
 from framework.performance.collector import PerformanceCollector
-from framework.performance.models import PerformanceMetrics, BenchmarkResult
+from framework.performance.models import BenchmarkResult, PerformanceMetrics
 from framework.reporting.github_reporter import GitHubReporter
 
 
@@ -25,9 +26,9 @@ class TestFrameworkProperties:
         throughput=st.integers(min_value=1, max_value=100000),
     )
     @settings(
-        max_examples=5, 
+        max_examples=5,
         suppress_health_check=[HealthCheck.function_scoped_fixture],
-        deadline=2000  # Allow 2 seconds per test case
+        deadline=2000,  # Allow 2 seconds per test case
     )
     def test_performance_collector_data_integrity(
         self, execution_time, memory_usage, throughput, tmp_path
