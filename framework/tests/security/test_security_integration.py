@@ -295,12 +295,12 @@ class TestSecurityModuleUnits:
         """Test dashboard generator proper initialization."""
         # Create mock dependencies that SecurityDashboardGenerator needs
         from unittest.mock import Mock
+
         mock_sbom_generator = Mock()
         mock_github_reporter = Mock()
-        
+
         dashboard = SecurityDashboardGenerator(
-            sbom_generator=mock_sbom_generator,
-            github_reporter=mock_github_reporter
+            sbom_generator=mock_sbom_generator, github_reporter=mock_github_reporter
         )
 
         assert hasattr(dashboard, "generate_security_dashboard")
