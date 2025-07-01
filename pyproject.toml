@@ -34,6 +34,7 @@ dependencies = [
     "asyncio-throttle>=1.0.0",
     "psutil>=5.0.0",
     "PyYAML>=6.0.0",
+    "click>=8.0.0",
 ]
 dynamic = ["version"]
 
@@ -46,6 +47,7 @@ framework-performance = "framework.performance.cli:main"
 framework-security = "framework.security.cli:main"
 framework-reporting = "framework.reporting.cli:main"
 framework-maintenance = "framework.maintenance.cli:main"
+framework-cli = "framework.cli:cli"
 
 [project.urls]
 Homepage = "https://github.com/MementoRC/hb-strategy-sandbox"
