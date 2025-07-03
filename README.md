@@ -72,13 +72,21 @@ Pure business logic for strategy development:
 - `strategy_sandbox/events/` - Event system
 
 #### **🛠️ Framework Components** (Shared Tools)
-Reusable development and quality tools now available in dedicated `framework/` package:
-- `framework/performance/` - Performance monitoring and benchmarking
-- `framework/security/` - Security scanning and vulnerability analysis
-- `framework/reporting/` - Report generation and artifact management
-- `framework/maintenance/` - System maintenance and health monitoring
+Comprehensive development and quality tools available in dedicated `framework/` package:
+- `framework/performance/` - Performance monitoring, benchmarking, and trend analysis
+- `framework/security/` - Security scanning, SBOM generation, and vulnerability analysis
+- `framework/reporting/` - Multi-format report generation and artifact management
+- `framework/maintenance/` - System health monitoring and automated maintenance
 
-> **✅ Phase 2 Complete**: Framework components successfully extracted to `framework/` package with full backward compatibility maintained. See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for usage details.
+**New Framework CLI**: Unified command-line interface for all development tools
+```bash
+framework-cli quick-scan .                    # Comprehensive quality check
+framework-cli performance compare results.json --baseline production
+framework-cli security scan . --save-baseline
+framework-cli reporting generate data/ --format markdown
+```
+
+> **✅ Phase 2 Complete**: Framework components successfully extracted to `framework/` package with enhanced CLI, comprehensive APIs, and full backward compatibility. See [framework/README.md](framework/README.md) and [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for detailed usage and migration information.
 
 ## Examples
 
