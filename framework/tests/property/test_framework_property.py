@@ -344,8 +344,9 @@ class TestFrameworkProperties:
         # Property: covered files cannot be negative
         assert covered_files >= 0
 
-        # Property: if percentage is 100%, all files should be covered
-        if abs(test_percentage - 100.0) < 0.001:
+        # Property: if percentage is effectively 100%, all files should be covered
+        # Use proper rounding for floating-point precision issues
+        if test_percentage >= 99.999:  # Close enough to 100% for practical purposes
             assert covered_files == file_count
 
         # Property: if percentage is 0%, no files should be covered
