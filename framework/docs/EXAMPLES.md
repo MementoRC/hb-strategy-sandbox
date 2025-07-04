@@ -14,7 +14,7 @@ import asyncio
 from pathlib import Path
 from framework import (
     PerformanceCollector,
-    PerformanceComparator, 
+    PerformanceComparator,
     SecurityCollector,
     ReportGenerator,
     CIHealthMonitor
@@ -23,16 +23,16 @@ from framework import (
 async def main():
     """Run comprehensive quality checks."""
     print("🔍 Starting Framework Quality Checks...")
-    
+
     # 1. Performance Analysis
     print("\n📊 Performance Analysis")
     perf_collector = PerformanceCollector(storage_path="./metrics")
-    
+
     # Collect current metrics (assuming you have benchmark results)
     if Path("benchmark_results.json").exists():
         current_metrics = perf_collector.collect_metrics("benchmark_results.json")
         print(f"  ✓ Collected {len(current_metrics.custom_metrics or {})} performance metrics")
-        
+
         # Compare with baseline if available
         comparator = PerformanceComparator(storage_path="./metrics")
         try:
@@ -44,34 +44,34 @@ async def main():
             print("  ℹ️ No baseline available for comparison")
     else:
         print("  ℹ️ No benchmark results found, skipping performance analysis")
-    
+
     # 2. Security Scanning
     print("\n🔒 Security Analysis")
     security_collector = SecurityCollector(project_path=".")
     security_metrics = security_collector.scan_project()
-    
+
     print(f"  ✓ Scanned {len(security_metrics.dependencies)} dependencies")
     print(f"  ✓ Found {security_metrics.total_vulnerabilities} vulnerabilities")
-    
+
     # Breakdown by severity
     severity_counts = security_metrics.vulnerability_count_by_severity
     for severity, count in severity_counts.items():
         if count > 0:
             print(f"    - {severity.title()}: {count}")
-    
+
     # 3. Health Monitoring
     print("\n🏥 System Health Check")
     health_monitor = CIHealthMonitor(base_dir=".")
     health_data = health_monitor.collect_health_metrics()
-    
+
     status = health_data.get('status', 'unknown')
     print(f"  ✓ System status: {status}")
     print(f"  ✓ Collected {len(health_data.get('metrics', []))} health metrics")
-    
+
     # 4. Report Generation
     print("\n📋 Generating Comprehensive Report")
     reporter = ReportGenerator()
-    
+
     # Combine all data
     report_data = {
         "timestamp": "2024-01-16T10:30:00Z",
@@ -84,23 +84,23 @@ async def main():
             "system_status": status
         }
     }
-    
+
     # Generate report in multiple formats
     markdown_report = reporter.generate_report(report_data, format="markdown")
-    
+
     # Save reports
     Path("reports").mkdir(exist_ok=True)
     with open("reports/quality_report.md", "w") as f:
         f.write(markdown_report)
-    
+
     print(f"  ✓ Generated comprehensive report: reports/quality_report.md")
-    
+
     # 5. Summary
     print("\n✅ Quality Check Complete!")
     print(f"  - Vulnerabilities: {security_metrics.total_vulnerabilities}")
     print(f"  - System Status: {status}")
     print(f"  - Reports: reports/quality_report.md")
-    
+
     return {
         "success": True,
         "vulnerabilities": security_metrics.total_vulnerabilities,
@@ -137,7 +137,7 @@ if [ -f "benchmark_results.json" ]; then
     framework-cli performance collect benchmark_results.json \
         --storage-path reports/performance \
         --store-baseline --baseline-name current
-        
+
     # Compare with previous baseline if exists
     if [ -f "reports/performance/baselines/previous.json" ]; then
         framework-cli performance compare benchmark_results.json \
@@ -196,30 +196,30 @@ on:
 jobs:
   framework-checks:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-        
+
     - name: Install dependencies
       run: |
         pip install -e .
         pip install -e ./framework
-        
+
     - name: Run tests and collect performance data
       run: |
         pytest --benchmark-json=benchmark_results.json
-        
+
     - name: Framework quality checks
       run: |
         # Quick comprehensive scan
         framework-cli quick-scan . --output reports/
-        
+
         # Performance baseline comparison for PRs
         if [ "${{ github.event_name }}" = "pull_request" ]; then
           framework-cli performance compare benchmark_results.json \
@@ -228,24 +228,24 @@ jobs:
             --output pr_performance.md \
             --fail-on-regression
         fi
-        
+
         # Security scan with baseline tracking
         framework-cli security scan . \
           --save-baseline \
           --baseline-name ${{ github.ref_name }} \
           --output reports/security_detailed.json
-          
+
         # Generate comprehensive report
         framework-cli reporting generate reports/ \
           --format markdown \
           --output reports/framework_summary.md
-          
+
     - name: Upload framework reports
       uses: actions/upload-artifact@v3
       with:
         name: framework-reports
         path: reports/
-        
+
     - name: Comment PR with performance results
       if: github.event_name == 'pull_request' && hashFiles('pr_performance.md') != ''
       uses: actions/github-script@v6
@@ -253,7 +253,7 @@ jobs:
         script: |
           const fs = require('fs');
           const report = fs.readFileSync('pr_performance.md', 'utf8');
-          
+
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
@@ -656,7 +656,7 @@ with open("quality_report.json", "w") as f:
     f.write(json_report)
 
 print("  ✓ Markdown: quality_report.md")
-print("  ✓ HTML: quality_report.html") 
+print("  ✓ HTML: quality_report.html")
 print("  ✓ JSON: quality_report.json")
 ```
 
@@ -676,43 +676,43 @@ from pathlib import Path
 def run_framework_checks():
     """Run framework quality checks for pre-commit."""
     print("🔍 Running Framework pre-commit checks...")
-    
+
     success = True
-    
+
     # 1. Quick health check
     try:
         result = subprocess.run([
             "framework-cli", "maintenance", "health-check",
             "--output", "pre-commit-health.json"
         ], capture_output=True, text=True, timeout=30)
-        
+
         if result.returncode == 0:
             print("  ✓ Health check passed")
         else:
             print(f"  ❌ Health check failed: {result.stderr}")
             success = False
-            
+
     except subprocess.TimeoutExpired:
         print("  ❌ Health check timed out")
         success = False
-    
+
     # 2. Security scan for new vulnerabilities
     try:
         result = subprocess.run([
             "framework-cli", "security", "scan", ".",
             "--output", "pre-commit-security.json"
         ], capture_output=True, text=True, timeout=60)
-        
+
         if result.returncode == 0:
             # Check for critical vulnerabilities
             with open("pre-commit-security.json", "r") as f:
                 security_data = json.load(f)
-                
+
             critical_vulns = [
                 v for v in security_data.get("vulnerabilities", [])
                 if v.get("severity") == "critical"
             ]
-            
+
             if critical_vulns:
                 print(f"  ❌ Critical vulnerabilities found: {len(critical_vulns)}")
                 for vuln in critical_vulns[:3]:
@@ -723,18 +723,18 @@ def run_framework_checks():
         else:
             print(f"  ❌ Security scan failed: {result.stderr}")
             success = False
-            
+
     except subprocess.TimeoutExpired:
         print("  ❌ Security scan timed out")
         success = False
     except json.JSONDecodeError:
         print("  ❌ Security scan output format error")
         success = False
-    
+
     # 3. Cleanup temporary files
     for temp_file in ["pre-commit-health.json", "pre-commit-security.json"]:
         Path(temp_file).unlink(missing_ok=True)
-    
+
     if success:
         print("✅ All framework checks passed")
         return 0
@@ -763,14 +763,14 @@ framework-check:
 framework-scan:
 	@echo "🔍 Running comprehensive framework scan..."
 	mkdir -p reports/detailed/
-	
+
 	# Performance analysis
 	@if [ -f "benchmark_results.json" ]; then \
 		framework-cli performance collect benchmark_results.json \
 			--storage-path reports/detailed/performance \
 			--store-baseline --baseline-name $(shell date +%Y%m%d); \
 	fi
-	
+
 	# Security scan with SBOM
 	framework-cli security scan . \
 		--save-baseline --baseline-name $(shell date +%Y%m%d) \
@@ -778,23 +778,23 @@ framework-scan:
 	framework-cli security sbom . \
 		--format cyclonedx --output-type json \
 		--output reports/detailed/sbom.json
-	
+
 	# Health monitoring
 	framework-cli maintenance health-check \
 		--output reports/detailed/health_check.json
-	
+
 	# Comprehensive report
 	framework-cli reporting generate reports/detailed/ \
 		--format markdown --include-charts \
 		--output reports/framework_report.md
-	
+
 	@echo "✅ Comprehensive scan complete - see reports/"
 
 # Generate framework reports
 framework-report:
 	@echo "📊 Generating framework reports..."
 	mkdir -p reports/
-	
+
 	# Generate different format reports
 	framework-cli reporting generate reports/ \
 		--format markdown --output reports/summary.md
@@ -802,7 +802,7 @@ framework-report:
 		--format html --output reports/dashboard.html
 	framework-cli reporting generate reports/ \
 		--format json --output reports/data.json
-	
+
 	@echo "✅ Reports generated in multiple formats"
 
 # Clean framework artifacts
@@ -818,13 +818,13 @@ framework-clean:
 # CI target
 ci-framework: framework-scan
 	@echo "🚀 Framework CI checks complete"
-	
+
 	# Check for critical issues
 	@if grep -q "critical" reports/detailed/security_scan.json; then \
 		echo "❌ Critical security issues found"; \
 		exit 1; \
 	fi
-	
+
 	@echo "✅ All CI framework checks passed"
 
 # Development target
@@ -868,7 +868,7 @@ services:
     environment:
       - FRAMEWORK_PERFORMANCE_STORAGE=/app/reports/performance
       - FRAMEWORK_SECURITY_STORAGE=/app/reports/security
-    
+
   framework-monitor:
     build: .
     command: |

@@ -81,7 +81,7 @@ framework-cli reporting generate data/ --format markdown --output report.md
 ```python
 from framework import (
     PerformanceCollector,
-    SecurityCollector, 
+    SecurityCollector,
     ReportGenerator,
     CIHealthMonitor
 )
@@ -91,7 +91,7 @@ collector = PerformanceCollector()
 metrics = collector.collect_metrics("benchmark_results.json")
 
 # Security scanning
-security = SecurityCollector() 
+security = SecurityCollector()
 scan_results = security.scan_project(".")
 
 # Report generation
@@ -232,21 +232,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-          
+
       - name: Install framework
         run: pip install -e ./framework
-        
+
       - name: Run framework checks
         run: |
           framework-cli quick-scan . --output reports/
           framework-cli security scan . --save-baseline
           framework-cli maintenance health-check --output health.json
-          
+
       - name: Upload reports
         uses: actions/upload-artifact@v3
         with:
@@ -266,8 +266,8 @@ repos:
         entry: framework-cli security scan .
         language: system
         pass_filenames: false
-        
-      - id: framework-health-check  
+
+      - id: framework-health-check
         name: Framework Health Check
         entry: framework-cli maintenance health-check
         language: system
@@ -396,7 +396,7 @@ pixi run test-framework
 # Unit tests
 pixi run test-unit framework/
 
-# Integration tests  
+# Integration tests
 pixi run test-integration framework/
 
 # Performance tests
@@ -478,7 +478,7 @@ framework-cli maintenance health-check --config-path config.yaml
 
 For detailed API documentation, see:
 - [Performance Module API](performance/README.md)
-- [Security Module API](security/README.md) 
+- [Security Module API](security/README.md)
 - [Reporting Module API](reporting/README.md)
 - [Maintenance Module API](maintenance/README.md)
 

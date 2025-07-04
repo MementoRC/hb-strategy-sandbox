@@ -73,6 +73,9 @@ class TemplateEngine:
             Formatted markdown content.
         """
         metrics = context.get("metrics", {})
+        # Handle case where metrics might be None
+        if metrics is None:
+            metrics = {}
         comparison = context.get("comparison")
         timestamp = context.get("timestamp", "")
 
@@ -287,12 +290,22 @@ class TemplateEngine:
             markdown += f"- **Skipped**: ⏭️ {skipped}\n"
 
         if duration > 0:
-            markdown += f"- **Duration**: {duration:.2f}s\n"
+            # Check if there's an original string format for backward compatibility
+            duration_string = test_results.get("duration_string")
+            if duration_string:
+                markdown += f"- **Duration**: {duration_string}\n"
+            else:
+                markdown += f"- **Duration**: {duration:.2f}s\n"
 
         # Pass rate
         if total > 0:
             pass_rate = (passed / total) * 100
             markdown += f"- **Pass Rate**: {pass_rate:.1f}%\n"
+
+        # Coverage (if available)
+        coverage = test_results.get("coverage")
+        if coverage is not None:
+            markdown += f"- **Coverage**: {coverage}%\n"
 
         return markdown
 

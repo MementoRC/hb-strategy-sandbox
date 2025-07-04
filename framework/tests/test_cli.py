@@ -347,15 +347,15 @@ class TestQuickScanCommand:
             tempfile.TemporaryDirectory() as tmp_dir,
             patch("framework.security.cli.scan_command"),
         ):
-                result = self.runner.invoke(
-                    cli, ["quick-scan", tmp_dir, "--output", str(Path(tmp_dir) / "reports")]
-                )
+            result = self.runner.invoke(
+                cli, ["quick-scan", tmp_dir, "--output", str(Path(tmp_dir) / "reports")]
+            )
 
-                assert result.exit_code == 0
-                assert "Quick Framework Scan Started" in result.output
-                assert "Running health check" in result.output
-                assert "Running security scan" in result.output
-                assert "Quick scan completed" in result.output
+            assert result.exit_code == 0
+            assert "Quick Framework Scan Started" in result.output
+            assert "Running health check" in result.output
+            assert "Running security scan" in result.output
+            assert "Quick scan completed" in result.output
 
     def test_quick_scan_default_directory(self):
         """Test quick scan with default directory."""

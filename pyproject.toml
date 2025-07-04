@@ -372,6 +372,7 @@ markers = [
     "asyncio: marks tests as asyncio tests",
     "benchmark: marks tests as performance benchmarks (deselect with '-m \"not benchmark\"')",
     "e2e: marks tests as end-to-end tests (deselect with '-m \"not e2e\"')",
+    "property: marks tests as property-based tests using Hypothesis",
 ]
 log_cli = true
 log_cli_level = "INFO"

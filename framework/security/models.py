@@ -122,6 +122,7 @@ class SecurityMetrics:
     scan_config: dict[str, Any] = field(default_factory=dict)
     environment: dict[str, str] = field(default_factory=dict)
     scan_duration: float | None = None  # seconds
+    _raw_data: dict[str, Any] = field(default_factory=dict)  # For backward compatibility
 
     def add_dependency(self, dependency: DependencyInfo) -> None:
         """Add a dependency to the collection."""
