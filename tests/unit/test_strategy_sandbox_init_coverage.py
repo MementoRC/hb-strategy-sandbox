@@ -5,6 +5,7 @@ This test file is designed to address the coverage patch failure by ensuring all
 lines in the modified __init__.py are executed during testing.
 """
 
+import contextlib
 import sys
 import warnings
 from unittest.mock import patch
@@ -193,3 +194,56 @@ def test_import_statements_coverage():
 
     assert SandboxEnvironment is not None
     assert MarketProtocol is not None
+
+
+def test_getattr_framework_import_and_fallback_failure():
+    """Test the specific case where both framework import and fallback fail."""
+    from unittest.mock import patch
+
+    import strategy_sandbox
+
+    # Test a component that exists in framework_components mapping
+    component_name = "PerformanceCollector"
+
+    with patch.object(strategy_sandbox, "import_module") as mock_import:
+        # Make both framework and fallback imports fail
+        mock_import.side_effect = ImportError("Module not found")
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+
+            # This should hit lines 98-105 (both exception blocks)
+            with pytest.raises(AttributeError, match="module 'strategy_sandbox' has no attribute"):
+                getattr(strategy_sandbox, component_name)
+
+            # Verify deprecation warning was still issued
+            assert len(w) >= 1
+            assert any("deprecated" in str(warn.message) for warn in w)
+
+
+def test_getattr_framework_success_fallback_failure():
+    """Test the case where framework import succeeds but getattr on module fails."""
+    from unittest.mock import MagicMock, patch
+
+    import strategy_sandbox
+
+    component_name = "PerformanceCollector"
+
+    with patch.object(strategy_sandbox, "import_module") as mock_import:
+        # Create a mock module that doesn't have the component
+        mock_module = MagicMock()
+        del mock_module.PerformanceCollector  # Ensure AttributeError when accessing
+        mock_import.return_value = mock_module
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+
+            # This should hit the AttributeError in the framework attempt
+            # and then the fallback mechanism
+            with contextlib.suppress(AttributeError):
+                # Expected when neither framework nor fallback has the component
+                getattr(strategy_sandbox, component_name)
+
+            # Verify deprecation warning was issued
+            assert len(w) >= 1
+            assert any("deprecated" in str(warn.message) for warn in w)

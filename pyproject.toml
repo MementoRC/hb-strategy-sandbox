@@ -311,7 +311,7 @@ py312 = { features = ["py312", "dev"], solve-group = "py312" }
 # Tool configurations
 [tool.coverage.run]
 branch = true
-parallel = true
+parallel = false
 source_pkgs = ["strategy_sandbox", "framework", "tests"]
 omit = [
   "strategy_sandbox/__about__.py",
