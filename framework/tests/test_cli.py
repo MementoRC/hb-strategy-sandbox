@@ -305,6 +305,40 @@ print("All CLI tests passed in subprocess")
                 # This should trigger the error handling path
                 assert result.exit_code == 1
 
+    def test_error_handling_coverage(self):
+        """Test error handling paths to cover lines 350-352, 429-431, 464-466."""
+        import tempfile
+        import os
+        from unittest.mock import patch
+        
+        # Create a temporary directory to use as a valid project path
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_path = os.path.join(temp_dir, "test_project")
+            os.makedirs(project_path, exist_ok=True)
+            
+            # Test reporting generate error handling (lines 350-352)
+            with patch('framework.reporting.ReportGenerator') as mock_report_gen:
+                mock_report_gen.side_effect = Exception("Report generation error")
+                result = self.runner.invoke(cli, ["reporting", "generate", project_path, "--output", "test_report.md"])
+                assert result.exit_code == 1
+                assert "Error generating report: Report generation error" in result.output
+                
+            # Test maintenance schedule error handling (lines 429-431)
+            with patch('framework.maintenance.MaintenanceScheduler') as mock_scheduler:
+                mock_scheduler.side_effect = Exception("Maintenance scheduling error")
+                result = self.runner.invoke(cli, ["maintenance", "schedule", "test_task", "--frequency", "daily"])
+                assert result.exit_code == 1
+                assert "Error scheduling maintenance task: Maintenance scheduling error" in result.output
+                
+            # Test quick-scan error handling (lines 464-466)
+            # Mock Path.mkdir to raise an exception during output directory creation
+            with patch('framework.cli.Path.mkdir') as mock_mkdir:
+                mock_mkdir.side_effect = Exception("Quick scan error")
+                result = self.runner.invoke(cli, ["quick-scan", project_path])
+                assert result.exit_code == 1
+                assert "Error during quick scan: Quick scan error" in result.output
+
+
     def test_cli_group_definitions(self):
         """Test that CLI group definitions are covered."""
         # Test that the performance group is properly defined
