@@ -9,7 +9,6 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import click
 from click.testing import CliRunner
 
 from framework.cli import cli
@@ -26,16 +25,16 @@ class TestFrameworkCLI:
         """Test that module imports and decorator execution are covered."""
         # This test must be the first to run to ensure module import lines are covered
         # Force fresh import to ensure coverage of lines 10-11, 13-17, 26-30
-        import sys
         import importlib
-        
+        import sys
+
         # Remove the module from cache to force fresh import
         if "framework.cli" in sys.modules:
             del sys.modules["framework.cli"]
 
         # Import the module fresh to execute import-time code
         import framework.cli
-        
+
         # Force module reload to ensure all import lines are executed
         importlib.reload(framework.cli)
 
@@ -59,21 +58,22 @@ class TestFrameworkCLI:
     def test_imports_and_decorators(self):
         """Test that imports and decorators are properly covered."""
         # Test that the imports are working (lines 10-11, 13-17)
-        from framework.cli import sys, Path, click
-        
+        from framework.cli import Path, sys
+
         # Verify imports were successful - this should exercise the try/except import
         assert sys is not None
         assert Path is not None
-        assert click is not None
-        
+
         # Test that decorators were applied (lines 26-30)
         from framework.cli import cli as cli_func
+
         assert hasattr(cli_func, "params")
         assert hasattr(cli_func, "callback")
         assert callable(cli_func)
-        
+
         # Test the click import success path (lines 13-17)
         import framework.cli
+
         assert hasattr(framework.cli, "click")
         assert framework.cli.click is not None
 
@@ -84,12 +84,12 @@ class TestFrameworkCLI:
         assert result.exit_code == 0
         # The verbose message should appear in the output when verbose is enabled
         assert "Framework CLI initialized in verbose mode" in result.output
-        
+
         # Test multiple commands with verbose to ensure line 41 is hit
         result = self.runner.invoke(cli, ["--verbose", "security", "--help"])
         assert result.exit_code == 0
         assert "Framework CLI initialized in verbose mode" in result.output
-        
+
         result = self.runner.invoke(cli, ["--verbose", "reporting", "--help"])
         assert result.exit_code == 0
         assert "Framework CLI initialized in verbose mode" in result.output
@@ -98,59 +98,58 @@ class TestFrameworkCLI:
         """Test that context object is properly set up (lines 37-38)."""
         # Test that the context is properly set when invoking commands
         # This ensures lines 37-38 (ctx.ensure_object and ctx.obj assignment) are covered
-        
+
         # Test without verbose flag
         result = self.runner.invoke(cli, ["--help"])
         assert result.exit_code == 0
-        
+
         # Test with verbose flag - this should execute lines 37-38 and 41
         result = self.runner.invoke(cli, ["--verbose", "--help"])
         assert result.exit_code == 0
-        
+
         # Test with a subcommand to ensure context is passed properly
         result = self.runner.invoke(cli, ["--verbose", "performance", "--help"])
         assert result.exit_code == 0
         assert "Framework CLI initialized in verbose mode" in result.output
-        
+
     def test_specific_coverage_lines(self):
         """Test to ensure specific lines are covered."""
         # This test is specifically designed to hit the lines codecov complains about
-        
+
         # Test the imports (lines 10-11, 13-17)
         import sys
-        import importlib
-        
+
         # Clear the module cache and re-import
         if "framework.cli" in sys.modules:
             del sys.modules["framework.cli"]
-        
+
         # Import should trigger lines 10-11 and 13-17
         import framework.cli
-        
+
         # Verify the imports worked
         assert framework.cli.sys is not None
         assert framework.cli.Path is not None
         assert framework.cli.click is not None
-        
+
         # Test the decorator application (lines 26-30)
         cli_func = framework.cli.cli
         assert hasattr(cli_func, "params")
         assert hasattr(cli_func, "callback")
-        
+
         # Test the verbose echo (line 41) and context setup (lines 37-38)
         result = self.runner.invoke(cli_func, ["--verbose", "performance", "--help"])
         assert result.exit_code == 0
         assert "Framework CLI initialized in verbose mode" in result.output
-        
+
     def test_force_import_execution(self):
         """Force execution of import-time code for coverage."""
         # This test tries to force execution of the import-time code
-        import sys
         import subprocess
+        import sys
         import tempfile
-        
+
         # Create a temporary script that imports and uses the CLI
-        script_content = '''
+        script_content = """
 import sys
 import os
 sys.path.insert(0, os.getcwd())
@@ -167,7 +166,7 @@ runner = CliRunner()
 result = runner.invoke(framework.cli.cli, ["--help"])
 assert result.exit_code == 0
 
-# Test verbose mode 
+# Test verbose mode
 result = runner.invoke(framework.cli.cli, ["--verbose", "performance", "--help"])
 assert result.exit_code == 0
 assert "Framework CLI initialized in verbose mode" in result.output
@@ -177,41 +176,43 @@ result = runner.invoke(framework.cli.cli, ["--version"])
 assert result.exit_code == 0
 
 print("All CLI tests passed in subprocess")
-'''
-        
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+"""
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(script_content)
             f.flush()
-            
+
             # Run the script in a subprocess to force fresh import
-            result = subprocess.run([sys.executable, f.name], 
-                                  capture_output=True, text=True, cwd='.')
-            
+            result = subprocess.run(
+                [sys.executable, f.name], capture_output=True, text=True, cwd="."
+            )
+
             # Clean up
             import os
+
             os.unlink(f.name)
-            
+
             # Check that the subprocess ran successfully
             assert result.returncode == 0, f"Subprocess failed: {result.stderr}"
             assert "All CLI tests passed in subprocess" in result.stdout
-    
+
     def test_cli_group_definitions(self):
         """Test that CLI group definitions are covered."""
         # Test that the performance group is properly defined
         result = self.runner.invoke(cli, ["performance", "--help"])
         assert result.exit_code == 0
         assert "Performance monitoring and analysis tools" in result.output
-        
+
         # Test that the security group is properly defined
         result = self.runner.invoke(cli, ["security", "--help"])
         assert result.exit_code == 0
         assert "Security scanning and vulnerability assessment tools" in result.output
-        
-        # Test that the reporting group is properly defined  
+
+        # Test that the reporting group is properly defined
         result = self.runner.invoke(cli, ["reporting", "--help"])
         assert result.exit_code == 0
         assert "Report generation and artifact management tools" in result.output
-        
+
         # Test that the maintenance group is properly defined
         result = self.runner.invoke(cli, ["maintenance", "--help"])
         assert result.exit_code == 0
