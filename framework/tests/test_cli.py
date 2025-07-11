@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import click
 from click.testing import CliRunner
 
 from framework.cli import cli
@@ -24,32 +25,73 @@ class TestFrameworkCLI:
     def test_module_import_coverage(self):
         """Test that module imports and decorator execution are covered."""
         # Force import-time code execution to ensure coverage of lines 10-11, 26-30
-        import importlib
         import sys
-        
+
         # Remove the module from cache to force fresh import
-        if 'framework.cli' in sys.modules:
-            del sys.modules['framework.cli']
-        
+        if "framework.cli" in sys.modules:
+            del sys.modules["framework.cli"]
+
         # Import the module fresh to execute import-time code
         import framework.cli
-        
-        # Verify the module attributes exist (exercises import lines)
-        assert hasattr(framework.cli, 'sys')
-        assert hasattr(framework.cli, 'Path') 
-        assert hasattr(framework.cli, 'click')
-        assert hasattr(framework.cli, 'cli')
-        
+
+        # Verify the module attributes exist (exercises import lines 10-11)
+        assert hasattr(framework.cli, "sys")
+        assert hasattr(framework.cli, "Path")
+        assert hasattr(framework.cli, "click")
+        assert hasattr(framework.cli, "cli")
+
         # Verify the CLI decorator has been applied (exercises decorator lines 26-30)
-        assert hasattr(framework.cli.cli, 'params')
-        assert hasattr(framework.cli.cli, 'callback')
-        
+        assert hasattr(framework.cli.cli, "params")
+        assert hasattr(framework.cli.cli, "callback")
+
         # Test that the function can be called to exercise context lines 37-38, 41
         # Use the test runner to actually execute the CLI which will call the callback
         result = self.runner.invoke(framework.cli.cli, ["--verbose", "--help"])
         assert result.exit_code == 0
-        
+
         # This execution should have covered lines 37-38 (context setup) and 41 (verbose echo)
+
+    def test_imports_and_decorators(self):
+        """Test that imports and decorators are properly covered."""
+        # Test that the imports are working (lines 10-11, 13-17)
+        from framework.cli import sys, Path, click
+        
+        # Verify imports were successful
+        assert sys is not None
+        assert Path is not None
+        assert click is not None
+        
+        # Test that decorators were applied (lines 26-30)
+        from framework.cli import cli as cli_func
+        assert hasattr(cli_func, "params")
+        assert hasattr(cli_func, "callback")
+        assert callable(cli_func)
+
+    def test_verbose_mode_execution(self):
+        """Test verbose mode execution that triggers line 41."""
+        # Test a command that actually executes the verbose echo
+        result = self.runner.invoke(cli, ["--verbose", "performance", "--help"])
+        assert result.exit_code == 0
+        # The verbose message should appear in the output when verbose is enabled
+        assert "Framework CLI initialized in verbose mode" in result.output
+
+    def test_context_object_setup(self):
+        """Test that context object is properly set up (lines 37-38)."""
+        # Test that the context is properly set when invoking commands
+        # This ensures lines 37-38 (ctx.ensure_object and ctx.obj assignment) are covered
+        
+        # Test without verbose flag
+        result = self.runner.invoke(cli, ["--help"])
+        assert result.exit_code == 0
+        
+        # Test with verbose flag - this should execute lines 37-38 and 41
+        result = self.runner.invoke(cli, ["--verbose", "--help"])
+        assert result.exit_code == 0
+        
+        # Test with a subcommand to ensure context is passed properly
+        result = self.runner.invoke(cli, ["--verbose", "performance", "--help"])
+        assert result.exit_code == 0
+        assert "Framework CLI initialized in verbose mode" in result.output
 
     def test_cli_help(self):
         """Test that CLI help displays correctly."""
@@ -76,19 +118,19 @@ class TestFrameworkCLI:
 
     def test_cli_decorators_and_signature(self):
         """Test that CLI decorators and function signature are properly defined."""
-        # This test exercises the @click.group, @click.version_option, 
+        # This test exercises the @click.group, @click.version_option,
         # @click.option, and @click.pass_context decorators (lines 26-30)
         from framework.cli import cli as cli_func
-        
+
         # Test that decorators have been applied by checking function attributes
-        assert hasattr(cli_func, 'params')  # Click adds this
-        assert hasattr(cli_func, 'callback')  # Click group callback
-        
+        assert hasattr(cli_func, "params")  # Click adds this
+        assert hasattr(cli_func, "callback")  # Click group callback
+
         # Test version functionality (exercises decorator)
         result = self.runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
         assert "1.0.0" in result.output
-        
+
         # Test that the context is properly passed and handled
         result = self.runner.invoke(cli, ["--verbose", "--help"])
         assert result.exit_code == 0
@@ -581,7 +623,8 @@ class TestQuickScanCommand:
 
             # Test with --verbose to cover lines 436-437
             result = self.runner.invoke(
-                cli, ["--verbose", "quick-scan", tmp_dir, "--output", str(Path(tmp_dir) / "reports")]
+                cli,
+                ["--verbose", "quick-scan", tmp_dir, "--output", str(Path(tmp_dir) / "reports")],
             )
 
             assert result.exit_code == 0
@@ -604,17 +647,17 @@ class TestCLIErrorHandling:
         assert result.exit_code != 0
 
     def test_missing_click_dependency(self):
-        """Test handling when Click is not available.""" 
+        """Test handling when Click is not available."""
         # Test that we can exercise the import error code path
         # by creating a temporary module that simulates the same structure
-        
-        import tempfile
-        import sys
+
         import subprocess
+        import sys
+        import tempfile
         from pathlib import Path
-        
+
         # Create a test script that mimics the CLI structure with import error
-        test_script = '''
+        test_script = """
 import sys
 from pathlib import Path
 
@@ -625,26 +668,23 @@ except ImportError:
     sys.exit(1)
 
 print("This should not be reached")
-'''
-        
+"""
+
         # Write and execute the test script to verify error handling logic
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(test_script)
             f.flush()
-            
+
             try:
                 # Run the script and capture output
                 result = subprocess.run(
-                    [sys.executable, f.name],
-                    capture_output=True,
-                    text=True,
-                    timeout=10
+                    [sys.executable, f.name], capture_output=True, text=True, timeout=10
                 )
-                
+
                 # Verify the error handling worked correctly
                 assert result.returncode == 1
                 assert "Click library is required" in result.stderr
-                
+
             finally:
                 # Clean up
                 Path(f.name).unlink(missing_ok=True)
@@ -739,7 +779,7 @@ class TestCLIIntegration:
             mock_monitor = MagicMock()
             mock_monitor.collect_health_metrics.return_value = {"status": "healthy"}
             mock_monitor_class.return_value = mock_monitor
-            
+
             result = self.runner.invoke(cli, ["--verbose", "maintenance", "health-check"])
             assert result.exit_code == 0
             assert "Framework CLI initialized in verbose mode" in result.output
@@ -748,13 +788,13 @@ class TestCLIIntegration:
         """Test that CLI context object is properly initialized."""
         # Use CliRunner to test context handling more directly
         # This ensures the CLI callback runs and exercises lines 37-38 and 41
-        
+
         # Test that context object is created and verbose is handled
         with patch("framework.maintenance.CIHealthMonitor") as mock_monitor_class:
             mock_monitor = MagicMock()
             mock_monitor.collect_health_metrics.return_value = {"status": "healthy"}
             mock_monitor_class.return_value = mock_monitor
-            
+
             # This will call the CLI function with verbose=True
             # which should exercise ctx.ensure_object, ctx.obj["verbose"] = verbose,
             # and the verbose echo message
@@ -767,11 +807,12 @@ class TestCLIIntegration:
         # This test exercises the import statements at the top of the module
         # by forcing a fresh import to execute the module-level code
         import importlib
+
         import framework.cli
-        
+
         # Force reload to execute import-time code
         importlib.reload(framework.cli)
-        
-        assert hasattr(framework.cli, 'click')
-        assert hasattr(framework.cli, 'sys')
-        assert hasattr(framework.cli, 'Path')
+
+        assert hasattr(framework.cli, "click")
+        assert hasattr(framework.cli, "sys")
+        assert hasattr(framework.cli, "Path")
