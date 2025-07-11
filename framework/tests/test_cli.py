@@ -141,6 +141,81 @@ class TestFrameworkCLI:
         result = self.runner.invoke(cli_func, ["--verbose", "performance", "--help"])
         assert result.exit_code == 0
         assert "Framework CLI initialized in verbose mode" in result.output
+        
+    def test_force_import_execution(self):
+        """Force execution of import-time code for coverage."""
+        # This test tries to force execution of the import-time code
+        import sys
+        import subprocess
+        import tempfile
+        
+        # Create a temporary script that imports and uses the CLI
+        script_content = '''
+import sys
+import os
+sys.path.insert(0, os.getcwd())
+
+# Import the CLI module fresh
+import framework.cli
+
+# Use the CLI to ensure all code paths are executed
+from click.testing import CliRunner
+
+runner = CliRunner()
+
+# Test basic functionality
+result = runner.invoke(framework.cli.cli, ["--help"])
+assert result.exit_code == 0
+
+# Test verbose mode 
+result = runner.invoke(framework.cli.cli, ["--verbose", "performance", "--help"])
+assert result.exit_code == 0
+assert "Framework CLI initialized in verbose mode" in result.output
+
+# Test version
+result = runner.invoke(framework.cli.cli, ["--version"])
+assert result.exit_code == 0
+
+print("All CLI tests passed in subprocess")
+'''
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(script_content)
+            f.flush()
+            
+            # Run the script in a subprocess to force fresh import
+            result = subprocess.run([sys.executable, f.name], 
+                                  capture_output=True, text=True, cwd='.')
+            
+            # Clean up
+            import os
+            os.unlink(f.name)
+            
+            # Check that the subprocess ran successfully
+            assert result.returncode == 0, f"Subprocess failed: {result.stderr}"
+            assert "All CLI tests passed in subprocess" in result.stdout
+    
+    def test_cli_group_definitions(self):
+        """Test that CLI group definitions are covered."""
+        # Test that the performance group is properly defined
+        result = self.runner.invoke(cli, ["performance", "--help"])
+        assert result.exit_code == 0
+        assert "Performance monitoring and analysis tools" in result.output
+        
+        # Test that the security group is properly defined
+        result = self.runner.invoke(cli, ["security", "--help"])
+        assert result.exit_code == 0
+        assert "Security scanning and vulnerability assessment tools" in result.output
+        
+        # Test that the reporting group is properly defined  
+        result = self.runner.invoke(cli, ["reporting", "--help"])
+        assert result.exit_code == 0
+        assert "Report generation and artifact management tools" in result.output
+        
+        # Test that the maintenance group is properly defined
+        result = self.runner.invoke(cli, ["maintenance", "--help"])
+        assert result.exit_code == 0
+        assert "Maintenance and health monitoring tools" in result.output
 
     def test_cli_help(self):
         """Test that CLI help displays correctly."""
