@@ -24,15 +24,20 @@ class TestFrameworkCLI:
 
     def test_module_import_coverage(self):
         """Test that module imports and decorator execution are covered."""
-        # Force import-time code execution to ensure coverage of lines 10-11, 26-30
+        # This test must be the first to run to ensure module import lines are covered
+        # Force fresh import to ensure coverage of lines 10-11, 13-17, 26-30
         import sys
-
+        import importlib
+        
         # Remove the module from cache to force fresh import
         if "framework.cli" in sys.modules:
             del sys.modules["framework.cli"]
 
         # Import the module fresh to execute import-time code
         import framework.cli
+        
+        # Force module reload to ensure all import lines are executed
+        importlib.reload(framework.cli)
 
         # Verify the module attributes exist (exercises import lines 10-11)
         assert hasattr(framework.cli, "sys")
@@ -56,7 +61,7 @@ class TestFrameworkCLI:
         # Test that the imports are working (lines 10-11, 13-17)
         from framework.cli import sys, Path, click
         
-        # Verify imports were successful
+        # Verify imports were successful - this should exercise the try/except import
         assert sys is not None
         assert Path is not None
         assert click is not None
@@ -66,6 +71,11 @@ class TestFrameworkCLI:
         assert hasattr(cli_func, "params")
         assert hasattr(cli_func, "callback")
         assert callable(cli_func)
+        
+        # Test the click import success path (lines 13-17)
+        import framework.cli
+        assert hasattr(framework.cli, "click")
+        assert framework.cli.click is not None
 
     def test_verbose_mode_execution(self):
         """Test verbose mode execution that triggers line 41."""
@@ -73,6 +83,15 @@ class TestFrameworkCLI:
         result = self.runner.invoke(cli, ["--verbose", "performance", "--help"])
         assert result.exit_code == 0
         # The verbose message should appear in the output when verbose is enabled
+        assert "Framework CLI initialized in verbose mode" in result.output
+        
+        # Test multiple commands with verbose to ensure line 41 is hit
+        result = self.runner.invoke(cli, ["--verbose", "security", "--help"])
+        assert result.exit_code == 0
+        assert "Framework CLI initialized in verbose mode" in result.output
+        
+        result = self.runner.invoke(cli, ["--verbose", "reporting", "--help"])
+        assert result.exit_code == 0
         assert "Framework CLI initialized in verbose mode" in result.output
 
     def test_context_object_setup(self):
@@ -90,6 +109,36 @@ class TestFrameworkCLI:
         
         # Test with a subcommand to ensure context is passed properly
         result = self.runner.invoke(cli, ["--verbose", "performance", "--help"])
+        assert result.exit_code == 0
+        assert "Framework CLI initialized in verbose mode" in result.output
+        
+    def test_specific_coverage_lines(self):
+        """Test to ensure specific lines are covered."""
+        # This test is specifically designed to hit the lines codecov complains about
+        
+        # Test the imports (lines 10-11, 13-17)
+        import sys
+        import importlib
+        
+        # Clear the module cache and re-import
+        if "framework.cli" in sys.modules:
+            del sys.modules["framework.cli"]
+        
+        # Import should trigger lines 10-11 and 13-17
+        import framework.cli
+        
+        # Verify the imports worked
+        assert framework.cli.sys is not None
+        assert framework.cli.Path is not None
+        assert framework.cli.click is not None
+        
+        # Test the decorator application (lines 26-30)
+        cli_func = framework.cli.cli
+        assert hasattr(cli_func, "params")
+        assert hasattr(cli_func, "callback")
+        
+        # Test the verbose echo (line 41) and context setup (lines 37-38)
+        result = self.runner.invoke(cli_func, ["--verbose", "performance", "--help"])
         assert result.exit_code == 0
         assert "Framework CLI initialized in verbose mode" in result.output
 
