@@ -191,7 +191,7 @@ class TestReportGenerator:
         ]
 
         # Test that the method exists and can be called
-        assert hasattr(generator, 'generate_build_insights')
+        assert hasattr(generator, 'generate_build_dashboard')
 
     @patch('framework.reporting.report_generator.GitHubReporter')
     def test_report_generator_with_github_integration(self, mock_github):

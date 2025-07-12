@@ -334,8 +334,8 @@ class TestFrameworkProperties:
     @settings(max_examples=15)
     def test_coverage_calculation_properties(self, file_count, test_percentage):
         """Test that coverage calculations maintain mathematical properties."""
-        # Calculate covered files
-        covered_files = int((test_percentage / 100.0) * file_count)
+        # Calculate covered files using proper rounding to handle floating-point precision
+        covered_files = round((test_percentage / 100.0) * file_count)
 
         # Verify coverage properties
         # Property: covered files cannot exceed total files
