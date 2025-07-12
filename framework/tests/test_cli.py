@@ -740,6 +740,98 @@ class TestReportingCommands:
         )
         assert result.exit_code != 0
 
+    def test_reporting_group_decorator_coverage(self):
+        """Test to specifically cover the reporting group decorator lines 293-295."""
+        # This test specifically targets the @cli.group() decorator and function definition
+        # by accessing the reporting command directly
+        from framework.cli import reporting
+        
+        # Verify the reporting group is properly decorated
+        assert hasattr(reporting, 'params')  # Click adds this for decorated functions
+        assert hasattr(reporting, 'callback')  # Click group callback
+        assert callable(reporting)
+        
+        # Test the reporting group help to exercise the decorator execution (lines 293-295)
+        result = self.runner.invoke(cli, ["reporting", "--help"])
+        assert result.exit_code == 0
+        assert "Report generation and artifact management tools" in result.output
+        
+        # This execution should cover lines 293-295 (decorator and function def) and 301 (pass)
+
+    def test_reporting_generate_decorator_coverage(self):
+        """Test to specifically cover the reporting generate decorator lines 304-307, 313-316."""
+        # This test targets the @reporting.command("generate") decorator and options
+        from framework.cli import reporting_generate
+        
+        # Verify the command is properly decorated
+        assert hasattr(reporting_generate, 'params')  # Click adds this for decorated commands
+        assert hasattr(reporting_generate, 'callback')  # Click command callback
+        assert callable(reporting_generate)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # Create a dummy data file
+            data_file = Path(tmp_dir) / "data.json"
+            data_file.write_text('{"test": "data"}')
+            
+            # Test the command with all options to exercise decorator lines 304-307, 313-316
+            result = self.runner.invoke(
+                cli,
+                [
+                    "reporting",
+                    "generate",
+                    str(data_file),
+                    "--template", "test_template",
+                    "--format", "markdown",
+                    "--output", "test_report.md",
+                    "--include-charts",
+                ],
+            )
+            
+            # This execution should cover the decorator lines 304-307, 313-316
+            assert result.exit_code == 0
+
+    def test_reporting_generate_try_block_coverage(self):
+        """Test to specifically cover the try block line 325 and error handling."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # Create a dummy data file
+            data_file = Path(tmp_dir) / "data.json"
+            data_file.write_text('{"test": "data"}')
+            
+            # Test with valid input to exercise the try block (line 325)
+            result = self.runner.invoke(
+                cli,
+                [
+                    "reporting",
+                    "generate",
+                    str(data_file),
+                    "--output", "test_report.md",
+                ],
+            )
+            
+            # This should exercise line 325 (try:) and the subsequent code
+            assert result.exit_code == 0
+            
+        # Test error handling by mocking to cause an exception
+        with patch('framework.reporting.ReportGenerator') as mock_report_gen:
+            mock_report_gen.side_effect = Exception("Test error")
+            
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                data_file = Path(tmp_dir) / "data.json"
+                data_file.write_text('{"test": "data"}')
+                
+                result = self.runner.invoke(
+                    cli,
+                    [
+                        "reporting",
+                        "generate",
+                        str(data_file),
+                        "--output", "test_report.md",
+                    ],
+                )
+                
+                # This should exercise the exception handling path
+                assert result.exit_code == 1
+
 
 class TestMaintenanceCommands:
     """Test cases for maintenance-related CLI commands."""
