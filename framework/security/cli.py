@@ -42,15 +42,16 @@ def scan_command(args: argparse.Namespace) -> None:
 
         # Save baseline if requested
         if args.save_baseline:
-            baseline_file = collector.save_baseline(metrics, args.baseline_name)
+            baseline_name = getattr(args, 'baseline_name', args.save_baseline)
+            baseline_file = collector.save_baseline(metrics, baseline_name)
             print(f"Baseline saved to: {baseline_file}")
 
         # Compare with baseline if requested
         comparison = None
         if args.compare_baseline:
-            comparison = collector.compare_with_baseline(metrics, args.baseline_name)
+            comparison = collector.compare_with_baseline(metrics, args.compare_baseline)
             if comparison:
-                print(f"\nBaseline comparison (vs {args.baseline_name}):")
+                print(f"\nBaseline comparison (vs {args.compare_baseline}):")
                 for key, change_data in comparison.get("changes", {}).items():
                     if "change" in change_data:
                         change = change_data["change"]
@@ -66,7 +67,7 @@ def scan_command(args: argparse.Namespace) -> None:
                 if resolved_vulns:
                     print(f"  Resolved vulnerabilities: {len(resolved_vulns)}")
             else:
-                print(f"No baseline '{args.baseline_name}' found for comparison")
+                print(f"No baseline '{args.compare_baseline}' found for comparison")
 
         # Generate output file if requested
         if args.output:
@@ -149,10 +150,10 @@ def sbom_command(args: argparse.Namespace) -> None:
     try:
         # Generate SBOM
         sbom_data = generator.generate_sbom(
-            output_format=args.format,
-            output_type=args.output_type,
-            include_dev_dependencies=args.include_dev,
-            include_vulnerabilities=args.include_vulns,
+            output_format=getattr(args, 'format', 'json'),
+            output_type=getattr(args, 'output_type', 'file'),
+            include_dev_dependencies=getattr(args, 'include_dev', False),
+            include_vulnerabilities=getattr(args, 'include_vulns', False),
         )
 
         # Save SBOM to file
@@ -160,26 +161,28 @@ def sbom_command(args: argparse.Namespace) -> None:
             output_path = generator.save_sbom(
                 sbom_data=sbom_data,
                 output_path=args.output,
-                output_format=args.format,
-                output_type=args.output_type,
+                output_format=getattr(args, 'format', 'json'),
+                output_type=getattr(args, 'output_type', 'file'),
             )
             print(f"SBOM saved to: {output_path}")
         else:
             # Print to stdout if no output file specified
-            if args.output_type == "json":
+            output_type = getattr(args, 'output_type', 'file')
+            if output_type == "json":
                 print(json.dumps(sbom_data, indent=2, ensure_ascii=False))
             else:
                 print("Output file required for non-JSON formats")
 
         # Print summary
-        if args.format == "cyclonedx":
+        format_type = getattr(args, 'format', 'json')
+        if format_type == "cyclonedx":
             component_count = len(sbom_data.get("components", []))
             vuln_count = len(sbom_data.get("vulnerabilities", []))
             print("\nSBOM Summary (CycloneDX):")
             print(f"  Components: {component_count}")
-            if args.include_vulns:
+            if getattr(args, 'include_vulns', False):
                 print(f"  Vulnerabilities: {vuln_count}")
-        elif args.format == "spdx":
+        elif format_type == "spdx":
             package_count = len(sbom_data.get("packages", [])) - 1  # Exclude root package
             print("\nSBOM Summary (SPDX):")
             print(f"  Packages: {package_count}")

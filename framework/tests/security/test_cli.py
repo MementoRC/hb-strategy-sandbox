@@ -176,7 +176,7 @@ class TestSecurityCLI:
             mock_instance.scan_project_security.side_effect = Exception("Project not found")
             
             # Should handle exception gracefully
-            with pytest.raises(Exception):
+            with pytest.raises(SystemExit):
                 scan_command(args)
 
     def test_sbom_command_error_handling(self):
@@ -194,7 +194,7 @@ class TestSecurityCLI:
             mock_instance.generate_sbom.side_effect = Exception("SBOM generation failed")
             
             # Should handle exception gracefully
-            with pytest.raises(Exception):
+            with pytest.raises(SystemExit):
                 sbom_command(args)
 
     def test_scan_command_with_output_file(self):
