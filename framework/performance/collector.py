@@ -23,15 +23,15 @@ class PerformanceCollector:
                          Defaults to 'performance_data' in current directory.
         """
         self.storage_path = Path(storage_path or "performance_data")
-        self.storage_path.mkdir(exist_ok=True)
+        self.storage_path.mkdir(parents=True, exist_ok=True)
 
         # Initialize baseline storage
         self.baseline_path = self.storage_path / "baselines"
-        self.baseline_path.mkdir(exist_ok=True)
+        self.baseline_path.mkdir(parents=True, exist_ok=True)
 
         # Initialize history storage
         self.history_path = self.storage_path / "history"
-        self.history_path.mkdir(exist_ok=True)
+        self.history_path.mkdir(parents=True, exist_ok=True)
 
     def collect_system_info(self) -> dict[str, str | int | float]:
         """Collect current system information."""
