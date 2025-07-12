@@ -26,12 +26,14 @@ class TestCIHealthMonitor:
         
         with patch('pathlib.Path.exists') as mock_exists:
             mock_exists.return_value = False
-            with patch('framework.maintenance.health_monitor.CIHealthMonitor._load_config') as mock_load:
-                mock_load.return_value = {}
-                
-                monitor = CIHealthMonitor(config_path=config_path, project_path=project_path)
-                assert monitor.project_path == Path(project_path)
-                assert monitor.config_path == Path(config_path)
+            with patch('pathlib.Path.mkdir') as mock_mkdir:
+                mock_mkdir.return_value = None
+                with patch('framework.maintenance.health_monitor.CIHealthMonitor._load_config') as mock_load:
+                    mock_load.return_value = {}
+                    
+                    monitor = CIHealthMonitor(config_path=config_path, project_path=project_path)
+                    assert monitor.project_path == Path(project_path)
+                    assert monitor.config_path == Path(config_path)
 
     @patch('builtins.open', new_callable=mock_open, read_data='{"test": "config"}')
     @patch('yaml.safe_load')
