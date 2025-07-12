@@ -34,6 +34,7 @@ dependencies = [
     "asyncio-throttle>=1.0.0",
     "psutil>=5.0.0",
     "PyYAML>=6.0.0",
+    "click>=8.0.0",
 ]
 dynamic = ["version"]
 
@@ -42,6 +43,11 @@ hb-performance = "strategy_sandbox.performance.cli:main"
 hb-reporting = "strategy_sandbox.reporting.cli:main"
 hb-security = "strategy_sandbox.security.cli:main"
 hb-maintenance = "strategy_sandbox.maintenance.cli:main"
+framework-performance = "framework.performance.cli:main"
+framework-security = "framework.security.cli:main"
+framework-reporting = "framework.reporting.cli:main"
+framework-maintenance = "framework.maintenance.cli:main"
+framework-cli = "framework.cli:cli"
 
 [project.urls]
 Homepage = "https://github.com/MementoRC/hb-strategy-sandbox"
@@ -66,6 +72,7 @@ dev = [
     "build>=0.10.0",
     "twine>=4.0.0",
     "safety>=2.0.0",
+    "hypothesis>=6.0.0",
 ]
 docs = [
     "mkdocs",
@@ -85,7 +92,7 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 path = "strategy_sandbox/__about__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["strategy_sandbox"]
+packages = ["strategy_sandbox", "framework"]
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -133,12 +140,16 @@ test = "pytest tests"
 test-unit = "pytest tests/unit"
 test-integration = "pytest tests/integration"
 test-performance = "pytest tests/performance"
+test-framework = "pytest framework/tests"
 lint = "ruff check strategy_sandbox tests"
 lint-critical = "ruff check --select=F,E9 strategy_sandbox tests"
 format = "ruff format strategy_sandbox tests"
 typecheck = "mypy strategy_sandbox"
 lint-cython = "cython-lint strategy_sandbox"
-check = { cmd = ["pixi run format", "pixi run lint", "pixi run lint-critical", "pixi run typecheck", "pixi run test-unit"] }
+lint-framework = "ruff check framework"
+format-framework = "ruff format framework"
+typecheck-framework = "mypy framework"
+check = "ruff format strategy_sandbox tests && ruff check strategy_sandbox tests && ruff check --select=F,E9 strategy_sandbox tests && mypy strategy_sandbox && pytest tests/unit"
 
 # Documentation tasks
 docs-build = "mkdocs build --clean --strict"
@@ -300,8 +311,8 @@ py312 = { features = ["py312", "dev"], solve-group = "py312" }
 # Tool configurations
 [tool.coverage.run]
 branch = true
-parallel = true
-source_pkgs = ["strategy_sandbox", "tests"]
+parallel = false
+source_pkgs = ["strategy_sandbox", "framework", "tests"]
 omit = [
   "strategy_sandbox/__about__.py",
 ]
@@ -343,7 +354,7 @@ ignore = [
 unfixable = ["F401"]  # unused imports - let the developer decide
 
 [tool.ruff.lint.isort]
-known-first-party = ["strategy_sandbox"]
+known-first-party = ["strategy_sandbox", "framework"]
 
 [tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
@@ -351,7 +362,7 @@ docstring-quotes = "double"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-testpaths = ["tests"]
+testpaths = ["tests", "framework/tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
 markers = [
@@ -361,6 +372,7 @@ markers = [
     "asyncio: marks tests as asyncio tests",
     "benchmark: marks tests as performance benchmarks (deselect with '-m \"not benchmark\"')",
     "e2e: marks tests as end-to-end tests (deselect with '-m \"not e2e\"')",
+    "property: marks tests as property-based tests using Hypothesis",
 ]
 log_cli = true
 log_cli_level = "INFO"

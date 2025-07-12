@@ -1,0 +1,153 @@
+{
+  "validation_date": "2025-06-27",
+  "project_root": "/home/memento/ClaudeCode/hummingbot-worktrees/dev-sandboxing/__hb-strategy-sandbox__",
+  "total_checks": 16,
+  "results": {
+    "pass": 16,
+    "warn": 0,
+    "fail": 0
+  },
+  "details": [
+    {
+      "component": "strategy_sandbox.core",
+      "status": "pass",
+      "message": "Module exists and importable",
+      "details": {
+        "target": "features/strategy_sandbox/core",
+        "priority": "high"
+      }
+    },
+    {
+      "component": "strategy_sandbox.balance",
+      "status": "pass",
+      "message": "Module exists and importable",
+      "details": {
+        "target": "features/strategy_sandbox/balance",
+        "priority": "high"
+      }
+    },
+    {
+      "component": "strategy_sandbox.markets",
+      "status": "pass",
+      "message": "Module exists and importable",
+      "details": {
+        "target": "features/strategy_sandbox/markets",
+        "priority": "high"
+      }
+    },
+    {
+      "component": "strategy_sandbox.events",
+      "status": "pass",
+      "message": "Module exists and importable",
+      "details": {
+        "target": "features/strategy_sandbox/events",
+        "priority": "high"
+      }
+    },
+    {
+      "component": "strategy_sandbox.data",
+      "status": "pass",
+      "message": "Module exists and importable",
+      "details": {
+        "target": "features/strategy_sandbox/data",
+        "priority": "medium"
+      }
+    },
+    {
+      "component": "strategy_sandbox.utils",
+      "status": "pass",
+      "message": "Module exists and importable",
+      "details": {
+        "target": "features/strategy_sandbox/utils",
+        "priority": "low"
+      }
+    },
+    {
+      "component": "strategy_sandbox.performance",
+      "status": "pass",
+      "message": "Framework module exists and importable",
+      "details": {
+        "target": "framework/performance",
+        "dependencies": []
+      }
+    },
+    {
+      "component": "strategy_sandbox.security",
+      "status": "pass",
+      "message": "Framework module exists and importable",
+      "details": {
+        "target": "framework/security",
+        "dependencies": []
+      }
+    },
+    {
+      "component": "strategy_sandbox.reporting",
+      "status": "pass",
+      "message": "Framework module exists and importable",
+      "details": {
+        "target": "framework/reporting",
+        "dependencies": []
+      }
+    },
+    {
+      "component": "strategy_sandbox.maintenance",
+      "status": "pass",
+      "message": "Framework module exists and importable",
+      "details": {
+        "target": "framework/maintenance",
+        "dependencies": []
+      }
+    },
+    {
+      "component": "import_compatibility",
+      "status": "pass",
+      "message": "Import works: from strategy_sandbox.core import SandboxEnvironment",
+      "details": {
+        "import": "from strategy_sandbox.core import SandboxEnvironment"
+      }
+    },
+    {
+      "component": "import_compatibility",
+      "status": "pass",
+      "message": "Import works: from strategy_sandbox.balance import SandboxBalanceManager",
+      "details": {
+        "import": "from strategy_sandbox.balance import SandboxBalanceManager"
+      }
+    },
+    {
+      "component": "import_compatibility",
+      "status": "pass",
+      "message": "Import works: from strategy_sandbox.performance import PerformanceCollector",
+      "details": {
+        "import": "from strategy_sandbox.performance import PerformanceCollector"
+      }
+    },
+    {
+      "component": "test_coverage",
+      "status": "pass",
+      "message": "Test count 674 meets minimum 337",
+      "details": {
+        "test_count": 674,
+        "minimum": 337
+      }
+    },
+    {
+      "component": "quality_metrics",
+      "status": "pass",
+      "message": "No critical lint violations found",
+      "details": {
+        "violations": 0,
+        "max_allowed": 0
+      }
+    },
+    {
+      "component": "configuration",
+      "status": "pass",
+      "message": "pyproject.toml is valid",
+      "details": {
+        "project_name": "hb-strategy-sandbox"
+      }
+    }
+  ],
+  "workspace_ready": true
+}
