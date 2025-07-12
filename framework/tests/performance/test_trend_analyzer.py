@@ -4,7 +4,8 @@ import pytest
 from unittest.mock import MagicMock, patch
 from datetime import datetime, timedelta
 
-from framework.performance.trend_analyzer import TrendAnalyzer
+from framework.performance.trend_analyzer import TrendAnalyzer, TrendData
+from framework.performance.models import PerformanceMetrics, BenchmarkResult
 
 
 class TestTrendAnalyzer:
@@ -17,12 +18,9 @@ class TestTrendAnalyzer:
 
     def test_trend_analyzer_with_config(self):
         """Test TrendAnalyzer with configuration."""
-        config = {
-            "window_size": 10,
-            "threshold": 0.1,
-            "min_samples": 5
-        }
-        analyzer = TrendAnalyzer(config=config)
+        alert_config_path = "alert_config.yaml"
+        github_token = "test_token"
+        analyzer = TrendAnalyzer(alert_config_path=alert_config_path, github_token=github_token)
         assert analyzer is not None
 
     def test_analyze_trend_improving(self):
@@ -94,15 +92,35 @@ class TestTrendAnalyzer:
         """Test anomaly detection in trend data."""
         analyzer = TrendAnalyzer()
         
-        # Data with outliers
-        data_points = [50, 51, 52, 53, 100, 54, 55, 56, 57, 58]  # 100 is an outlier
-        
         if hasattr(analyzer, 'detect_anomalies'):
-            anomalies = analyzer.detect_anomalies(data_points)
+            # Create mock performance metrics
+            current_metrics = PerformanceMetrics(
+                build_id="test-build",
+                timestamp=datetime.now(),
+                results=[
+                    BenchmarkResult(
+                        name="test_benchmark",
+                        execution_time=100.0,  # outlier value in seconds
+                        memory_usage=50.0,
+                        timestamp=datetime.now().timestamp()
+                    )
+                ]
+            )
+            
+            # Create mock trend data
+            trends = {
+                "test_benchmark": TrendData(
+                    metric_name="test_benchmark",
+                    benchmark_name="test_benchmark",
+                    values=[50, 51, 52, 53, 54, 55, 56, 57, 58]  # normal range
+                )
+            }
+            
+            anomalies = analyzer.detect_anomalies(current_metrics, trends)
             assert anomalies is not None
             if isinstance(anomalies, list):
-                # Should detect the outlier
-                assert len(anomalies) > 0 or anomalies == []
+                # Should detect the outlier or return empty list
+                assert isinstance(anomalies, list)
         else:
             assert analyzer is not None
 

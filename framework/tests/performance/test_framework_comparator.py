@@ -36,9 +36,9 @@ class TestPerformanceComparator:
         assert comparator is not None
 
     def test_comparator_initialization_with_storage_path(self):
-        """Test PerformanceComparator initialization with custom storage path."""
-        storage_path = "custom/performance/data"
-        comparator = PerformanceComparator(storage_path=storage_path)
+        """Test PerformanceComparator initialization with custom threshold config path."""
+        threshold_config_path = "custom/performance/thresholds.yaml"
+        comparator = PerformanceComparator(threshold_config_path=threshold_config_path)
         assert comparator is not None
 
     @patch('builtins.open', new_callable=mock_open, read_data='{"response_time": 150.0, "memory_usage": 256.0}')
@@ -285,20 +285,32 @@ class TestPerformanceComparator:
         """Test loading threshold configuration from file."""
         threshold_config = {
             "thresholds": {
-                "response_time": 5.0,
-                "memory_usage": 10.0,
-                "cpu_usage": 15.0
+                "response_time": {
+                    "relative_increase": 0.05,
+                    "absolute_increase": 5.0,
+                    "statistical_significance": 0.95
+                },
+                "memory_usage": {
+                    "relative_increase": 0.10,
+                    "absolute_increase": 10.0,
+                    "statistical_significance": 0.95
+                },
+                "cpu_usage": {
+                    "relative_increase": 0.15,
+                    "absolute_increase": 15.0,
+                    "statistical_significance": 0.95
+                }
             }
         }
         
         with patch('builtins.open', mock_open()):
-            with patch('json.load') as mock_json:
-                mock_json.return_value = threshold_config
+            with patch('yaml.safe_load') as mock_yaml:
+                mock_yaml.return_value = threshold_config
                 
                 comparator = PerformanceComparator()
                 
                 if hasattr(comparator, 'load_threshold_config'):
-                    comparator.load_threshold_config("thresholds.json")
+                    comparator.load_threshold_config("thresholds.yaml")
                     # Verify thresholds were loaded
                     assert comparator is not None
                 else:
