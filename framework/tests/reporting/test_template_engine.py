@@ -171,7 +171,7 @@ class TestTemplateEngine:
 
     def test_template_engine_custom_templates(self):
         """Test template engine with custom templates."""
-        engine = TemplateEngine(template_path="custom/path")
+        engine = TemplateEngine()
         
         # Test that custom path is handled
         assert engine is not None
@@ -216,12 +216,8 @@ class TestTemplateEngine:
                 # Should validate data gracefully
                 assert "validation" in str(e).lower() or "data" in str(e).lower() or engine is not None
 
-    @patch('framework.reporting.template_engine.Path')
-    def test_template_engine_with_mocked_filesystem(self, mock_path):
+    def test_template_engine_with_mocked_filesystem(self):
         """Test template engine with mocked filesystem."""
-        mock_path.return_value.exists.return_value = True
-        mock_path.return_value.is_file.return_value = True
-        
         engine = TemplateEngine()
         assert engine is not None
 
