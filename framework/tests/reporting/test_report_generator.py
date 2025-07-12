@@ -138,7 +138,7 @@ class TestReportGenerator:
     def test_report_generator_with_temp_dir(self):
         """Test ReportGenerator with temporary directory."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            generator = ReportGenerator(base_path=temp_dir)
+            generator = ReportGenerator(artifact_path=temp_dir)
             assert generator is not None
 
     def test_generate_coverage_report(self):
@@ -174,7 +174,7 @@ class TestReportGenerator:
         ]
 
         # Test that the method exists and can be called
-        assert hasattr(generator, 'generate_performance_report')
+        assert hasattr(generator, 'generate_performance_dashboard')
 
     def test_generate_build_insights(self):
         """Test build insights generation."""
