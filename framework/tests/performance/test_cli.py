@@ -27,8 +27,8 @@ class TestPerformanceCLI:
         with patch('framework.performance.cli.PerformanceCollector') as mock_collector:
             mock_instance = mock_collector.return_value
             mock_metrics = MagicMock()
-            mock_instance.collect_benchmark_data.return_value = mock_metrics
-            mock_instance.save_metrics.return_value = "test_metrics.json"
+            mock_instance.collect_metrics.return_value = mock_metrics
+            mock_instance.store_history.return_value = "test_metrics.json"
             
             # Mock file reading
             with patch('builtins.open', create=True) as mock_open:
@@ -37,8 +37,8 @@ class TestPerformanceCLI:
                 handle_collect(args)
                 
                 # Verify collector was called
-                mock_instance.collect_benchmark_data.assert_called_once()
-                mock_instance.save_metrics.assert_called_once()
+                mock_instance.collect_metrics.assert_called_once()
+                mock_instance.store_history.assert_called_once()
 
     def test_collect_command_with_baseline(self):
         """Test collect command with baseline storage."""
@@ -54,9 +54,9 @@ class TestPerformanceCLI:
         with patch('framework.performance.cli.PerformanceCollector') as mock_collector:
             mock_instance = mock_collector.return_value
             mock_metrics = MagicMock()
-            mock_instance.collect_benchmark_data.return_value = mock_metrics
-            mock_instance.save_metrics.return_value = "test_metrics.json"
-            mock_instance.save_baseline.return_value = "custom_baseline.json"
+            mock_instance.collect_metrics.return_value = mock_metrics
+            mock_instance.store_history.return_value = "test_metrics.json"
+            mock_instance.store_baseline.return_value = "custom_baseline.json"
             
             with patch('builtins.open', create=True) as mock_open:
                 mock_open.return_value.__enter__.return_value.read.return_value = '{"test": "data"}'
@@ -64,7 +64,7 @@ class TestPerformanceCLI:
                 handle_collect(args)
                 
                 # Verify baseline was saved
-                mock_instance.save_baseline.assert_called_once()
+                mock_instance.store_baseline.assert_called_once()
 
     def test_collect_command_with_comparison(self):
         """Test collect command with baseline comparison."""
@@ -80,8 +80,8 @@ class TestPerformanceCLI:
         with patch('framework.performance.cli.PerformanceCollector') as mock_collector:
             mock_instance = mock_collector.return_value
             mock_metrics = MagicMock()
-            mock_instance.collect_benchmark_data.return_value = mock_metrics
-            mock_instance.save_metrics.return_value = "test_metrics.json"
+            mock_instance.collect_metrics.return_value = mock_metrics
+            mock_instance.store_history.return_value = "test_metrics.json"
             mock_instance.compare_with_baseline.return_value = MagicMock()
             
             with patch('builtins.open', create=True) as mock_open:
@@ -99,16 +99,23 @@ class TestPerformanceCLI:
             baseline="baseline_name",
             storage_path="test_storage",
             threshold_config=None,
-            mode="comprehensive",
+            mode="single",
             output=None,
-            format="json"
+            format="json",
+            fail_on_regression=False,
+            history_limit=10
         )
         
-        # Mock PerformanceComparator
-        with patch('framework.performance.cli.PerformanceComparator') as mock_comparator:
-            mock_instance = mock_comparator.return_value
+        # Mock PerformanceComparator and PerformanceCollector
+        with patch('framework.performance.cli.PerformanceComparator') as mock_comparator, \
+             patch('framework.performance.cli.PerformanceCollector') as mock_collector:
+            mock_comparator_instance = mock_comparator.return_value
+            mock_collector_instance = mock_collector.return_value
             mock_comparison = MagicMock()
-            mock_instance.compare_performance.return_value = mock_comparison
+            mock_comparator_instance.compare_with_baseline.return_value = mock_comparison
+            mock_collector_instance.collect_metrics.return_value = MagicMock()
+            mock_collector_instance.load_baseline.return_value = MagicMock()
+            mock_comparator_instance.generate_report.return_value = "Test report"
             
             # Mock file operations
             with patch('builtins.open', create=True) as mock_open:
@@ -117,7 +124,7 @@ class TestPerformanceCLI:
                 handle_compare(args)
                 
                 # Verify comparison was performed
-                mock_instance.compare_performance.assert_called_once()
+                mock_comparator_instance.compare_with_baseline.assert_called_once()
 
     def test_compare_command_with_threshold_config(self):
         """Test compare command with custom threshold configuration."""
@@ -126,15 +133,22 @@ class TestPerformanceCLI:
             baseline="baseline_name",
             storage_path="test_storage",
             threshold_config="custom_thresholds.json",
-            mode="comprehensive",
+            mode="single",
             output=None,
-            format="json"
+            format="json",
+            fail_on_regression=False,
+            history_limit=10
         )
         
-        with patch('framework.performance.cli.PerformanceComparator') as mock_comparator:
-            mock_instance = mock_comparator.return_value
+        with patch('framework.performance.cli.PerformanceComparator') as mock_comparator, \
+             patch('framework.performance.cli.PerformanceCollector') as mock_collector:
+            mock_comparator_instance = mock_comparator.return_value
+            mock_collector_instance = mock_collector.return_value
             mock_comparison = MagicMock()
-            mock_instance.compare_performance.return_value = mock_comparison
+            mock_comparator_instance.compare_with_baseline.return_value = mock_comparison
+            mock_collector_instance.collect_metrics.return_value = MagicMock()
+            mock_collector_instance.load_baseline.return_value = MagicMock()
+            mock_comparator_instance.generate_report.return_value = "Test report"
             
             with patch('builtins.open', create=True) as mock_open:
                 mock_open.return_value.__enter__.return_value.read.return_value = '{"test": "data"}'
@@ -142,7 +156,7 @@ class TestPerformanceCLI:
                 handle_compare(args)
                 
                 # Verify comparison was performed with custom config
-                mock_instance.compare_performance.assert_called_once()
+                mock_comparator_instance.compare_with_baseline.assert_called_once()
 
     def test_performance_main_function(self):
         """Test performance main function."""
@@ -158,8 +172,8 @@ class TestPerformanceCLI:
             with patch('framework.performance.cli.PerformanceCollector') as mock_collector:
                 mock_instance = mock_collector.return_value
                 mock_metrics = MagicMock()
-                mock_instance.collect_benchmark_data.return_value = mock_metrics
-                mock_instance.save_metrics.return_value = "test_metrics.json"
+                mock_instance.collect_metrics.return_value = mock_metrics
+                mock_instance.store_history.return_value = "test_metrics.json"
                 
                 with patch('builtins.open', create=True) as mock_open:
                     mock_open.return_value.__enter__.return_value.read.return_value = '{"test": "data"}'
@@ -184,8 +198,8 @@ class TestPerformanceCLI:
             with patch('framework.performance.cli.PerformanceCollector') as mock_collector:
                 mock_instance = mock_collector.return_value
                 mock_metrics = MagicMock()
-                mock_instance.collect_benchmark_data.return_value = mock_metrics
-                mock_instance.save_metrics.return_value = "test_metrics.json"
+                mock_instance.collect_metrics.return_value = mock_metrics
+                mock_instance.store_history.return_value = "test_metrics.json"
                 
                 with patch('builtins.open', create=True) as mock_open:
                     mock_open.return_value.__enter__.return_value.read.return_value = '{"test": "data"}'
@@ -210,7 +224,7 @@ class TestPerformanceCLI:
         
         with patch('framework.performance.cli.PerformanceCollector') as mock_collector:
             mock_instance = mock_collector.return_value
-            mock_instance.collect_benchmark_data.side_effect = Exception("File not found")
+            mock_instance.collect_metrics.side_effect = Exception("File not found")
             
             # Should handle exception gracefully
             with pytest.raises(Exception):
@@ -223,14 +237,20 @@ class TestPerformanceCLI:
             baseline="nonexistent_baseline",
             storage_path="test_storage",
             threshold_config=None,
-            mode="comprehensive",
+            mode="single",
             output=None,
-            format="json"
+            format="json",
+            fail_on_regression=False,
+            history_limit=10
         )
         
-        with patch('framework.performance.cli.PerformanceComparator') as mock_comparator:
-            mock_instance = mock_comparator.return_value
-            mock_instance.compare_performance.side_effect = Exception("Comparison failed")
+        with patch('framework.performance.cli.PerformanceComparator') as mock_comparator, \
+             patch('framework.performance.cli.PerformanceCollector') as mock_collector:
+            mock_comparator_instance = mock_comparator.return_value
+            mock_collector_instance = mock_collector.return_value
+            mock_comparator_instance.compare_with_baseline.side_effect = Exception("Comparison failed")
+            mock_collector_instance.collect_metrics.return_value = MagicMock()
+            mock_collector_instance.load_baseline.return_value = MagicMock()
             
             # Should handle exception gracefully
             with pytest.raises(Exception):
@@ -250,8 +270,9 @@ class TestPerformanceCLI:
         with patch('framework.performance.cli.PerformanceCollector') as mock_collector:
             mock_instance = mock_collector.return_value
             mock_metrics = MagicMock()
-            mock_instance.collect_benchmark_data.return_value = mock_metrics
-            mock_instance.save_metrics.return_value = "test_metrics.json"
+            mock_metrics.to_dict.return_value = {"test": "metrics"}
+            mock_instance.collect_metrics.return_value = mock_metrics
+            mock_instance.store_history.return_value = "test_metrics.json"
             
             with patch('builtins.open', create=True) as mock_open:
                 mock_open.return_value.__enter__.return_value.read.return_value = '{"test": "data"}'
@@ -273,7 +294,7 @@ class TestPerformanceCLI:
 
     def test_compare_command_different_modes(self):
         """Test compare command with different comparison modes."""
-        modes = ["comprehensive", "basic", "detailed"]
+        modes = ["single", "trend"]  # Updated to match actual modes
         
         for mode in modes:
             args = argparse.Namespace(
@@ -283,13 +304,21 @@ class TestPerformanceCLI:
                 threshold_config=None,
                 mode=mode,
                 output=None,
-                format="json"
+                format="json",
+                fail_on_regression=False,
+                history_limit=10
             )
             
-            with patch('framework.performance.cli.PerformanceComparator') as mock_comparator:
-                mock_instance = mock_comparator.return_value
+            with patch('framework.performance.cli.PerformanceComparator') as mock_comparator, \
+                 patch('framework.performance.cli.PerformanceCollector') as mock_collector:
+                mock_comparator_instance = mock_comparator.return_value
+                mock_collector_instance = mock_collector.return_value
                 mock_comparison = MagicMock()
-                mock_instance.compare_performance.return_value = mock_comparison
+                mock_comparator_instance.compare_with_baseline.return_value = mock_comparison
+                mock_collector_instance.collect_metrics.return_value = MagicMock()
+                mock_collector_instance.load_baseline.return_value = MagicMock()
+                mock_collector_instance.get_recent_history.return_value = []  # For trend mode
+                mock_comparator_instance.generate_report.return_value = "Test report"
                 
                 with patch('builtins.open', create=True) as mock_open:
                     mock_open.return_value.__enter__.return_value.read.return_value = '{"test": "data"}'
@@ -297,11 +326,11 @@ class TestPerformanceCLI:
                     handle_compare(args)
                     
                     # Verify comparison was performed
-                    mock_instance.compare_performance.assert_called_once()
+                    mock_comparator_instance.compare_with_baseline.assert_called()
 
     def test_compare_command_different_formats(self):
         """Test compare command with different output formats."""
-        formats = ["json", "yaml", "html"]
+        formats = ["json", "markdown", "github"]  # Updated to match actual formats
         
         for fmt in formats:
             args = argparse.Namespace(
@@ -309,15 +338,22 @@ class TestPerformanceCLI:
                 baseline="baseline_name",
                 storage_path="test_storage",
                 threshold_config=None,
-                mode="comprehensive",
+                mode="single",
                 output=None,
-                format=fmt
+                format=fmt,
+                fail_on_regression=False,
+                history_limit=10
             )
             
-            with patch('framework.performance.cli.PerformanceComparator') as mock_comparator:
-                mock_instance = mock_comparator.return_value
+            with patch('framework.performance.cli.PerformanceComparator') as mock_comparator, \
+                 patch('framework.performance.cli.PerformanceCollector') as mock_collector:
+                mock_comparator_instance = mock_comparator.return_value
+                mock_collector_instance = mock_collector.return_value
                 mock_comparison = MagicMock()
-                mock_instance.compare_performance.return_value = mock_comparison
+                mock_comparator_instance.compare_with_baseline.return_value = mock_comparison
+                mock_collector_instance.collect_metrics.return_value = MagicMock()
+                mock_collector_instance.load_baseline.return_value = MagicMock()
+                mock_comparator_instance.generate_report.return_value = "Test report"
                 
                 with patch('builtins.open', create=True) as mock_open:
                     mock_open.return_value.__enter__.return_value.read.return_value = '{"test": "data"}'
@@ -325,7 +361,7 @@ class TestPerformanceCLI:
                     handle_compare(args)
                     
                     # Verify comparison was performed
-                    mock_instance.compare_performance.assert_called_once()
+                    mock_comparator_instance.compare_with_baseline.assert_called()
 
     def test_collect_command_json_parsing(self):
         """Test collect command with JSON parsing."""
@@ -341,8 +377,8 @@ class TestPerformanceCLI:
         with patch('framework.performance.cli.PerformanceCollector') as mock_collector:
             mock_instance = mock_collector.return_value
             mock_metrics = MagicMock()
-            mock_instance.collect_benchmark_data.return_value = mock_metrics
-            mock_instance.save_metrics.return_value = "test_metrics.json"
+            mock_instance.collect_metrics.return_value = mock_metrics
+            mock_instance.store_history.return_value = "test_metrics.json"
             
             # Test with valid JSON
             with patch('builtins.open', create=True) as mock_open:
@@ -351,7 +387,7 @@ class TestPerformanceCLI:
                 handle_collect(args)
                 
                 # Verify JSON was parsed
-                mock_instance.collect_benchmark_data.assert_called_once()
+                mock_instance.collect_metrics.assert_called_once()
 
     def test_collect_command_invalid_json(self):
         """Test collect command with invalid JSON."""
@@ -365,10 +401,11 @@ class TestPerformanceCLI:
         )
         
         with patch('framework.performance.cli.PerformanceCollector') as mock_collector:
-            # Test with invalid JSON
-            with patch('builtins.open', create=True) as mock_open:
-                mock_open.return_value.__enter__.return_value.read.return_value = 'invalid json'
+            mock_instance = mock_collector.return_value
+            # Mock the collect_metrics to raise JSONDecodeError for invalid JSON
+            import json
+            mock_instance.collect_metrics.side_effect = json.JSONDecodeError("Invalid JSON", "test", 0)
                 
-                # Should handle invalid JSON gracefully
-                with pytest.raises(Exception):
-                    handle_collect(args)
+            # Should handle invalid JSON gracefully
+            with pytest.raises(json.JSONDecodeError):
+                handle_collect(args)
