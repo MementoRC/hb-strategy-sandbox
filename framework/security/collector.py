@@ -22,15 +22,15 @@ class SecurityCollector:
                          Defaults to 'security_data' in current directory.
         """
         self.storage_path = Path(storage_path or "security_data")
-        self.storage_path.mkdir(exist_ok=True)
+        self.storage_path.mkdir(parents=True, exist_ok=True)
 
         # Initialize baseline storage
         self.baseline_path = self.storage_path / "baselines"
-        self.baseline_path.mkdir(exist_ok=True)
+        self.baseline_path.mkdir(parents=True, exist_ok=True)
 
         # Initialize history storage
         self.history_path = self.storage_path / "history"
-        self.history_path.mkdir(exist_ok=True)
+        self.history_path.mkdir(parents=True, exist_ok=True)
 
     def collect_environment_info(self) -> dict[str, str]:
         """Collect current environment information."""
@@ -183,13 +183,23 @@ class SecurityCollector:
             Path to the saved file.
         """
         if filename is None:
-            timestamp = metrics.timestamp.strftime("%Y%m%d_%H%M%S")
-            filename = f"security_metrics_{timestamp}_{metrics.build_id}.json"
+            # Handle both SecurityMetrics objects and dicts
+            if hasattr(metrics, 'timestamp'):
+                timestamp = metrics.timestamp.strftime("%Y%m%d_%H%M%S")
+                build_id = metrics.build_id
+            else:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                build_id = metrics.get('build_id', 'unknown')
+            filename = f"security_metrics_{timestamp}_{build_id}.json"
 
         file_path = self.history_path / filename
 
         with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(metrics.to_dict(), f, indent=2, default=str)
+            # Handle both SecurityMetrics objects and raw dicts
+            if hasattr(metrics, 'to_dict'):
+                json.dump(metrics.to_dict(), f, indent=2, default=str)
+            else:
+                json.dump(metrics, f, indent=2, default=str)
 
         return file_path
 
@@ -221,7 +231,11 @@ class SecurityCollector:
         file_path = self.baseline_path / filename
 
         with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(metrics.to_dict(), f, indent=2, default=str)
+            # Handle both SecurityMetrics objects and raw dicts for backwards compatibility
+            if hasattr(metrics, 'to_dict'):
+                json.dump(metrics.to_dict(), f, indent=2, default=str)
+            else:
+                json.dump(metrics, f, indent=2, default=str)
 
         return file_path
 
@@ -258,17 +272,25 @@ class SecurityCollector:
         if baseline is None:
             return None
 
-        current_stats = current_metrics.calculate_summary_stats()
-        baseline_stats = baseline.calculate_summary_stats()
+        # Handle both SecurityMetrics objects and raw dicts for backwards compatibility
+        if hasattr(current_metrics, 'calculate_summary_stats'):
+            current_stats = current_metrics.calculate_summary_stats()
+        else:
+            current_stats = current_metrics  # Assume it's already stats
+            
+        if hasattr(baseline, 'calculate_summary_stats'):
+            baseline_stats = baseline.calculate_summary_stats()
+        else:
+            baseline_stats = baseline  # Assume it's already stats
 
         comparison: dict[str, Any] = {
             "baseline_info": {
-                "build_id": baseline.build_id,
-                "timestamp": baseline.timestamp.isoformat(),
+                "build_id": getattr(baseline, 'build_id', baseline.get('build_id', 'unknown')),
+                "timestamp": getattr(baseline, 'timestamp', baseline.get('timestamp', 'unknown')),
             },
             "current_info": {
-                "build_id": current_metrics.build_id,
-                "timestamp": current_metrics.timestamp.isoformat(),
+                "build_id": getattr(current_metrics, 'build_id', current_metrics.get('build_id', 'unknown')) if hasattr(current_metrics, 'get') else getattr(current_metrics, 'build_id', 'unknown'),
+                "timestamp": getattr(current_metrics, 'timestamp', current_metrics.get('timestamp', 'unknown')) if hasattr(current_metrics, 'get') else getattr(current_metrics, 'timestamp', 'unknown'),
             },
             "changes": {},
             "new_vulnerabilities": [],
@@ -296,13 +318,19 @@ class SecurityCollector:
         current_vulns = set()
         baseline_vulns = set()
 
-        for dep in current_metrics.dependencies:
-            for vuln in dep.vulnerabilities:
-                current_vulns.add((dep.name, vuln.id))
+        # Handle dependencies for both SecurityMetrics objects and dicts
+        current_deps = getattr(current_metrics, 'dependencies', current_metrics.get('dependencies', [])) if hasattr(current_metrics, 'get') else getattr(current_metrics, 'dependencies', [])
+        baseline_deps = getattr(baseline, 'dependencies', baseline.get('dependencies', [])) if hasattr(baseline, 'get') else getattr(baseline, 'dependencies', [])
 
-        for dep in baseline.dependencies:
-            for vuln in dep.vulnerabilities:
-                baseline_vulns.add((dep.name, vuln.id))
+        for dep in current_deps:
+            if hasattr(dep, 'vulnerabilities'):
+                for vuln in dep.vulnerabilities:
+                    current_vulns.add((dep.name, vuln.id))
+
+        for dep in baseline_deps:
+            if hasattr(dep, 'vulnerabilities'):
+                for vuln in dep.vulnerabilities:
+                    baseline_vulns.add((dep.name, vuln.id))
 
         # Find new and resolved vulnerabilities
         new_vulns = current_vulns - baseline_vulns
@@ -331,8 +359,15 @@ class SecurityCollector:
         Returns:
             Complete security report data.
         """
-        # Perform security scan
-        metrics = self.scan_project_security(project_path)
+        # Perform security scan or use provided data
+        if isinstance(project_path, dict):
+            # If a dict is passed, treat it as scan data
+            metrics = project_path
+            project_path_str = project_path.get('project_path', 'unknown')
+        else:
+            # Normal path-based scanning
+            metrics = self.scan_project_security(project_path)
+            project_path_str = str(project_path)
 
         # Save current metrics
         metrics_file = self.save_metrics(metrics)
@@ -341,8 +376,8 @@ class SecurityCollector:
         report = {
             "report_type": "security_scan",
             "generated_at": datetime.now().isoformat(),
-            "project_path": str(project_path),
-            "scan_results": metrics.to_dict(),
+            "project_path": project_path_str,
+            "scan_results": metrics.to_dict() if hasattr(metrics, 'to_dict') else metrics,
             "metrics_file": str(metrics_file),
         }
 
