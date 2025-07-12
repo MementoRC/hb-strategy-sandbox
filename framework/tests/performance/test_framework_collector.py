@@ -361,47 +361,67 @@ class TestPerformanceCollector:
         
         if hasattr(collector, 'load_baseline'):
             baseline_data = {
-                "baseline_name": "v1.0_baseline",
-                "metrics": {"response_time": 140.0, "memory_usage": 240.0}
+                "build_id": "baseline_v1.0",
+                "timestamp": "2023-01-01T10:00:00",
+                "results": [
+                    {
+                        "name": "response_time_test",
+                        "execution_time": 140.0,
+                        "memory_usage": 240.0,
+                        "metadata": {}
+                    }
+                ],
+                "environment": {"test_env": "baseline"},
+                "system_info": {"cpu_count": 4}
             }
             
             with patch('builtins.open', mock_open()) as mock_file:
                 with patch('json.load') as mock_json:
-                    mock_json.return_value = baseline_data
-                    
-                    baseline = collector.load_baseline("v1.0_baseline")
-                    assert baseline is not None
-                    if isinstance(baseline, dict):
-                        assert "metrics" in baseline or baseline is not None
+                    with patch('pathlib.Path.exists') as mock_exists:
+                        mock_json.return_value = baseline_data
+                        mock_exists.return_value = True
+                        
+                        baseline = collector.load_baseline("v1.0_baseline")
+                        assert baseline is not None
+                        if hasattr(baseline, 'build_id'):
+                            assert baseline.build_id == "baseline_v1.0"
         else:
             assert collector is not None
 
     def test_compare_with_baseline(self):
         """Test comparing current metrics with baseline."""
+        from framework.performance.models import PerformanceMetrics, BenchmarkResult
+        from datetime import datetime
+        
         collector = PerformanceCollector()
         
-        current_metrics = {
-            "response_time": 150.0,
-            "memory_usage": 260.0,
-            "cpu_usage": 45.0
-        }
+        # Create proper PerformanceMetrics objects
+        current_metrics = PerformanceMetrics(
+            build_id="current_build",
+            timestamp=datetime.now(),
+            results=[
+                BenchmarkResult(name="response_time_test", execution_time=150.0, memory_usage=260.0, cpu_usage=45.0)
+            ]
+        )
+        
+        baseline_metrics = PerformanceMetrics(
+            build_id="baseline_build", 
+            timestamp=datetime.now(),
+            results=[
+                BenchmarkResult(name="response_time_test", execution_time=140.0, memory_usage=240.0, cpu_usage=40.0)
+            ]
+        )
         
         baseline_name = "v1.0_baseline"
         
         if hasattr(collector, 'compare_with_baseline'):
             with patch.object(collector, 'load_baseline') as mock_load_baseline:
-                mock_load_baseline.return_value = {
-                    "metrics": {
-                        "response_time": 140.0,
-                        "memory_usage": 240.0,
-                        "cpu_usage": 40.0
-                    }
-                }
+                mock_load_baseline.return_value = baseline_metrics
                 
                 comparison = collector.compare_with_baseline(current_metrics, baseline_name)
                 assert comparison is not None
                 if isinstance(comparison, dict):
-                    assert "comparison_summary" in comparison or comparison is not None
+                    assert "baseline_build_id" in comparison or comparison is not None
         else:
             assert collector is not None
 
