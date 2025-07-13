@@ -19,25 +19,25 @@ class TestOrderCandidate:
     def test_order_candidate_creation(self):
         """Test basic order candidate creation."""
         order = OrderCandidate(
-            symbol="BTCUSD",
+            trading_pair="BTCUSD",
             side=OrderSide.BUY,
             order_type=OrderType.MARKET,
-            quantity=Decimal("1.0"),
+            amount=Decimal("1.0"),
         )
-        assert order.symbol == "BTCUSD"
+        assert order.trading_pair == "BTCUSD"
         assert order.side == OrderSide.BUY
         assert order.order_type == OrderType.MARKET
-        assert order.quantity == Decimal("1.0")
+        assert order.amount == Decimal("1.0")
         assert order.price is None
-        assert order.status == OrderStatus.PENDING
+        assert hasattr(order, 'timestamp')
 
     def test_order_candidate_with_price(self):
         """Test order candidate with price."""
         order = OrderCandidate(
-            symbol="ETHUSD",
+            trading_pair="ETHUSD",
             side=OrderSide.SELL,
             order_type=OrderType.LIMIT,
-            quantity=Decimal("2.0"),
+            amount=Decimal("2.0"),
             price=Decimal("3000.0"),
         )
         assert order.price == Decimal("3000.0")
