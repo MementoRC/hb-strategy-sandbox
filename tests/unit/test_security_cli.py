@@ -174,7 +174,7 @@ class TestSecurityCLI:
         ) as mock_collector_class:
             mock_collector_class.side_effect = Exception("Test exception")
 
-            with pytest.raises(Exception):
+            with pytest.raises(SystemExit):
                 scan_command(sample_args)
 
     def test_report_command_basic(self, temp_dir):

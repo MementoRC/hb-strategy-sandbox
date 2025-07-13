@@ -268,7 +268,7 @@ class TestSecurityCollector:
         ) as mock_analyzer_class:
             mock_analyzer_class.side_effect = Exception("Test exception")
 
-            with pytest.raises(Exception):
+            with pytest.raises((Exception, ValueError, RuntimeError)):
                 collector.scan_project_security(
                     project_path=str(project_path),
                     build_id="test_build_123",

@@ -46,66 +46,84 @@ class TestMaintenanceCLI:
 
     def test_main_health_summary(self):
         """Test main function with health summary command."""
-        with unittest.mock.patch("sys.argv", ["cli.py", "health", "--summary"]):
-            with unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"):
-                with pytest.raises(SystemExit):
-                    main()
+        with (
+            unittest.mock.patch("sys.argv", ["cli.py", "health", "--summary"]),
+            unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"),
+            pytest.raises(SystemExit)
+        ):
+            main()
 
     def test_main_health_collect(self):
         """Test main function with health collect command."""
-        with unittest.mock.patch("sys.argv", ["cli.py", "health", "--collect"]):
-            with unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"):
-                with pytest.raises(SystemExit):
-                    main()
+        with (
+            unittest.mock.patch("sys.argv", ["cli.py", "health", "--collect"]),
+            unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"),
+            pytest.raises(SystemExit)
+        ):
+            main()
 
     def test_main_health_diagnostics(self):
         """Test main function with health diagnostics command."""
-        with unittest.mock.patch("sys.argv", ["cli.py", "health", "--diagnostics"]):
-            with unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"):
-                with pytest.raises(SystemExit):
-                    main()
+        with (
+            unittest.mock.patch("sys.argv", ["cli.py", "health", "--diagnostics"]),
+            unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"),
+            pytest.raises(SystemExit)
+        ):
+            main()
 
     def test_main_tasks_list(self):
         """Test main function with tasks list command."""
-        with unittest.mock.patch("sys.argv", ["cli.py", "tasks", "--list"]):
-            with unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"):
-                with pytest.raises(SystemExit):
-                    main()
+        with (
+            unittest.mock.patch("sys.argv", ["cli.py", "tasks", "--list"]),
+            unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
+            pytest.raises(SystemExit)
+        ):
+            main()
 
     def test_main_tasks_run(self):
         """Test main function with tasks run command."""
-        with unittest.mock.patch("sys.argv", ["cli.py", "tasks", "--run", "health_check"]):
-            with unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"):
-                with pytest.raises(SystemExit):
-                    main()
+        with (
+            unittest.mock.patch("sys.argv", ["cli.py", "tasks", "--run", "health_check"]),
+            unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
+            pytest.raises(SystemExit)
+        ):
+            main()
 
     def test_main_tasks_run_pending(self):
         """Test main function with tasks run-pending command."""
-        with unittest.mock.patch("sys.argv", ["cli.py", "tasks", "--run-pending"]):
-            with unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"):
-                with pytest.raises(SystemExit):
-                    main()
+        with (
+            unittest.mock.patch("sys.argv", ["cli.py", "tasks", "--run-pending"]),
+            unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
+            pytest.raises(SystemExit)
+        ):
+            main()
 
     def test_main_maintenance_perform(self):
         """Test main function with maintenance perform command."""
-        with unittest.mock.patch("sys.argv", ["cli.py", "maintenance", "--perform"]):
-            with unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"):
-                with pytest.raises(SystemExit):
-                    main()
+        with (
+            unittest.mock.patch("sys.argv", ["cli.py", "maintenance", "--perform"]),
+            unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
+            pytest.raises(SystemExit)
+        ):
+            main()
 
     def test_main_maintenance_dry_run(self):
         """Test main function with maintenance dry run command."""
-        with unittest.mock.patch("sys.argv", ["cli.py", "maintenance", "--perform", "--dry-run"]):
-            with unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"):
-                with pytest.raises(SystemExit):
-                    main()
+        with (
+            unittest.mock.patch("sys.argv", ["cli.py", "maintenance", "--perform", "--dry-run"]),
+            unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
+            pytest.raises(SystemExit)
+        ):
+            main()
 
     def test_main_config_show(self):
         """Test main function with config show command."""
-        with unittest.mock.patch("sys.argv", ["cli.py", "config", "--show"]):
-            with unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"):
-                with pytest.raises(SystemExit):
-                    main()
+        with (
+            unittest.mock.patch("sys.argv", ["cli.py", "config", "--show"]),
+            unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
+            pytest.raises(SystemExit)
+        ):
+            main()
 
     def test_main_exception_handling(self):
         """Test main function handles unexpected exceptions gracefully."""
