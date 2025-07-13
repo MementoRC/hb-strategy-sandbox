@@ -29,7 +29,7 @@ class TestOrderCandidate:
         assert order.order_type == OrderType.MARKET
         assert order.amount == Decimal("1.0")
         assert order.price is None
-        assert hasattr(order, 'timestamp')
+        assert hasattr(order, "timestamp")
 
     def test_order_candidate_with_price(self):
         """Test order candidate with price."""

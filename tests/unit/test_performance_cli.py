@@ -62,17 +62,16 @@ class TestPerformanceCLI:
                 "--storage-path",
                 str(storage_path),
             ],
-        ):
-            with unittest.mock.patch(
-                "strategy_sandbox.performance.cli.PerformanceCollector"
-            ) as mock_collector:
-                mock_instance = mock_collector.return_value
-                mock_instance.collect_benchmark_data.return_value = {"test": "data"}
+        ), unittest.mock.patch(
+            "strategy_sandbox.performance.cli.PerformanceCollector"
+        ) as mock_collector:
+            mock_instance = mock_collector.return_value
+            mock_instance.collect_benchmark_data.return_value = {"test": "data"}
 
-                main()
+            main()
 
-                mock_collector.assert_called_once_with(str(storage_path))
-                mock_instance.collect_benchmark_data.assert_called_once()
+            mock_collector.assert_called_once_with(str(storage_path))
+            mock_instance.collect_benchmark_data.assert_called_once()
 
     def test_main_collect_with_baseline(self, temp_dir, sample_results_file):
         """Test main function with collect command storing baseline."""
@@ -91,19 +90,18 @@ class TestPerformanceCLI:
                 "--baseline-name",
                 "test_baseline",
             ],
-        ):
-            with unittest.mock.patch(
-                "strategy_sandbox.performance.cli.PerformanceCollector"
-            ) as mock_collector:
-                mock_instance = mock_collector.return_value
-                mock_instance.collect_benchmark_data.return_value = {"test": "data"}
+        ), unittest.mock.patch(
+            "strategy_sandbox.performance.cli.PerformanceCollector"
+        ) as mock_collector:
+            mock_instance = mock_collector.return_value
+            mock_instance.collect_benchmark_data.return_value = {"test": "data"}
 
-                main()
+            main()
 
-                mock_instance.collect_benchmark_data.assert_called_once()
-                mock_instance.store_baseline.assert_called_once_with(
-                    {"test": "data"}, "test_baseline"
-                )
+            mock_instance.collect_benchmark_data.assert_called_once()
+            mock_instance.store_baseline.assert_called_once_with(
+                {"test": "data"}, "test_baseline"
+            )
 
     def test_main_collect_with_comparison(self, temp_dir, sample_results_file):
         """Test main function with collect command and baseline comparison."""
@@ -121,20 +119,19 @@ class TestPerformanceCLI:
                 "--compare-baseline",
                 "test_baseline",
             ],
-        ):
-            with unittest.mock.patch(
-                "strategy_sandbox.performance.cli.PerformanceCollector"
-            ) as mock_collector:
-                mock_instance = mock_collector.return_value
-                mock_instance.collect_benchmark_data.return_value = {"test": "data"}
-                mock_instance.compare_with_baseline.return_value = {"comparison": "result"}
+        ), unittest.mock.patch(
+            "strategy_sandbox.performance.cli.PerformanceCollector"
+        ) as mock_collector:
+            mock_instance = mock_collector.return_value
+            mock_instance.collect_benchmark_data.return_value = {"test": "data"}
+            mock_instance.compare_with_baseline.return_value = {"comparison": "result"}
 
-                main()
+            main()
 
-                mock_instance.collect_benchmark_data.assert_called_once()
-                mock_instance.compare_with_baseline.assert_called_once_with(
-                    {"test": "data"}, "test_baseline"
-                )
+            mock_instance.collect_benchmark_data.assert_called_once()
+            mock_instance.compare_with_baseline.assert_called_once_with(
+                {"test": "data"}, "test_baseline"
+            )
 
     def test_main_collect_with_output(self, temp_dir, sample_results_file):
         """Test main function with collect command and output file."""
@@ -153,17 +150,16 @@ class TestPerformanceCLI:
                 "--output",
                 str(output_file),
             ],
-        ):
-            with unittest.mock.patch(
-                "strategy_sandbox.performance.cli.PerformanceCollector"
-            ) as mock_collector:
-                mock_instance = mock_collector.return_value
-                mock_instance.collect_benchmark_data.return_value = {"test": "data"}
+        ), unittest.mock.patch(
+            "strategy_sandbox.performance.cli.PerformanceCollector"
+        ) as mock_collector:
+            mock_instance = mock_collector.return_value
+            mock_instance.collect_benchmark_data.return_value = {"test": "data"}
 
-                with unittest.mock.patch("builtins.open", unittest.mock.mock_open()) as mock_file:
-                    main()
+            with unittest.mock.patch("builtins.open", unittest.mock.mock_open()) as mock_file:
+                main()
 
-                    mock_file.assert_called_once_with(str(output_file), "w")
+                mock_file.assert_called_once_with(str(output_file), "w")
 
     def test_main_compare_command(self, temp_dir):
         """Test main function with compare command."""
@@ -178,17 +174,16 @@ class TestPerformanceCLI:
         with unittest.mock.patch(
             "sys.argv",
             ["cli.py", "compare", "--current", str(results1), "--baseline", str(results2)],
-        ):
-            with unittest.mock.patch(
-                "strategy_sandbox.performance.cli.PerformanceComparator"
-            ) as mock_comparator:
-                mock_instance = mock_comparator.return_value
-                mock_instance.compare.return_value = {"comparison": "result"}
+        ), unittest.mock.patch(
+            "strategy_sandbox.performance.cli.PerformanceComparator"
+        ) as mock_comparator:
+            mock_instance = mock_comparator.return_value
+            mock_instance.compare.return_value = {"comparison": "result"}
 
-                main()
+            main()
 
-                mock_comparator.assert_called_once()
-                mock_instance.compare.assert_called_once()
+            mock_comparator.assert_called_once()
+            mock_instance.compare.assert_called_once()
 
     def test_main_compare_with_mode(self, temp_dir):
         """Test main function with compare command and specific mode."""
@@ -212,16 +207,15 @@ class TestPerformanceCLI:
                 "--mode",
                 "statistical",
             ],
-        ):
-            with unittest.mock.patch(
-                "strategy_sandbox.performance.cli.PerformanceComparator"
-            ) as mock_comparator:
-                mock_instance = mock_comparator.return_value
-                mock_instance.compare.return_value = {"comparison": "result"}
+        ), unittest.mock.patch(
+            "strategy_sandbox.performance.cli.PerformanceComparator"
+        ) as mock_comparator:
+            mock_instance = mock_comparator.return_value
+            mock_instance.compare.return_value = {"comparison": "result"}
 
-                main()
+            main()
 
-                mock_comparator.assert_called_once()
+            mock_comparator.assert_called_once()
 
     def test_main_baseline_command(self, temp_dir, sample_results_file):
         """Test main function with baseline command."""
@@ -239,18 +233,17 @@ class TestPerformanceCLI:
                 "--name",
                 "test_baseline",
             ],
-        ):
-            with unittest.mock.patch(
-                "strategy_sandbox.performance.cli.PerformanceCollector"
-            ) as mock_collector:
-                mock_instance = mock_collector.return_value
-                mock_instance.collect_benchmark_data.return_value = {"test": "data"}
+        ), unittest.mock.patch(
+            "strategy_sandbox.performance.cli.PerformanceCollector"
+        ) as mock_collector:
+            mock_instance = mock_collector.return_value
+            mock_instance.collect_benchmark_data.return_value = {"test": "data"}
 
-                main()
+            main()
 
-                mock_instance.store_baseline.assert_called_once_with(
-                    {"test": "data"}, "test_baseline"
-                )
+            mock_instance.store_baseline.assert_called_once_with(
+                {"test": "data"}, "test_baseline"
+            )
 
     def test_main_history_command(self, temp_dir):
         """Test main function with history command."""
@@ -258,16 +251,15 @@ class TestPerformanceCLI:
 
         with unittest.mock.patch(
             "sys.argv", ["cli.py", "history", "--storage-path", str(storage_path)]
-        ):
-            with unittest.mock.patch(
-                "strategy_sandbox.performance.cli.PerformanceCollector"
-            ) as mock_collector:
-                mock_instance = mock_collector.return_value
-                mock_instance.get_historical_data.return_value = []
+        ), unittest.mock.patch(
+            "strategy_sandbox.performance.cli.PerformanceCollector"
+        ) as mock_collector:
+            mock_instance = mock_collector.return_value
+            mock_instance.get_historical_data.return_value = []
 
-                main()
+            main()
 
-                mock_instance.get_historical_data.assert_called_once()
+            mock_instance.get_historical_data.assert_called_once()
 
     def test_main_history_with_baseline_filter(self, temp_dir):
         """Test main function with history command and baseline filter."""
@@ -283,16 +275,15 @@ class TestPerformanceCLI:
                 "--baseline-name",
                 "test_baseline",
             ],
-        ):
-            with unittest.mock.patch(
-                "strategy_sandbox.performance.cli.PerformanceCollector"
-            ) as mock_collector:
-                mock_instance = mock_collector.return_value
-                mock_instance.get_historical_data.return_value = []
+        ), unittest.mock.patch(
+            "strategy_sandbox.performance.cli.PerformanceCollector"
+        ) as mock_collector:
+            mock_instance = mock_collector.return_value
+            mock_instance.get_historical_data.return_value = []
 
-                main()
+            main()
 
-                mock_instance.get_historical_data.assert_called_once_with("test_baseline")
+            mock_instance.get_historical_data.assert_called_once_with("test_baseline")
 
     def test_main_file_not_found_error(self, temp_dir):
         """Test main function handles file not found errors gracefully."""
@@ -322,12 +313,11 @@ class TestPerformanceCLI:
         """Test main function handles unexpected exceptions gracefully."""
         with unittest.mock.patch(
             "sys.argv", ["cli.py", "collect", "--results", str(sample_results_file)]
-        ):
-            with unittest.mock.patch(
-                "strategy_sandbox.performance.cli.PerformanceCollector"
-            ) as mock_collector:
-                mock_collector.side_effect = Exception("Test exception")
+        ), unittest.mock.patch(
+            "strategy_sandbox.performance.cli.PerformanceCollector"
+        ) as mock_collector:
+            mock_collector.side_effect = Exception("Test exception")
 
-                with pytest.raises(SystemExit) as exc_info:
-                    main()
-                assert exc_info.value.code == 1
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+            assert exc_info.value.code == 1

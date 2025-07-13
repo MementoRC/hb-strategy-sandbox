@@ -49,7 +49,7 @@ class TestMaintenanceCLI:
         with (
             unittest.mock.patch("sys.argv", ["cli.py", "health", "--summary"]),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
 
@@ -58,7 +58,7 @@ class TestMaintenanceCLI:
         with (
             unittest.mock.patch("sys.argv", ["cli.py", "health", "--collect"]),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
 
@@ -67,7 +67,7 @@ class TestMaintenanceCLI:
         with (
             unittest.mock.patch("sys.argv", ["cli.py", "health", "--diagnostics"]),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
 
@@ -76,7 +76,7 @@ class TestMaintenanceCLI:
         with (
             unittest.mock.patch("sys.argv", ["cli.py", "tasks", "--list"]),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
 
@@ -85,7 +85,7 @@ class TestMaintenanceCLI:
         with (
             unittest.mock.patch("sys.argv", ["cli.py", "tasks", "--run", "health_check"]),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
 
@@ -94,7 +94,7 @@ class TestMaintenanceCLI:
         with (
             unittest.mock.patch("sys.argv", ["cli.py", "tasks", "--run-pending"]),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
 
@@ -103,7 +103,7 @@ class TestMaintenanceCLI:
         with (
             unittest.mock.patch("sys.argv", ["cli.py", "maintenance", "--perform"]),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
 
@@ -112,7 +112,7 @@ class TestMaintenanceCLI:
         with (
             unittest.mock.patch("sys.argv", ["cli.py", "maintenance", "--perform", "--dry-run"]),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
 
@@ -121,21 +121,22 @@ class TestMaintenanceCLI:
         with (
             unittest.mock.patch("sys.argv", ["cli.py", "config", "--show"]),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
 
     def test_main_exception_handling(self):
         """Test main function handles unexpected exceptions gracefully."""
-        with unittest.mock.patch("sys.argv", ["cli.py", "health", "--summary"]):
-            with unittest.mock.patch(
+        with (
+            unittest.mock.patch("sys.argv", ["cli.py", "health", "--summary"]),
+            unittest.mock.patch(
                 "strategy_sandbox.maintenance.cli.CIHealthMonitor"
-            ) as mock_monitor:
-                mock_monitor.side_effect = Exception("Test exception")
-
-                with pytest.raises(SystemExit) as exc_info:
-                    main()
-                assert exc_info.value.code == 1
+            ) as mock_monitor,
+            pytest.raises(SystemExit) as exc_info
+        ):
+            mock_monitor.side_effect = Exception("Test exception")
+            main()
+        assert exc_info.value.code == 1
 
     def test_main_invalid_command(self):
         """Test main function with invalid command."""
@@ -151,9 +152,9 @@ class TestMaintenanceCLI:
                 "sys.argv", ["cli.py", "config", "--show", "--config", str(sample_config_file)]
             ),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
+            pytest.raises(SystemExit)
         ):
-            with pytest.raises(SystemExit):
-                main()
+            main()
 
     def test_main_with_custom_project_path(self, temp_dir):
         """Test main function with custom project path."""
@@ -162,9 +163,9 @@ class TestMaintenanceCLI:
                 "sys.argv", ["cli.py", "health", "--summary", "--project-path", str(temp_dir)]
             ),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"),
+            pytest.raises(SystemExit)
         ):
-            with pytest.raises(SystemExit):
-                main()
+            main()
 
     def test_main_with_json_output(self):
         """Test main function with JSON output format."""
@@ -173,6 +174,6 @@ class TestMaintenanceCLI:
                 "sys.argv", ["cli.py", "health", "--summary", "--output-format", "json"]
             ),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"),
+            pytest.raises(SystemExit)
         ):
-            with pytest.raises(SystemExit):
-                main()
+            main()

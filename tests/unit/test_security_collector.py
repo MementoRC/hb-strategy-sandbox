@@ -65,14 +65,16 @@ class TestSecurityCollector:
 
     def test_collect_environment_info(self, collector):
         """Test collect_environment_info method."""
-        with unittest.mock.patch("platform.platform", return_value="Linux-5.4.0"):
-            with unittest.mock.patch("platform.python_version", return_value="3.12.0"):
-                with unittest.mock.patch("platform.node", return_value="test-host"):
-                    env_info = collector.collect_environment_info()
+        with (
+            unittest.mock.patch("platform.platform", return_value="Linux-5.4.0"),
+            unittest.mock.patch("platform.python_version", return_value="3.12.0"),
+            unittest.mock.patch("platform.node", return_value="test-host")
+        ):
+            env_info = collector.collect_environment_info()
 
-                    assert env_info["platform"] == "Linux-5.4.0"
-                    assert env_info["python_version"] == "3.12.0"
-                    assert env_info["hostname"] == "test-host"
+            assert env_info["platform"] == "Linux-5.4.0"
+            assert env_info["python_version"] == "3.12.0"
+            assert env_info["hostname"] == "test-host"
 
     def test_collect_environment_info_with_ci_vars(self, collector):
         """Test collect_environment_info method with CI environment variables."""
@@ -83,16 +85,18 @@ class TestSecurityCollector:
             "GITHUB_REPOSITORY": "user/repo",
         }
 
-        with unittest.mock.patch("platform.platform", return_value="Linux"):
-            with unittest.mock.patch("platform.python_version", return_value="3.12.0"):
-                with unittest.mock.patch("platform.node", return_value="test-host"):
-                    with unittest.mock.patch.dict("os.environ", ci_env):
-                        env_info = collector.collect_environment_info()
+        with (
+            unittest.mock.patch("platform.platform", return_value="Linux"),
+            unittest.mock.patch("platform.python_version", return_value="3.12.0"),
+            unittest.mock.patch("platform.node", return_value="test-host"),
+            unittest.mock.patch.dict("os.environ", ci_env)
+        ):
+            env_info = collector.collect_environment_info()
 
-                        assert env_info["GITHUB_ACTIONS"] == "true"
-                        assert env_info["GITHUB_WORKFLOW"] == "CI"
-                        assert env_info["GITHUB_RUN_ID"] == "123456"
-                        assert env_info["GITHUB_REPOSITORY"] == "user/repo"
+            assert env_info["GITHUB_ACTIONS"] == "true"
+            assert env_info["GITHUB_WORKFLOW"] == "CI"
+            assert env_info["GITHUB_RUN_ID"] == "123456"
+            assert env_info["GITHUB_REPOSITORY"] == "user/repo"
 
     def test_scan_project_security(self, collector, temp_dir):
         """Test scan_project_security method."""
