@@ -1,6 +1,5 @@
 """Test suite for the performance CLI module."""
 
-import argparse
 import json
 import tempfile
 import unittest.mock
@@ -9,8 +8,6 @@ from pathlib import Path
 import pytest
 
 from strategy_sandbox.performance.cli import main
-from strategy_sandbox.performance.collector import PerformanceCollector
-from strategy_sandbox.performance.comparator import ComparisonMode, PerformanceComparator
 
 
 class TestPerformanceCLI:

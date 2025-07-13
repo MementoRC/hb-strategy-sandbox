@@ -1,6 +1,5 @@
 """Test suite for the security models module."""
 
-import time
 from datetime import datetime
 
 import pytest

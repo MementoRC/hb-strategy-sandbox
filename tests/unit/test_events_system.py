@@ -1,9 +1,5 @@
 """Test suite for events system module."""
 
-import asyncio
-
-import pytest
-
 from strategy_sandbox.core.protocols import MarketEvent
 from strategy_sandbox.events.system import SandboxEventSystem
 

@@ -1,7 +1,6 @@
 """Test suite for the security CLI module."""
 
 import argparse
-import json
 import tempfile
 import unittest.mock
 from pathlib import Path
@@ -15,8 +14,6 @@ from strategy_sandbox.security.cli import (
     sbom_command,
     scan_command,
 )
-from strategy_sandbox.security.collector import SecurityCollector
-from strategy_sandbox.security.sbom_generator import SBOMGenerator
 
 
 class TestSecurityCLI:

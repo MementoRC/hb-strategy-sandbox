@@ -1,9 +1,5 @@
 """Basic tests to improve CLI coverage."""
 
-import unittest.mock
-
-import pytest
-
 
 def test_performance_cli_import():
     """Test that performance CLI can be imported."""
@@ -90,8 +86,6 @@ def test_basic_imports():
 
 def test_package_structure():
     """Test package structure imports."""
-    import strategy_sandbox
-
     # Test that main package modules can be imported
     from strategy_sandbox import (
         balance,

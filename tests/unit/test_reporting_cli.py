@@ -1,6 +1,5 @@
 """Test suite for the reporting CLI module."""
 
-import argparse
 import json
 import tempfile
 import unittest.mock
@@ -9,7 +8,6 @@ from pathlib import Path
 import pytest
 
 from strategy_sandbox.reporting.cli import main
-from strategy_sandbox.reporting.github_reporter import GitHubReporter
 
 
 class TestReportingCLI:

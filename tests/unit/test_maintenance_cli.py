@@ -9,8 +9,6 @@ from pathlib import Path
 import pytest
 
 from strategy_sandbox.maintenance.cli import create_parser, main
-from strategy_sandbox.maintenance.health_monitor import CIHealthMonitor
-from strategy_sandbox.maintenance.scheduler import MaintenanceScheduler
 
 
 class TestMaintenanceCLI:
