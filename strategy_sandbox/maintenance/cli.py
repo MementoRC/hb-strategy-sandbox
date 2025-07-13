@@ -294,17 +294,14 @@ def handle_config_command(args, scheduler: MaintenanceScheduler) -> int:
         return 1
 
 
-def main() -> int:
-    """Main entry point for the maintenance CLI.
-
-    :return: The exit code of the application.
-    """
+def main():
+    """Main entry point for the maintenance CLI."""
     parser = create_parser()
     args = parser.parse_args()
 
     if not args.command:
         parser.print_help()
-        return 1
+        sys.exit(0)  # Help should exit with 0, not 1
 
     # Initialize components
     try:
@@ -313,24 +310,24 @@ def main() -> int:
 
         if args.command in ["health"]:
             monitor = CIHealthMonitor(config_path=config_path, project_path=project_path)
-            return handle_health_command(args, monitor)
+            sys.exit(handle_health_command(args, monitor))
 
         else:
             scheduler = MaintenanceScheduler(config_path=config_path, project_path=project_path)
 
             if args.command == "tasks":
-                return handle_tasks_command(args, scheduler)
+                sys.exit(handle_tasks_command(args, scheduler))
             elif args.command == "maintenance":
-                return handle_maintenance_command(args, scheduler)
+                sys.exit(handle_maintenance_command(args, scheduler))
             elif args.command == "config":
-                return handle_config_command(args, scheduler)
+                sys.exit(handle_config_command(args, scheduler))
 
     except Exception as e:
         print(f"Initialization error: {e}", file=sys.stderr)
-        return 1
+        sys.exit(1)
 
-    return 0
+    sys.exit(0)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
