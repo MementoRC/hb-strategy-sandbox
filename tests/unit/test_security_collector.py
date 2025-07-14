@@ -68,7 +68,7 @@ class TestSecurityCollector:
         with (
             unittest.mock.patch("platform.platform", return_value="Linux-5.4.0"),
             unittest.mock.patch("platform.python_version", return_value="3.12.0"),
-            unittest.mock.patch("platform.node", return_value="test-host")
+            unittest.mock.patch("platform.node", return_value="test-host"),
         ):
             env_info = collector.collect_environment_info()
 
@@ -89,7 +89,7 @@ class TestSecurityCollector:
             unittest.mock.patch("platform.platform", return_value="Linux"),
             unittest.mock.patch("platform.python_version", return_value="3.12.0"),
             unittest.mock.patch("platform.node", return_value="test-host"),
-            unittest.mock.patch.dict("os.environ", ci_env)
+            unittest.mock.patch.dict("os.environ", ci_env),
         ):
             env_info = collector.collect_environment_info()
 

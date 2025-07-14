@@ -129,10 +129,8 @@ class TestMaintenanceCLI:
         """Test main function handles unexpected exceptions gracefully."""
         with (
             unittest.mock.patch("sys.argv", ["cli.py", "health", "--summary"]),
-            unittest.mock.patch(
-                "strategy_sandbox.maintenance.cli.CIHealthMonitor"
-            ) as mock_monitor,
-            pytest.raises(SystemExit) as exc_info
+            unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor") as mock_monitor,
+            pytest.raises(SystemExit) as exc_info,
         ):
             mock_monitor.side_effect = Exception("Test exception")
             main()
@@ -152,7 +150,7 @@ class TestMaintenanceCLI:
                 "sys.argv", ["cli.py", "config", "--show", "--config", str(sample_config_file)]
             ),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.MaintenanceScheduler"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
 
@@ -163,7 +161,7 @@ class TestMaintenanceCLI:
                 "sys.argv", ["cli.py", "health", "--summary", "--project-path", str(temp_dir)]
             ),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
 
@@ -174,6 +172,6 @@ class TestMaintenanceCLI:
                 "sys.argv", ["cli.py", "health", "--summary", "--output-format", "json"]
             ),
             unittest.mock.patch("strategy_sandbox.maintenance.cli.CIHealthMonitor"),
-            pytest.raises(SystemExit)
+            pytest.raises(SystemExit),
         ):
             main()
