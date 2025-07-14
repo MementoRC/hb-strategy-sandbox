@@ -2,6 +2,8 @@
 
 A comprehensive testing and simulation framework for Hummingbot trading strategies.
 
+> **🚀 Framework Extraction Complete**: Phase 2 migration completed! Framework components now available in `framework/` package. See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) and [CHANGELOG.md](CHANGELOG.md) for details.
+
 ## Overview
 
 The Hummingbot Strategy Sandbox provides a controlled environment for testing and developing trading strategies without connecting to real exchanges. It simulates market conditions, order execution, and balance management to enable safe strategy development and backtesting.
@@ -58,6 +60,34 @@ The sandbox is built on a clean protocol-based architecture:
 - **Balance Management**: Accurate balance tracking and locking
 - **Event System**: Complete event propagation system
 
+### 🏗️ **Workspace Architecture**
+
+This project is organized for multi-feature workspace development:
+
+#### **🎯 Feature Components** (Strategy Sandbox)
+Pure business logic for strategy development:
+- `strategy_sandbox/core/` - Core strategy logic
+- `strategy_sandbox/balance/` - Balance management
+- `strategy_sandbox/markets/` - Market simulation
+- `strategy_sandbox/events/` - Event system
+
+#### **🛠️ Framework Components** (Shared Tools)
+Comprehensive development and quality tools available in dedicated `framework/` package:
+- `framework/performance/` - Performance monitoring, benchmarking, and trend analysis
+- `framework/security/` - Security scanning, SBOM generation, and vulnerability analysis
+- `framework/reporting/` - Multi-format report generation and artifact management
+- `framework/maintenance/` - System health monitoring and automated maintenance
+
+**New Framework CLI**: Unified command-line interface for all development tools
+```bash
+framework-cli quick-scan .                    # Comprehensive quality check
+framework-cli performance compare results.json --baseline production
+framework-cli security scan . --save-baseline
+framework-cli reporting generate data/ --format markdown
+```
+
+> **✅ Phase 2 Complete**: Framework components successfully extracted to `framework/` package with enhanced CLI, comprehensive APIs, and full backward compatibility. See [framework/README.md](framework/README.md) and [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for detailed usage and migration information.
+
 ## Examples
 
 See the `examples/` directory for:
@@ -101,10 +131,13 @@ pixi run test-performance   # Performance tests
 ## Roadmap
 
 - [x] **Phase 1**: Basic sandbox functionality with CI/CD
-- [ ] **Phase 2**: Advanced market dynamics and slippage simulation
-- [ ] **Phase 3**: Hummingbot Strategy V2 integration
-- [ ] **Phase 4**: Historical data replay and backtesting
-- [ ] **Phase 5**: Real-time data integration
+- [x] **Phase 2**: Framework extraction and modular architecture ✅ **COMPLETE**
+- [ ] **Phase 3**: Advanced market dynamics and slippage simulation
+- [ ] **Phase 4**: Hummingbot Strategy V2 integration
+- [ ] **Phase 5**: Historical data replay and backtesting
+- [ ] **Phase 6**: Real-time data integration
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed release notes.
 
 ## Contributing
 

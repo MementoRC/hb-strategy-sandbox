@@ -197,6 +197,10 @@ test_output.json
 __do_not_edit*
 __do_not_eddit*
 
+# Temporary workflow directories
+__workflows/
+__workflows__/
+
 # Added by Task Master AI
 # Logs
 logs
@@ -222,6 +226,12 @@ artifacts/
 integration-coverage.xml
 reports/
 
+# Framework-specific temporary files
+framework/.cache/
+framework/artifacts/
+framework/reports/
+framework/performance_data/
+
 # Environment files
 .env.example
 
@@ -232,3 +242,14 @@ pip-audit-report.json
 
 # Benchmark and performance results
 *.benchmark.json
+
+# AI development documentation
+ai_docs/
+
+# Environment variables
+.vscode
+# OS specific
+
+# Task files
+# tasks.json
+# tasks/
